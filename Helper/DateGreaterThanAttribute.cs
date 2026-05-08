@@ -2,9 +2,11 @@
 
 namespace EventApp.Helper
 {
+    /// DateGreaterThanAttribute
     [AttributeUsage(AttributeTargets.Property)]
     public class DateGreaterThanAttribute : ValidationAttribute
     {
+        /// DateGreaterThanAttribute
         public DateGreaterThanAttribute(string dateToCompareToFieldName)
         {
             DateToCompareToFieldName = dateToCompareToFieldName;
@@ -12,6 +14,7 @@ namespace EventApp.Helper
 
         private string DateToCompareToFieldName { get; set; }
 
+        /// ValidationResult IsValid
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
             DateTime earlierDate = (DateTime)value;

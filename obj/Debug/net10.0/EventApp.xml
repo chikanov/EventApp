@@ -4,7 +4,12 @@
         <name>EventApp</name>
     </assembly>
     <members>
-        <!-- Badly formed XML comment ignored for member "M:EventApp.Controllers.EventsController.GetAllEvents" -->
+        <member name="M:EventApp.Controllers.EventsController.GetAllEvents">
+            <summary>
+            GET: Get All Events.
+            </summary>
+            <returns>Collection Events</returns>
+        </member>
         <member name="M:EventApp.Controllers.EventsController.GetEventById(System.Int32)">
             <summary>
             GET: Get Event by id.
@@ -12,13 +17,13 @@
             <param name="id">Id</param>
             <returns>Event event</returns>
         </member>
-        <member name="M:EventApp.Controllers.EventsController.CreateEvent(EventApp.Models.Event)">
+        <member name="M:EventApp.Controllers.EventsController.CreateEvent(EventApp.Models.DTO.EventDto)">
             <summary>
             POST: Create new event.
             </summary>
             <returns>Event eventt</returns>
         </member>
-        <member name="M:EventApp.Controllers.EventsController.UpdateEvent(EventApp.Models.Event)">
+        <member name="M:EventApp.Controllers.EventsController.UpdateEvent(System.Int32,EventApp.Models.DTO.EventDto)">
             <summary>
             PUT: Update Event
             </summary>

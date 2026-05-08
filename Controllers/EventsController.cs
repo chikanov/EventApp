@@ -1,16 +1,17 @@
 ﻿using EventApp.Interfaces;
 using EventApp.Models;
-using Microsoft.AspNetCore.Http;
+using EventApp.Models.DTO;
 using Microsoft.AspNetCore.Mvc;
-using System.Data.Common;
 
 namespace EventApp.Controllers
 {
+    /// EventsController
     [ApiController]
     [Route("api/[controller]")]
     public class EventsController : ControllerBase
     {
         private readonly IEventService _eventService;
+        /// text
         public EventsController(IEventService eventService)
         {
             _eventService = eventService;
@@ -19,7 +20,7 @@ namespace EventApp.Controllers
         /// <summary>
         /// GET: Get All Events.
         /// </summary>
-        /// <returns>List<Event> AllEvents</returns>
+        /// <returns>Collection Events</returns>
         [HttpGet]
         public ActionResult<List<Event>> GetAllEvents()
         {
@@ -28,7 +29,7 @@ namespace EventApp.Controllers
             {
                 return Ok(allEvents);
             }
-            else return NoContent();
+            else return NotFound();
         }
 
         /// <summary>
@@ -37,12 +38,12 @@ namespace EventApp.Controllers
         /// <param name="id">Id</param>
         /// <returns>Event event</returns>
         [HttpGet("{id}")]
-        public ActionResult<Event> GetEventById(int id)
+        public ActionResult<Event> GetEventById([FromRoute] int id)
         {
             var ev = _eventService.GetById(id);
             if (ev == null)
             {
-                return BadRequest();
+                return NotFound();
             }
             
             return Ok(ev);
@@ -53,7 +54,7 @@ namespace EventApp.Controllers
         /// </summary>
         /// <returns>Event eventt</returns>
         [HttpPost]
-        public ActionResult<Event> CreateEvent(Event ev)
+        public ActionResult<EventDto> CreateEvent(EventDto ev)
         {
             if (!ModelState.IsValid)
             {
@@ -61,7 +62,7 @@ namespace EventApp.Controllers
             }
             var createdEvent = _eventService.Add(ev);
 
-            return Ok(createdEvent);
+            return Created();
         }
 
         /// <summary>
@@ -69,12 +70,14 @@ namespace EventApp.Controllers
         /// </summary>
         /// <returns>Event eventt</returns>
         [HttpPut("{id}")]
-        public ActionResult<Event> UpdateEvent(Event ev)
+        public ActionResult<EventDto> UpdateEvent([FromRoute] int id, EventDto ev)
         {
-            if (!ModelState.IsValid || _eventService.GetById(ev.Id) == null)
+            if (!ModelState.IsValid)
                 return BadRequest(ModelState);
+            if (_eventService.GetById(id) == null)
+                return NotFound(ev);
 
-            var updatedEvent = _eventService.Update(ev);
+            var updatedEvent = _eventService.Update(id, ev);
             return Ok(updatedEvent);
         }
 
@@ -83,13 +86,13 @@ namespace EventApp.Controllers
         /// </summary>
         /// <returns>Event eventt</returns>
         [HttpDelete("{id}")]
-        public ActionResult<Event> DeleteEvent(int id)
+        public ActionResult<Event> DeleteEvent([FromRoute] int id)
         {
             if (_eventService.GetById(id) == null)
-                return BadRequest();
+                return NotFound();
 
             var deletedEvent = _eventService.Delete(id);
-            return Ok(deletedEvent);
+            return NoContent();
         }
     }
 }

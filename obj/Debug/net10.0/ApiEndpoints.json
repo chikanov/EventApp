@@ -29,13 +29,13 @@
     "Parameters": [
       {
         "Name": "ev",
-        "Type": "EventApp.Models.Event",
+        "Type": "EventApp.Models.DTO.EventDto",
         "IsRequired": true
       }
     ],
     "ReturnTypes": [
       {
-        "Type": "EventApp.Models.Event",
+        "Type": "EventApp.Models.DTO.EventDto",
         "MediaTypes": [
           "text/plain",
           "application/json",
@@ -80,19 +80,19 @@
     "Order": 0,
     "Parameters": [
       {
-        "Name": "ev",
-        "Type": "EventApp.Models.Event",
+        "Name": "id",
+        "Type": "System.Int32",
         "IsRequired": true
       },
       {
-        "Name": "id",
-        "Type": "",
+        "Name": "ev",
+        "Type": "EventApp.Models.DTO.EventDto",
         "IsRequired": true
       }
     ],
     "ReturnTypes": [
       {
-        "Type": "EventApp.Models.Event",
+        "Type": "EventApp.Models.DTO.EventDto",
         "MediaTypes": [
           "text/plain",
           "application/json",
