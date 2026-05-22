@@ -10,6 +10,8 @@ namespace EventApp.Interfaces
     {
         /// Collection Event GetAll
         List<Event> GetAll();
+        /// Filtred collection Event GetAll
+        List<Event> GetAll(string? tittle, DateTime? From, DateTime? to);
         /// Event? GetById
         Event? GetById(int id);
         /// Event Add

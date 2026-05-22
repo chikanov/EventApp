@@ -2,6 +2,7 @@
 using EventApp.Models;
 using EventApp.Models.DTO;
 using Microsoft.AspNetCore.Mvc;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace EventApp.Controllers
 {
@@ -22,13 +23,24 @@ namespace EventApp.Controllers
         /// </summary>
         /// <returns>Collection Events</returns>
         [HttpGet]
-        public ActionResult<List<Event>> GetAllEvents()
+        public ActionResult<List<Event>> GetAllEvents([FromQuery] string? tittle = null,
+            [FromQuery]  DateTime? from = null, [FromQuery]  DateTime? to = null)
         {
-            var allEvents = _eventService.GetAll();
-            if (allEvents.Any())
+            var listEvent = new List<Event>();
+            if (!string.IsNullOrEmpty(tittle) && from.HasValue && to.HasValue)
             {
-                return Ok(allEvents);
+                listEvent = _eventService.GetAll(tittle, from, to);
             }
+            else
+            {
+                listEvent = _eventService.GetAll();
+            }
+            
+            if (listEvent.Any())
+            {
+                return Ok(listEvent);
+            }
+
             else return NotFound();
         }
 

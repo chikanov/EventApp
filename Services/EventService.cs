@@ -23,6 +23,12 @@ namespace EventApp.Services
             return _events;
         }
 
+        ///GetAll() 
+        public List<Event> GetAll(string? tittle = null, DateTime? From = null, DateTime? to = null)
+        {
+            return _events.Where(e => e.Title == tittle && e.StartAt >= From && e.EndAt <= to).ToList();
+        }
+
         ///GetById
         public Event? GetById(int id)
         {
