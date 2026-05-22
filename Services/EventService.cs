@@ -10,23 +10,36 @@ namespace EventApp.Services
     public class EventService : IEventService
     {
         /// Collection Events
-        public static List<Event> _events = new() 
+        public static List<Event> _events = new()
         {
             new Event(){ Id = 1, Title = "Tittle1", Description = "Description1", StartAt = DateTime.Now, EndAt = DateTime.Now.AddDays(1)},
             new Event(){ Id = 2, Title = "Tittle2", Description = "Description2", StartAt = DateTime.Now, EndAt = DateTime.Now.AddDays(1)},
-            new Event(){ Id = 3, Title = "Tittle3", Description = "Description3", StartAt = DateTime.Now, EndAt = DateTime.Now.AddDays(1)}
+            new Event(){ Id = 3, Title = "Tittle3", Description = "Description3", StartAt = DateTime.Now.AddDays(1), EndAt = DateTime.Now.AddDays(2)},
+            new Event(){ Id = 4, Title = "Tittle4", Description = "Description4", StartAt = DateTime.Now.AddDays(1), EndAt = DateTime.Now.AddDays(2)},
+            new Event(){ Id = 5, Title = "Tittle5", Description = "Description5", StartAt = DateTime.Now.AddDays(2), EndAt = DateTime.Now.AddDays(3)},
+            new Event(){ Id = 6, Title = "Tittle6", Description = "Description6", StartAt = DateTime.Now.AddDays(2), EndAt = DateTime.Now.AddDays(3)},
+            new Event(){ Id = 7, Title = "Tittle7", Description = "Description7", StartAt = DateTime.Now.AddDays(3), EndAt = DateTime.Now.AddDays(4)},
+            new Event(){ Id = 8, Title = "Tittle8", Description = "Description8", StartAt = DateTime.Now.AddDays(3), EndAt = DateTime.Now.AddDays(4)},
+            new Event(){ Id = 9, Title = "Tittle9", Description = "Description9", StartAt = DateTime.Now.AddDays(4), EndAt = DateTime.Now.AddDays(5)},
+            new Event(){ Id = 10, Title = "Tittle10", Description = "Description10", StartAt = DateTime.Now.AddDays(4), EndAt = DateTime.Now.AddDays(5)},
+            new Event(){ Id = 11, Title = "Tittle11", Description = "Description11", StartAt = DateTime.Now.AddDays(6), EndAt = DateTime.Now.AddDays(7)},
+            new Event(){ Id = 12, Title = "Tittle12", Description = "Description12", StartAt = DateTime.Now.AddDays(6), EndAt = DateTime.Now.AddDays(7)},
+            new Event(){ Id = 13, Title = "Tittle13", Description = "Description13", StartAt = DateTime.Now.AddDays(8), EndAt = DateTime.Now.AddDays(9)},
+            new Event(){ Id = 14, Title = "Tittle14", Description = "Description14", StartAt = DateTime.Now.AddDays(8), EndAt = DateTime.Now.AddDays(9)},
+            new Event(){ Id = 15, Title = "Tittle15", Description = "Description15", StartAt = DateTime.Now.AddDays(9), EndAt = DateTime.Now.AddDays(10)}
         };
 
         ///GetAll() 
-        public List<Event> GetAll() 
+        public List<Event> GetAll(int page, int pageSize) 
         {
-            return _events;
+            return _events.Skip((page - 1) * pageSize).Take(pageSize).ToList();
         }
 
         ///GetAll() 
-        public List<Event> GetAll(string? tittle = null, DateTime? From = null, DateTime? to = null)
+        public List<Event> GetAll(int page, int pageSize, string? tittle = null, DateTime? From = null, DateTime? to = null)
         {
-            return _events.Where(e => e.Title == tittle && e.StartAt >= From && e.EndAt <= to).ToList();
+            return _events.Where(e => e.Title == tittle && e.StartAt >= From && e.EndAt <= to).
+                Skip((page - 1) * pageSize).Take(pageSize).ToList();
         }
 
         ///GetById

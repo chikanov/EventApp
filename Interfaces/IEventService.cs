@@ -9,9 +9,9 @@ namespace EventApp.Interfaces
     public interface IEventService
     {
         /// Collection Event GetAll
-        List<Event> GetAll();
+        List<Event> GetAll(int page, int pageSize);
         /// Filtred collection Event GetAll
-        List<Event> GetAll(string? tittle, DateTime? From, DateTime? to);
+        List<Event> GetAll(int page, int pageSize, string? tittle, DateTime? From, DateTime? to);
         /// Event? GetById
         Event? GetById(int id);
         /// Event Add

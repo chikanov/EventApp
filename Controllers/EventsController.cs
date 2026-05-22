@@ -1,6 +1,7 @@
 ﻿using EventApp.Interfaces;
 using EventApp.Models;
 using EventApp.Models.DTO;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Mvc;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
@@ -23,22 +24,25 @@ namespace EventApp.Controllers
         /// </summary>
         /// <returns>Collection Events</returns>
         [HttpGet]
-        public ActionResult<List<Event>> GetAllEvents([FromQuery] string? tittle = null,
-            [FromQuery]  DateTime? from = null, [FromQuery]  DateTime? to = null)
+        public ActionResult<PaginatedResult> GetAllEvents([FromQuery] string? tittle = null,
+            [FromQuery]  DateTime? from = null, [FromQuery]  DateTime? to = null, 
+            [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
-            var listEvent = new List<Event>();
+            var result = new PaginatedResult() {Page = page, ListEvents = new List<Event>(), CountEventsOnPage = pageSize };
+
             if (!string.IsNullOrEmpty(tittle) && from.HasValue && to.HasValue)
             {
-                listEvent = _eventService.GetAll(tittle, from, to);
+                result.ListEvents = _eventService.GetAll(page, pageSize, tittle, from, to);
             }
             else
             {
-                listEvent = _eventService.GetAll();
+                result.ListEvents = _eventService.GetAll(page, pageSize);
             }
             
-            if (listEvent.Any())
+            if (result.ListEvents.Any())
             {
-                return Ok(listEvent);
+                result.EventsCount = result.ListEvents.Count;
+                return Ok(result);
             }
 
             else return NotFound();

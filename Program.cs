@@ -13,6 +13,7 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddScoped<IEventService, EventService>();
 
+
 builder.Services.AddSwaggerGen(options =>
 {
     var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
