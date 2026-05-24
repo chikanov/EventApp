@@ -1,9 +1,7 @@
 ﻿using EventApp.Interfaces;
 using EventApp.Models;
 using EventApp.Models.DTO;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Mvc;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace EventApp.Controllers
 {

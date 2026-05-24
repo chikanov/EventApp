@@ -1,7 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using EventApp.Helper;
-
-namespace EventApp.Models
+﻿namespace EventApp.Models
 {
     /// <summary>
     /// Event

@@ -36,10 +36,15 @@ namespace EventApp.Services
         }
 
         ///GetAll() 
-        public List<Event> GetAll(int page, int pageSize, string? tittle = null, DateTime? From = null, DateTime? to = null)
+        public List<Event> GetAll(int page, int pageSize, string? tittle = null, DateTime? from = null, DateTime? to = null)
         {
-            return _events.Where(e => e.Title == tittle && e.StartAt >= From && e.EndAt <= to).
+            var _to = to.Value.AddHours(23 - to.Value.Hour).AddMinutes(59 - to.Value.Minute).AddSeconds(59 - to.Value.Second);
+            var _from = from.Value.AddHours(0 - from.Value.Hour).AddMinutes(0 - from.Value.Minute).AddSeconds(0 - from.Value.Second);
+
+            var resalt = _events.Where(e => e.Title.Contains(tittle ?? "") && e.StartAt >= _from && e.EndAt <= _to).
                 Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
+            return resalt;
         }
 
         ///GetById
@@ -69,6 +74,11 @@ namespace EventApp.Services
         {
             var existEvent = _events.FirstOrDefault(e => e.Id == id);
 
+            if (ev.StartAt > ev.EndAt)
+            {
+                throw new ArgumentOutOfRangeException("The end date must be greater than the start date.");
+            }
+
             if (existEvent != null)
             {
                 existEvent.Id = id;
@@ -84,8 +94,11 @@ namespace EventApp.Services
         public Event Delete(int id)
         {
             var existEvent = _events.FirstOrDefault(e => e.Id == id);
-
-            if(existEvent != null)
+            if (existEvent == null)
+            {
+                throw new ArgumentOutOfRangeException($"Event with Id = {id} does not exist.");
+            }
+            if (existEvent != null)
                 _events.Remove(existEvent);
 
             return existEvent;
