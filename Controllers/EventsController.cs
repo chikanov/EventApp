@@ -20,6 +20,11 @@ namespace EventApp.Controllers
         /// <summary>
         /// GET: Get All Events.
         /// </summary>
+        /// <param name="tittle">Event title</param>
+        /// <param name="from">Date when event start</param>
+        /// <param name="to">Date when event finished</param>
+        /// <param name="page">Number of page</param>
+        /// <param name="pageSize">Page size</param>
         /// <returns>Collection Events</returns>
         [HttpGet]
         public ActionResult<PaginatedResult> GetAllEvents([FromQuery] string? tittle = null,
