@@ -6,6 +6,6 @@ obj
 ../obj
 ../.vs
 
-../EventService.Test/bin
-../EventService.Test/obj
-../EventService.Test/.vs
+../EventService.Tests/bin
+../EventService.Tests/obj
+../EventService.Tests/.vs
