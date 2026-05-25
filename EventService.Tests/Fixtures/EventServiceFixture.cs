@@ -1,4 +1,5 @@
-﻿using EventApp.Services;
+﻿using Castle.Core.Configuration;
+using EventApp.Services;
 
 namespace EventApp
 {

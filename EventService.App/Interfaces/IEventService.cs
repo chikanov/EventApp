@@ -8,10 +8,8 @@ namespace EventApp.Interfaces
     /// </summary>
     public interface IEventService
     {
-        /// Collection Event GetAll
-        List<Event> GetAll(int page, int pageSize);
         /// Filtred collection Event GetAll
-        List<Event> GetAll(int page, int pageSize, string? tittle, DateTime? From, DateTime? to);
+        PaginatedResult GetAll(int page, int pageSize, string? tittle, DateTime? From, DateTime? to);
         /// Event? GetById
         Event? GetById(int id);
         /// Event Add

@@ -1,4 +1,5 @@
-﻿using EventApp.Models;
+﻿using EventApp.CustomExceptions;
+using EventApp.Models;
 using EventApp.Models.DTO;
 using EventApp.Services;
 namespace EventApp
@@ -48,7 +49,7 @@ namespace EventApp
             new Event(){ Id = 15, Title = "Tittle15", Description = "Description15", StartAt = DateTime.Now.AddDays(9), EndAt = DateTime.Now.AddDays(10)}
             };
 
-            var result = _eventService.GetAll(1, 15).Where(e => e.Id <= 15).ToList();
+            var result = _eventService.GetAll(1, 15).ListEvents.Where(e => e.Id <= 15).ToList();
 
             Assert.Equal(expectedEvents.Count, result.Count);
         }
@@ -105,8 +106,8 @@ namespace EventApp
 
             if (result != null)
             {
-                Assert.All(result, events => expectedTitle.Contains(events.Title));
-                Assert.DoesNotContain(notExpectedTitle, result.Select(events => events.Title));
+                Assert.All(result.ListEvents, events => expectedTitle.Contains(events.Title));
+                Assert.DoesNotContain(notExpectedTitle, result.ListEvents.Select(events => events.Title));
             }
         }
 
@@ -119,8 +120,8 @@ namespace EventApp
 
             var result = _eventService?.GetAll(expectedPageNumber, expectedPageCount);
 
-            Assert.Equal(expectedPageCount, result?.Count());
-            Assert.All(result, events => expectedListEventsTitles.Contains(events.Title));
+            Assert.Equal(expectedPageCount, result?.ListEvents.Count());
+            Assert.All(result!.ListEvents, events => expectedListEventsTitles.Contains(events.Title));
         }
 
         [Fact]
@@ -147,9 +148,9 @@ namespace EventApp
             };
 
             var exception = Assert
-        .Throws<ArgumentOutOfRangeException>(() => _eventService?.Delete(expectedNotExistId));
+        .Throws<NotFoundException>(() => _eventService?.Delete(expectedNotExistId));
 
-            Assert.Equal(expectedParamName, exception.ParamName);
+            Assert.Equal(expectedParamName, exception.Message);
         }
 
         [Fact]
@@ -166,9 +167,9 @@ namespace EventApp
             };
 
             var exception = Assert
-        .Throws<ArgumentOutOfRangeException>(() => _eventService?.Update(expectedId, eventDto));
+        .Throws<NotFoundException>(() => _eventService?.Update(expectedId, eventDto));
 
-            Assert.Equal(expectedParamName, exception.ParamName);
+            Assert.Equal(expectedParamName, exception.Message);
         }
     }
 }

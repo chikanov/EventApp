@@ -11,40 +11,32 @@ namespace EventApp.Controllers
     public class EventsController : ControllerBase
     {
         private readonly IEventService _eventService;
+        private readonly IConfiguration _config;
         /// text
-        public EventsController(IEventService eventService)
+        public EventsController(IEventService eventService, IConfiguration config)
         {
             _eventService = eventService;
+            _config = config;
         }
 
         /// <summary>
         /// GET: Get All Events.
         /// </summary>
-        /// <param name="tittle">Event title</param>
+        /// <param name="title">Event title</param>
         /// <param name="from">Date when event start</param>
         /// <param name="to">Date when event finished</param>
         /// <param name="page">Number of page</param>
         /// <param name="pageSize">Page size</param>
         /// <returns>Collection Events</returns>
         [HttpGet]
-        public ActionResult<PaginatedResult> GetAllEvents([FromQuery] string? tittle = null,
+        public ActionResult<PaginatedResult> GetAllEvents([FromQuery] string? title = null,
             [FromQuery]  DateTime? from = null, [FromQuery]  DateTime? to = null, 
             [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
-            var result = new PaginatedResult() {Page = page, ListEvents = new List<Event>(), CountEventsOnPage = pageSize };
-
-            if (!string.IsNullOrEmpty(tittle) && from.HasValue && to.HasValue)
-            {
-                result.ListEvents = _eventService.GetAll(page, pageSize, tittle, from, to);
-            }
-            else
-            {
-                result.ListEvents = _eventService.GetAll(page, pageSize);
-            }
+            var result = _eventService.GetAll(page, pageSize, title, from, to);
             
-            if (result.ListEvents.Any())
+            if (result != null)
             {
-                result.EventsCount = result.ListEvents.Count;
                 return Ok(result);
             }
 
