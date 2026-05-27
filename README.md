@@ -8,6 +8,10 @@ Event management Service.
     dotnet build
     dotnet run
 
+## To start test
+
+    dotnet test
+
 # REST API
 
 The REST API to the example app is described below.
@@ -15,7 +19,11 @@ The REST API to the example app is described below.
 ## Get list of Events
 
 ### Request
-
+<param name="tittle">Event title</param>
+<param name="from">Date when event start</param>
+<param name="to">Date when event finished</param>
+<param name="page">Number of page</param>
+<param name="pageSize">Page size</param>
 `GET /events/`
 
     curl -X 'GET' \  'https://localhost:7124/api/Events' \  -H 'accept: text/plain'
@@ -30,6 +38,20 @@ The REST API to the example app is described below.
     Content-Length: 2
 
     []
+### Response with error
+    Error: response status is 404
+    Response body
+    {
+        "type": "https://tools.ietf.org/html/rfc9110#section-15.5.5",
+        "title": "Not Found",
+        "status": 404,
+        "traceId": "00-1ec2d2b9aad6b86a546c67aecdccbb82-8b0a7bb24db31e32-00"
+    }
+
+    Response headers
+    content-type: application/problem+json; charset=utf-8 
+    date: Sun,24 May 2026 15:11:10 GMT 
+    server: Kestrel
 
 ## Create a new Event
 

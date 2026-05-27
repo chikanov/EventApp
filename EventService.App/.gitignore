@@ -1,0 +1,11 @@
+bin
+obj
+.vs
+
+../bin
+../obj
+../.vs
+
+../EventService.Tests/bin
+../EventService.Tests/obj
+../EventService.Tests/.vs
