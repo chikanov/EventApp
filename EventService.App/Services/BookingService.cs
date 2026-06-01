@@ -7,25 +7,23 @@ namespace EventApp.Services
     public class BookingService : IBookingService
     {
         public readonly IEventService _eventService;
-        public readonly ILogger _logger;
-        public BookingService(IEventService eventService, ILogger logger)
+        public BookingService(IEventService eventService)
         {
             _eventService = eventService;
-            _logger = logger;
         }
         public static List<Booking> _bookings = new()
         {
-            new Booking() {Id = new Guid(), 
+            new Booking() {Id = Guid.NewGuid(), 
                            EventId = 1, 
                            CreatedAt = DateTime.Now, 
                            ProcessedAt = DateTime.Now.AddMinutes(5), 
                            Status = BookingStatus.Confirmed },
-            new Booking() {Id = new Guid(),
+            new Booking() {Id = Guid.NewGuid(),
                            EventId = 2,
                            CreatedAt = DateTime.Now,
                            ProcessedAt = DateTime.Now.AddMinutes(5),
                            Status = BookingStatus.Rejected },
-            new Booking() {Id = new Guid(),
+            new Booking() {Id = Guid.NewGuid(),
                            EventId = 3,
                            CreatedAt = DateTime.Now,
                            ProcessedAt = DateTime.Now.AddMinutes(5),
@@ -33,12 +31,11 @@ namespace EventApp.Services
         };
         public async Task<Booking> CreateBookingAsync(int eventId)
         {
-            await Task.Delay(2000);
             var newBooking = new Booking()
             {
-                Id = new Guid(),
+                Id = Guid.NewGuid(),
                 EventId = eventId,
-                CreatedAt = new DateTime(),
+                CreatedAt = DateTime.Now,
                 Status = BookingStatus.Pending,
             };
             _bookings.Add(newBooking);
@@ -48,7 +45,6 @@ namespace EventApp.Services
 
         public async Task<Booking?> GetBookingByIdAsync(Guid bookingId)
         {
-            await Task.Delay(2000);
             return _bookings.FirstOrDefault(b => b.Id == bookingId);
         }
     }
