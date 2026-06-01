@@ -34,13 +34,7 @@ namespace EventApp.Controllers
             [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             var result = _eventService.GetAll(page, pageSize, title, from, to);
-            
-            if (result != null)
-            {
-                return Ok(result);
-            }
-
-            else return NotFound();
+            return Ok(result);
         }
 
         /// <summary>

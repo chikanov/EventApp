@@ -1,7 +1,9 @@
 ﻿using EventApp.CustomExceptions;
+using EventApp.Helper;
 using EventApp.Models;
 using EventApp.Models.DTO;
 using EventApp.Services;
+using System.ComponentModel.DataAnnotations;
 namespace EventApp
 {
     public class EventServiceTests : IClassFixture<EventServiceFixture>
@@ -104,11 +106,32 @@ namespace EventApp
 
             var result = _eventService?.GetAll(1, 10, expectedTitle, expectedStartAt, expectedEndAt);
 
-            if (result != null)
-            {
-                Assert.All(result.ListEvents, events => expectedTitle.Contains(events.Title));
-                Assert.DoesNotContain(notExpectedTitle, result.ListEvents.Select(events => events.Title));
-            }
+            Assert.All(result.ListEvents, events => expectedTitle.Contains(events.Title));
+            Assert.DoesNotContain(notExpectedTitle, result.ListEvents.Select(events => events.Title));
+        }
+
+        [Fact]
+        public void FiltringEventsTest_ReturnFiltredEventsByTitle()
+        {
+            var expectedTitle = "Title1";
+            var notExpectedTitle = "Title6";
+
+            var result = _eventService?.GetAll(1, 10, expectedTitle);
+
+            Assert.All(result.ListEvents, events => expectedTitle.Contains(events.Title));
+            Assert.DoesNotContain(notExpectedTitle, result.ListEvents.Select(events => events.Title));
+        }
+
+        [Fact]
+        public void FiltringEventsTest_ReturnFiltredEventsByStartAtByEndAt()
+        {
+            var expectedStartAt = _eventService?.GetById(1)?.StartAt;
+            var expectedEndAt = _eventService?.GetById(1)?.EndAt;
+            var expectedEventsCount = 2;
+
+            var result = _eventService?.GetAll(1, 10, null, expectedStartAt, expectedEndAt);
+
+            Assert.Equal(expectedEventsCount, result.EventsCount);
         }
 
         [Fact]
@@ -143,12 +166,12 @@ namespace EventApp
             {
                 Title = "Tittle5 - updated",
                 Description = "Description5 - updated",
-                StartAt = DateTime.Now.AddDays(3),
+                StartAt = DateTime.Now.AddDays(1),
                 EndAt = DateTime.Now.AddDays(2)
             };
 
             var exception = Assert
-        .Throws<NotFoundException>(() => _eventService?.Delete(expectedNotExistId));
+        .Throws<NotFoundException>(() => _eventService?.Update(expectedNotExistId, eventDto));
 
             Assert.Equal(expectedParamName, exception.Message);
         }
@@ -167,7 +190,7 @@ namespace EventApp
             };
 
             var exception = Assert
-        .Throws<NotFoundException>(() => _eventService?.Update(expectedId, eventDto));
+        .Throws<ValidationException>(() => _eventService?.Update(expectedId, eventDto));
 
             Assert.Equal(expectedParamName, exception.Message);
         }

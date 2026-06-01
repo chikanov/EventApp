@@ -2,6 +2,7 @@
 using EventApp.Interfaces;
 using EventApp.Models;
 using EventApp.Models.DTO;
+using System.ComponentModel.DataAnnotations;
 
 namespace EventApp.Services
 {
@@ -69,9 +70,14 @@ namespace EventApp.Services
         {
             var existEvent = _events.FirstOrDefault(e => e.Id == id);
 
+            if (existEvent == null)
+            {
+                throw new NotFoundException($"Event with Id = {id} does not exist.");
+            }
+
             if (ev.StartAt > ev.EndAt)
             {
-                throw new NotFoundException("The end date must be greater than the start date.");
+                throw new ValidationException("The end date must be greater than the start date.");
             }
 
             if (existEvent != null)
@@ -123,9 +129,7 @@ namespace EventApp.Services
 
             int filteredCount = events.Count();
 
-            var items = events.Where(e => e.Title.Contains(title ?? "", StringComparison.OrdinalIgnoreCase)
-            && e.StartAt >= GetTheStartOfTheDayOrDefault(from) && e.EndAt <= GetTheEndOfTheDayOrDefault(to)).
-                Skip((page - 1) * pageSize).Take(pageSize).ToList();
+            var items = events.Skip((page - 1) * pageSize).Take(pageSize).ToList();
 
             int totalPages = (int)Math.Ceiling((double)filteredCount / pageSize);
 
@@ -133,22 +137,22 @@ namespace EventApp.Services
                 CountEventsOnPage = items.Count,
                 ListEvents = items, 
                 EventsCount = filteredCount, 
-                Page = totalPages
+                Page = page
             };
         }
 
         DateTime? GetTheStartOfTheDayOrDefault(DateTime? from)
         {
-            return from != null ? from.Value.AddHours(0 - from.Value.Hour).
+            return from.Value.AddHours(0 - from.Value.Hour).
                 AddMinutes(0 - from.Value.Minute).
-                AddSeconds(0 - from.Value.Second) : new DateTime(2000, 1, 1);
+                AddSeconds(0 - from.Value.Second);
         }
 
         DateTime? GetTheEndOfTheDayOrDefault(DateTime? to)
         {
-            return to != null ? to!.Value.AddHours(23 - to.Value.Hour).
+            return to!.Value.AddHours(23 - to.Value.Hour).
                 AddMinutes(59 - to.Value.Minute).
-                AddSeconds(59 - to.Value.Second) : new DateTime(2999, 12, 31);
+                AddSeconds(59 - to.Value.Second);
         }
     }
 }
