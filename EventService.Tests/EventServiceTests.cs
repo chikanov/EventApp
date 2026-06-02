@@ -1,5 +1,4 @@
 ﻿using EventApp.CustomExceptions;
-using EventApp.Helper;
 using EventApp.Models;
 using EventApp.Models.DTO;
 using EventApp.Services;

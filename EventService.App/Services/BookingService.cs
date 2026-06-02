@@ -1,4 +1,5 @@
-﻿using EventApp.Interfaces;
+﻿using EventApp.CustomExceptions;
+using EventApp.Interfaces;
 using EventApp.Models;
 using EventApp.Models.Const;
 
@@ -6,7 +7,7 @@ namespace EventApp.Services
 {
     public class BookingService : IBookingService
     {
-        public readonly IEventService _eventService;
+        private readonly IEventService _eventService;
         public BookingService(IEventService eventService)
         {
             _eventService = eventService;
@@ -31,6 +32,10 @@ namespace EventApp.Services
         };
         public async Task<Booking> CreateBookingAsync(int eventId)
         {
+            if (_eventService.GetById(eventId) == null)
+            {
+                throw new NotFoundException($"Event with Id = {eventId} does not exist.");
+            }
             var newBooking = new Booking()
             {
                 Id = Guid.NewGuid(),
@@ -42,9 +47,12 @@ namespace EventApp.Services
 
             return newBooking;
         }
-
         public async Task<Booking?> GetBookingByIdAsync(Guid bookingId)
         {
+            if (!_bookings.Any(b => b.Id == bookingId))
+            {
+                throw new NotFoundException($"Booking with Id = {bookingId} does not exist.");
+            }
             return _bookings.FirstOrDefault(b => b.Id == bookingId);
         }
     }
