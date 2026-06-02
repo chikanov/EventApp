@@ -16,6 +16,30 @@ Event management Service.
 
 The REST API to the example app is described below.
 
+## Booking
+** Description: **
+    Class 'Booking' is a template for storing booking information
+** Attributes **
+    'Id' - unique guid
+    'EventId' - unique int id
+    'Status' - status of booking
+    'CreatedAt' - Creation Date
+    'ProcessedAt' - Processing Date
+
+## BookingStatus
+** Description: **
+    The class 'BookingStatus' is used to store constant values of the booking status.
+** Status options: **
+    'Pending' - Status when booking is created
+    'Confirmed' - Status confermed booking
+    'Rejected' - Status rejected booking
+
+## BookingBackgroundService
+** Description: **
+    This is a service that runs the program all the time and tries to process booking from the queue and change the status to Confirmed and add the processing date.
+** Example: **
+    User creates a booking by passing the event ID. The controller creates the booking and puts it in a queue. The BookingBagroundService tries to take the booking out of the queue, changes the status to Confirmed, and adds the processing time.
+
 ## Get list of Events
 
 ### Request
@@ -156,3 +180,63 @@ The REST API to the example app is described below.
     Date: Thu, 24 Feb 2011 12:36:32 GMT
     Status: 204 No Content
     Connection: close
+
+## Create Booking on Event
+
+### Request
+`POST /events/{id}/book`
+
+curl -X 'POST' \
+  'https://localhost:7124/api/Events/16/book' \
+  -H 'accept: text/plain' \
+  -d ''
+### Response
+
+    HTTP/1.1 202 Accepted
+    Date: Thu, 24 Feb 2011 12:36:30 GMT
+    Status: 202 Accepted
+    Connection: close
+    Content-Type: application/json
+    
+    {
+  "id": "01eeba11-fa52-4857-a060-803c1670b78b",
+  "eventId": 16,
+  "status": "Pending",
+  "createdAt": "2026-06-02T18:52:52.8095186+03:00",
+  "processedAt": "0001-01-01T00:00:00"
+    }
+    
+    content-type: application/json; charset=utf-8 
+    date: Tue,02 Jun 2026 15:52:52 GMT 
+    location: /bookings/01eeba11-fa52-4857-a060-803c1670b78b 
+    server: Kestrel
+
+## Get booking by Id.
+
+### Request
+`GET /bookings/{id}`
+
+curl -X 'GET' \
+  'https://localhost:7124/api/Bookings/01eeba11-fa52-4857-a060-803c1670b78b' \
+  -H 'accept: text/plain'
+
+### Response
+
+    HTTP/1.1 200 OK
+    Date: Thu, 24 Feb 2011 12:36:30 GMT
+    Status: 200 OK
+    Connection: close
+    Content-Type: application/json
+    
+    {
+  "id": "01eeba11-fa52-4857-a060-803c1670b78b",
+  "eventId": 16,
+  "status": "Confirmed",
+  "createdAt": "2026-06-02T18:52:52.8095186+03:00",
+  "processedAt": "2026-06-02T18:52:53.9904206+03:00"
+}
+
+     content-type: application/json; charset=utf-8 
+     date: Tue,02 Jun 2026 15:53:03 GMT 
+     server: Kestrel 
+    
