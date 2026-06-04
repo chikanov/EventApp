@@ -10,15 +10,11 @@ namespace EventApp.Controllers
     [Route("api/[controller]")]
     public class BookingsController : ControllerBase
     {
-        private readonly IEventService _eventService;
         private readonly IBookingService _bookingService;
-        private readonly IConfiguration _config;
 
-        public BookingsController(IEventService eventService, IBookingService bookingService, IConfiguration config)
+        public BookingsController(IBookingService bookingService, IConfiguration config)
         {
-            _eventService = eventService;
             _bookingService = bookingService;
-            _config = config;
         }
         
         /// <summary>

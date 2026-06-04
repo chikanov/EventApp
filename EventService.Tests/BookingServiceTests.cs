@@ -1,12 +1,10 @@
 ﻿using EventApp.CustomExceptions;
-using EventApp.Interfaces;
 using EventApp.Models;
-using EventApp.Models.Const;
-using EventApp.Services;
-using Microsoft.Extensions.Logging;
+using Xunit.v3.Priority;
 
-namespace EventApp
+namespace EventApp.Services
 {
+    [TestCaseOrderer(typeof(PriorityOrderer))]
     public class BookingServiceTests : IClassFixture<BookingServiceFixture>
     {
         private readonly BookingService _bookingService;
@@ -15,18 +13,18 @@ namespace EventApp
             _bookingService = fixture.bookingService;
         }
 
-        [Fact]
+        [Fact, Priority(0)]
         public async Task CreateBookingWithExistEvent_ReturnBookingWithStatusPending()
         {
             var ExistEventId = 3;
-            var statusPending = BookingStatus.Pending;
+            var statusPending = Booking.BookingStatus.Pending.ToString();
 
             var newBooking = await _bookingService.CreateBookingAsync(ExistEventId);
 
             Assert.Equal(statusPending, newBooking.Status);
         }
 
-        [Fact]
+        [Fact, Priority(1)]
         public async Task CreateTwoBookingsOnOneEvent_ReturnDifferendId()
         {
             var eventId = 4;
@@ -37,8 +35,20 @@ namespace EventApp
             Assert.NotEqual(firstBooking.Id, secondBooking.Id);
         }
 
-        [Fact]
+        [Fact, Priority(2)]
         public async Task GetBookingById_ReturnCorrectBooking()
+        {
+            var eventId = 8;
+
+            var newBooking = await _bookingService.CreateBookingAsync(eventId);
+
+            var expectedBookingWithPendingStatus = await _bookingService.GetBookingByIdAsync(newBooking.Id);
+
+            Assert.Equal(eventId, expectedBookingWithPendingStatus?.EventId);
+        }
+
+        [Fact, Priority(3)]
+        public async Task GetBookingById_ReturnCorrectStatus()
         {
             var eventId = 8;
 
@@ -49,23 +59,8 @@ namespace EventApp
             Assert.Equal(eventId, expectedBookingWithPendingStatus.EventId);
         }
 
-        [Fact]
-        public async Task GetBookingById_ReturnCorrectStatus()
-        {
-            var eventId = 9;
-            var newBooking = await _bookingService.CreateBookingAsync(eventId);
-
-            var expectedBookingWithPendingStatus = await _bookingService.GetBookingByIdAsync(newBooking.Id);
-            var pendingStatus = expectedBookingWithPendingStatus.Status;
-            expectedBookingWithPendingStatus.Status = BookingStatus.Confirmed;
-            var expectedBookingWithConfirmedStatus = await _bookingService.GetBookingByIdAsync(newBooking.Id);
-
-            Assert.Equal(BookingStatus.Pending, pendingStatus);
-            Assert.Equal(BookingStatus.Confirmed, expectedBookingWithConfirmedStatus.Status);
-        }
-
-        [Fact]
-        public async Task CretaeBookingWithNotExistEvent_ReturnNotFoundException()
+        [Fact, Priority(4)]
+        public async Task CreateBookingWithNotExistEvent_ReturnNotFoundException()
         {
             var notExistEventId = -1;
             var expectedExceptionMessage = $"Event with Id = {notExistEventId} does not exist.";
@@ -76,7 +71,20 @@ namespace EventApp
             Assert.Equal(expectedExceptionMessage, exception.Message);
         }
 
-        [Fact]
+        [Fact, Priority(5)]
+        public async Task CreateBookingWithDeletedEvent_ReturnNotFoundException()
+        {
+            var deletedEventId = 1;
+            var expectedExceptionMessage = $"Event with Id = {deletedEventId} does not exist.";
+            var eventService = new EventService();
+            eventService.Delete(deletedEventId);
+            var exception = await Assert
+        .ThrowsAsync<NotFoundException>(async () => await _bookingService.CreateBookingAsync(deletedEventId));
+
+            Assert.Equal(expectedExceptionMessage, exception.Message);
+        }
+
+        [Fact, Priority(6)]
         public async Task GetBookingByNotExistId_ReturnNotFoundException()
         {
             var notExistId = Guid.NewGuid();

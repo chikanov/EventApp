@@ -1,7 +1,6 @@
 ﻿using EventApp.CustomExceptions;
 using EventApp.Interfaces;
 using EventApp.Models;
-using EventApp.Models.Const;
 
 namespace EventApp.Services
 {
@@ -18,17 +17,17 @@ namespace EventApp.Services
                            EventId = 1, 
                            CreatedAt = DateTime.Now, 
                            ProcessedAt = DateTime.Now.AddMinutes(5), 
-                           Status = BookingStatus.Confirmed },
+                           Status = Booking.BookingStatus.Confirmed.ToString() },
             new Booking() {Id = Guid.NewGuid(),
                            EventId = 2,
                            CreatedAt = DateTime.Now,
                            ProcessedAt = DateTime.Now.AddMinutes(5),
-                           Status = BookingStatus.Rejected },
+                           Status = Booking.BookingStatus.Rejected.ToString() },
             new Booking() {Id = Guid.NewGuid(),
                            EventId = 3,
                            CreatedAt = DateTime.Now,
                            ProcessedAt = DateTime.Now.AddMinutes(5),
-                           Status = BookingStatus.Pending },
+                           Status = Booking.BookingStatus.Pending.ToString() },
         };
         public async Task<Booking> CreateBookingAsync(int eventId)
         {
@@ -41,7 +40,7 @@ namespace EventApp.Services
                 Id = Guid.NewGuid(),
                 EventId = eventId,
                 CreatedAt = DateTime.Now,
-                Status = BookingStatus.Pending,
+                Status = Booking.BookingStatus.Pending.ToString(),
             };
             _bookings.Add(newBooking);
 

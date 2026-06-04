@@ -1,10 +1,12 @@
 ﻿using EventApp.CustomExceptions;
 using EventApp.Models;
 using EventApp.Models.DTO;
-using EventApp.Services;
 using System.ComponentModel.DataAnnotations;
-namespace EventApp
+using Xunit.v3.Priority;
+
+namespace EventApp.Services
 {
+    [TestCaseOrderer(typeof(PriorityOrderer))]
     public class EventServiceTests : IClassFixture<EventServiceFixture>
     {
         private readonly EventService _eventService;
@@ -13,7 +15,7 @@ namespace EventApp
             _eventService = fixture.eventService;
         }
 
-        [Fact]
+        [Fact, Priority(0)]
         public void CreateEventTest_ReturnEventNotNull()
         {
             var eventDto = new EventDto()
@@ -28,7 +30,7 @@ namespace EventApp
             Assert.NotNull(result);
         }
 
-        [Fact]
+        [Fact, Priority(1)]
         public void GetAllEventsTest_ReturnListEvents()
         {
             var expectedEvents = new List<Event>()
@@ -55,7 +57,7 @@ namespace EventApp
             Assert.Equal(expectedEvents.Count, result.Count);
         }
 
-        [Fact]
+        [Fact, Priority(2)]
         public void GetEventByIdTest_ReturnEventById()
         {
             var expectedId = 5;
@@ -65,7 +67,7 @@ namespace EventApp
             Assert.Equal(expectedId, result?.Id);
         }
 
-        [Fact]
+        [Fact, Priority(3)]
         public void UpdateEventTest_ReturnUpdatedEvent()
         {
             var expextedEventId = 5;
@@ -83,7 +85,7 @@ namespace EventApp
             Assert.Equal(eventDto.EndAt, result.EndAt);
         }
 
-        [Fact]
+        [Fact, Priority(4)]
         public void DeleteEventTest()
         {
             var expextedEventId = 5;
@@ -95,7 +97,7 @@ namespace EventApp
             Assert.Null(result);
         }
 
-        [Fact]
+        [Fact, Priority(5)]
         public void FiltringEventsTest_ReturnFiltredEventsByTitleByStartAtByEndAt()
         {
             var expectedTitle = "Title1";
@@ -109,7 +111,7 @@ namespace EventApp
             Assert.DoesNotContain(notExpectedTitle, result.ListEvents.Select(events => events.Title));
         }
 
-        [Fact]
+        [Fact, Priority(6)]
         public void FiltringEventsTest_ReturnFiltredEventsByTitle()
         {
             var expectedTitle = "Title1";
@@ -121,11 +123,11 @@ namespace EventApp
             Assert.DoesNotContain(notExpectedTitle, result.ListEvents.Select(events => events.Title));
         }
 
-        [Fact]
+        [Fact, Priority(7)]
         public void FiltringEventsTest_ReturnFiltredEventsByStartAtByEndAt()
         {
-            var expectedStartAt = _eventService?.GetById(1)?.StartAt;
-            var expectedEndAt = _eventService?.GetById(1)?.EndAt;
+            var expectedStartAt = _eventService?.GetById(14)?.StartAt;
+            var expectedEndAt = _eventService?.GetById(14)?.EndAt;
             var expectedEventsCount = 2;
 
             var result = _eventService?.GetAll(1, 10, null, expectedStartAt, expectedEndAt);
@@ -133,7 +135,7 @@ namespace EventApp
             Assert.Equal(expectedEventsCount, result.EventsCount);
         }
 
-        [Fact]
+        [Fact, Priority(8)]
         public void PaginationEventTest_ReturnPageNumberPgageCountEvents()
         {
             var expectedPageNumber = 2;
@@ -146,7 +148,7 @@ namespace EventApp
             Assert.All(result!.ListEvents, events => expectedListEventsTitles.Contains(events.Title));
         }
 
-        [Fact]
+        [Fact, Priority(9)]
         public void GetEventByNotExistIdTest_ReturnNull()
         {
             var expecteNotExistId = -1;
@@ -156,7 +158,7 @@ namespace EventApp
             Assert.Null(result);
         }
 
-        [Fact]
+        [Fact, Priority(10)]
         public void UpdateEventWithNotExistId_ReturnNull()
         {
             var expectedNotExistId = -1;
@@ -175,10 +177,10 @@ namespace EventApp
             Assert.Equal(expectedParamName, exception.Message);
         }
 
-        [Fact]
+        [Fact, Priority(11)]
         public void UpdateEventWithNotCorrectDate_ReturnNull()
         {
-            var expectedId = 5;
+            var expectedId = 9;
             var expectedParamName = "The end date must be greater than the start date.";
             var eventDto = new EventDto()
             {

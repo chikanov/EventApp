@@ -1,6 +1,5 @@
 ﻿using EventApp.Interfaces;
 using EventApp.Models;
-using EventApp.Models.Const;
 
 namespace EventApp.BackgroundServices
 {
@@ -27,9 +26,9 @@ namespace EventApp.BackgroundServices
                             "Start booking with Id: {Id} processing with status: {Status}",
                             booking.Id, booking.Status);
 
-                        if (booking.Status == BookingStatus.Pending)
+                        if (booking.Status == Booking.BookingStatus.Pending.ToString())
                         {
-                            booking.Status = BookingStatus.Confirmed;
+                            booking.Status = Booking.BookingStatus.Confirmed.ToString();
                             booking.ProcessedAt = DateTime.Now;
                         }
                         await Task.Delay(TimeSpan.FromSeconds(2), stoppingToken);

@@ -1,6 +1,4 @@
-﻿using EventApp.Services;
-
-namespace EventApp
+﻿namespace EventApp.Services
 {
     public class EventServiceFixture
     {
