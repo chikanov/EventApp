@@ -1,6 +1,7 @@
 ﻿using EventApp.CustomExceptions;
 using EventApp.Models;
 using Xunit.v3.Priority;
+using static EventApp.Models.Booking;
 
 namespace EventApp.Services
 {
@@ -50,13 +51,16 @@ namespace EventApp.Services
         [Fact, Priority(3)]
         public async Task GetBookingById_ReturnCorrectStatus()
         {
-            var eventId = 8;
-
+            var eventId = 9;
             var newBooking = await _bookingService.CreateBookingAsync(eventId);
 
             var expectedBookingWithPendingStatus = await _bookingService.GetBookingByIdAsync(newBooking.Id);
+            var pendingStatus = expectedBookingWithPendingStatus.Status;
+            expectedBookingWithPendingStatus.Status = Booking.BookingStatus.Confirmed.ToString();
+            var expectedBookingWithConfirmedStatus = await _bookingService.GetBookingByIdAsync(newBooking.Id);
 
-            Assert.Equal(eventId, expectedBookingWithPendingStatus.EventId);
+            Assert.Equal(Booking.BookingStatus.Pending.ToString(), pendingStatus);
+            Assert.Equal(Booking.BookingStatus.Confirmed.ToString(), expectedBookingWithConfirmedStatus.Status);
         }
 
         [Fact, Priority(4)]
