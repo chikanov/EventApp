@@ -1,6 +1,11 @@
 /obj
+/EventService.App/obj
+/EventService.Tests/obj
 
 /bin
+/EventService.App/bin
+/EventService.Tests/bin
 
 /.vs
-
+/EventService.App/.vs
+/EventService.Tests/.vs

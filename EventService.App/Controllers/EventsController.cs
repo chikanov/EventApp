@@ -1,6 +1,7 @@
 ﻿using EventApp.Interfaces;
 using EventApp.Models;
 using EventApp.Models.DTO;
+using EventApp.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EventApp.Controllers
@@ -11,12 +12,15 @@ namespace EventApp.Controllers
     public class EventsController : ControllerBase
     {
         private readonly IEventService _eventService;
-        private readonly IConfiguration _config;
+        private readonly IBookingService _bookingService;
+        private readonly IBookingQueue _bookingQueue;
         /// text
-        public EventsController(IEventService eventService, IConfiguration config)
+        public EventsController(IEventService eventService, IBookingService bookingService,
+             IBookingQueue bookingQueue)
         {
             _eventService = eventService;
-            _config = config;
+            _bookingService = bookingService;
+            _bookingQueue = bookingQueue;
         }
 
         /// <summary>
@@ -34,13 +38,7 @@ namespace EventApp.Controllers
             [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             var result = _eventService.GetAll(page, pageSize, title, from, to);
-            
-            if (result != null)
-            {
-                return Ok(result);
-            }
-
-            else return NotFound();
+            return Ok(result);
         }
 
         /// <summary>
@@ -104,6 +102,26 @@ namespace EventApp.Controllers
 
             var deletedEvent = _eventService.Delete(id);
             return NoContent();
+        }
+
+        /// <summary>
+        /// POST: Create new booking.
+        /// </summary>
+        /// <param name="eventId">Event Id</param>
+        /// <returns>Return Booking and link to booking in Headers</returns>
+        [HttpPost]
+        [Route("{id}/book")]
+        public async Task<ActionResult<Booking>> CreateBookingAsync([FromRoute]int id)
+        {
+            if (_eventService.GetById(id) == null)
+            {
+                return NotFound();
+            }
+            var newBooking = await _bookingService.CreateBookingAsync(id);
+
+            _bookingQueue.Enqueue(newBooking);
+
+            return Accepted($"/bookings/{newBooking.Id}", newBooking);
         }
     }
 }

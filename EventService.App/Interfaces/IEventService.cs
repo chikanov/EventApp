@@ -9,7 +9,7 @@ namespace EventApp.Interfaces
     public interface IEventService
     {
         /// Filtred collection Event GetAll
-        PaginatedResult GetAll(int page, int pageSize, string? tittle, DateTime? From, DateTime? to);
+        PaginatedResult GetAll(int page, int pageSize, string? title, DateTime? From, DateTime? to);
         /// Event? GetById
         Event? GetById(int id);
         /// Event Add

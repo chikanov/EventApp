@@ -1,7 +1,4 @@
-﻿using Castle.Core.Configuration;
-using EventApp.Services;
-
-namespace EventApp
+﻿namespace EventApp.Services
 {
     public class EventServiceFixture
     {
