@@ -1,7 +1,6 @@
 ﻿using EventApp.Interfaces;
 using EventApp.Models;
 using EventApp.Models.DTO;
-using EventApp.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EventApp.Controllers
@@ -111,6 +110,7 @@ namespace EventApp.Controllers
         /// <returns>Return Booking and link to booking in Headers</returns>
         [HttpPost]
         [Route("{id}/book")]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
         public async Task<ActionResult<Booking>> CreateBookingAsync([FromRoute]int id)
         {
             if (_eventService.GetById(id) == null)

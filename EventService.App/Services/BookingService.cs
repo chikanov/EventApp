@@ -7,6 +7,7 @@ namespace EventApp.Services
     public class BookingService : IBookingService
     {
         private readonly IEventService _eventService;
+        private readonly object _bookingLock = new();
         public BookingService(IEventService eventService)
         {
             _eventService = eventService;
@@ -31,20 +32,31 @@ namespace EventApp.Services
         };
         public async Task<Booking> CreateBookingAsync(int eventId)
         {
-            if (_eventService.GetById(eventId) == null)
+            var currentEvent = _eventService.GetById(eventId);
+            if (currentEvent == null)
             {
                 throw new NotFoundException($"Event with Id = {eventId} does not exist.");
             }
-            var newBooking = new Booking()
-            {
-                Id = Guid.NewGuid(),
-                EventId = eventId,
-                CreatedAt = DateTime.Now,
-                Status = Booking.BookingStatus.Pending.ToString(),
-            };
-            _bookings.Add(newBooking);
 
-            return newBooking;
+            lock (_bookingLock)
+            {
+                if (!currentEvent.TryReserveSeats())
+                    throw new NoAvailableSeatsException();
+                else
+                {
+                    var newBooking = new Booking()
+                    {
+                        Id = Guid.NewGuid(),
+                        EventId = eventId,
+                        CreatedAt = DateTime.Now,
+                        Status = Booking.BookingStatus.Pending.ToString(),
+                    };
+
+                    _bookings.Add(newBooking);
+
+                    return newBooking;
+                }
+            }
         }
         public async Task<Booking?> GetBookingByIdAsync(Guid bookingId)
         {
