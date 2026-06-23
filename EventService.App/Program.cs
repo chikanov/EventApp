@@ -1,7 +1,6 @@
 using EventApp.BackgroundServices;
 using EventApp.Interfaces;
 using EventApp.Middleware;
-using EventApp.Models;
 using EventApp.Services;
 using System.Reflection;
 
@@ -16,8 +15,8 @@ builder.Services.AddHostedService<BookingBackgroundService>();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
-builder.Services.AddTransient<IEventService, EventService>();
-builder.Services.AddTransient<IBookingService, BookingService>();
+builder.Services.AddSingleton<IEventService, EventService>();
+builder.Services.AddSingleton<IBookingService, BookingService>();
 
 builder.Services.AddSwaggerGen(options =>
 {
