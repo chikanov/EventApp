@@ -13,7 +13,7 @@ namespace EventApp.Interfaces
         /// Event? GetById
         Event? GetById(int id);
         /// Event Add
-        Event Add(EventDto ev);
+        Event Add(CreateEventDto ev);
         /// Event Update
         Event Update(int id, EventDto ev);
         /// Event Delete

@@ -63,13 +63,13 @@ namespace EventApp.Controllers
         /// </summary>
         /// <returns>Event eventt</returns>
         [HttpPost]
-        public ActionResult<EventDto> CreateEvent(EventDto ev)
+        public ActionResult<Event> CreateEvent(CreateEventDto ev)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            var createdEvent = _eventService.Add(ev);
+            _eventService.Add(ev);
 
             return Created();
         }
