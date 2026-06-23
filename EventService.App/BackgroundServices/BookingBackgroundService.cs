@@ -1,16 +1,22 @@
-﻿using EventApp.Interfaces;
+﻿using EventApp.CustomExceptions;
+using EventApp.Interfaces;
 using EventApp.Models;
+using static EventApp.Models.Booking;
 
 namespace EventApp.BackgroundServices
 {
     public class BookingBackgroundService : BackgroundService
     {
-        private readonly IBookingQueue _bookingQueue;
-        private readonly ILogger<InMemoryBookingQueue> _logger;
-        public BookingBackgroundService(IBookingQueue bookingQueue, ILogger<InMemoryBookingQueue> logger)
+        private readonly IEventService _eventService;
+        private readonly IBookingService _bookingService;
+        private readonly ILogger<BookingBackgroundService> _logger;
+        private readonly SemaphoreSlim _processingSemaphore = new(1, 1);
+        public BookingBackgroundService(ILogger<BookingBackgroundService> logger,
+            IEventService eventService, IBookingService bookingService)
         {
-            _bookingQueue = bookingQueue;
             _logger = logger;
+            _eventService = eventService;
+            _bookingService = bookingService;
         }
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
@@ -20,22 +26,13 @@ namespace EventApp.BackgroundServices
             {
                 try
                 {
-                    if (_bookingQueue.TryDequeue(out var booking))
-                    {
-                        _logger.LogInformation(
-                            "Start booking with Id: {Id} processing with status: {Status}",
-                            booking.Id, booking.Status);
+                    await Task.Delay(TimeSpan.FromSeconds(20), stoppingToken);
+                    _logger.LogInformation("Start booking processing.");
 
-                        if (booking.Status == Booking.BookingStatus.Pending.ToString())
-                        {
-                            booking.Status = Booking.BookingStatus.Confirmed.ToString();
-                            booking.ProcessedAt = DateTime.Now;
-                        }
-                        await Task.Delay(TimeSpan.FromSeconds(2), stoppingToken);
+                    var pendingBookings = _bookingService.GetPending().ToList();
+                    var tasks = pendingBookings.Select(booking => ProcessBookingAsync(booking, stoppingToken));
 
-                        _logger.LogInformation(
-                            "Booking with Id: {Id} has received a new status: {Status}.", booking.Id, booking.Status);
-                    }
+                    await Task.WhenAll(tasks);
                 }
                 catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
                 {
@@ -48,6 +45,60 @@ namespace EventApp.BackgroundServices
                 await Task.Delay(TimeSpan.FromSeconds(2), stoppingToken);
             }
             _logger.LogInformation("BookingBackgroundService has been stopped.");
+        }
+
+        private async Task ProcessBookingAsync(Booking booking, CancellationToken stoppingToken)
+        {
+            await Task.Delay(TimeSpan.FromSeconds(2), stoppingToken);
+
+            try
+            {
+                if (!stoppingToken.IsCancellationRequested)
+                {
+                    _logger.LogInformation(
+                                "{DateTime} Start booking with Id: {Id} processing with status: {Status}", DateTime.Now,
+                                booking.Id, booking.Status);
+
+                    if (booking.Status == Booking.BookingStatus.Pending.ToString())
+                    {
+                        await _processingSemaphore.WaitAsync(stoppingToken);
+                        var currentEvent = _eventService.GetById(booking.EventId);
+                        if (currentEvent != null && currentEvent.TryReserveSeats())
+                        {
+                            booking.Confirm();
+                            booking.ProcessedAt = DateTime.Now;
+                            _bookingService.Update(booking);
+                        } else throw new NoAvailableSeatsException();
+                    }
+                }
+            }
+            catch (NoAvailableSeatsException ex)
+            {
+                _logger.LogWarning(ex?.InnerException?.ToString());
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error when executing the ProcessBookingAsync: {ex.Message}");
+                if (booking.Status == BookingStatus.Confirmed.ToString())
+                {
+                    await _processingSemaphore.WaitAsync(stoppingToken);
+                    var currentEvent = _eventService.GetById(booking.EventId);
+                    if (currentEvent != null)
+                    {
+                        currentEvent.ReleaseSeats();
+                        booking.Reject();
+                        _bookingService.Update(booking);
+                        _eventService.Update(booking.EventId);
+                    } else throw new NotFoundException($"Event with Id = {booking.EventId} does not exist.");
+                }
+            }
+            finally 
+            { 
+                _logger.LogInformation(
+                        "{DateTime} Booking with Id: {Id} has received a new status: {Status}.",DateTime.Now, booking.Id, booking.Status);
+                _processingSemaphore.Release();
+            }
+
         }
     }
 }

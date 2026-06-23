@@ -102,6 +102,37 @@ namespace EventApp.Services
             return existEvent;
         }
 
+        public Event Update(int id)
+        {
+            var existEvent = _events.FirstOrDefault(e => e.Id == id);
+
+            if (existEvent == null)
+            {
+                throw new NotFoundException($"Event with Id = {id} does not exist.");
+            }
+
+            if (existEvent.StartAt > existEvent.EndAt)
+            {
+                throw new ValidationException("The end date must be greater than the start date.");
+            }
+
+            if (existEvent.TotalSeats <= 0)
+            {
+                throw new ValidationException("Total seats value must be greater than zero.");
+            }
+
+            if (existEvent != null)
+            {
+                existEvent.Id = id;
+                existEvent.Title = existEvent.Title;
+                existEvent.Description = existEvent.Description;
+                existEvent.StartAt = existEvent.StartAt;
+                existEvent.EndAt = existEvent.EndAt;
+                existEvent.TotalSeats = existEvent.TotalSeats;
+            }
+            return existEvent;
+        }
+
         /// Delete
         public Event Delete(int id)
         {

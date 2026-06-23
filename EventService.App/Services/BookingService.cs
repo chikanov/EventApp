@@ -1,6 +1,8 @@
 ﻿using EventApp.CustomExceptions;
 using EventApp.Interfaces;
 using EventApp.Models;
+using System.ComponentModel.DataAnnotations;
+using System.Net;
 
 namespace EventApp.Services
 {
@@ -65,6 +67,30 @@ namespace EventApp.Services
                 throw new NotFoundException($"Booking with Id = {bookingId} does not exist.");
             }
             return _bookings.FirstOrDefault(b => b.Id == bookingId);
+        }
+        public Booking Update(Booking book)
+        {
+            var existBooking = _bookings.FirstOrDefault(e => e.Id == book.Id);
+
+            if (existBooking == null)
+            {
+                throw new NotFoundException($"Booking with Id = {book.Id} does not exist.");
+            }
+
+            if (existBooking != null)
+            {
+                existBooking.Id = book.Id;
+                existBooking.EventId = book.EventId;
+                existBooking.Status = book.Status;
+                existBooking.CreatedAt = book.CreatedAt;
+                existBooking.ProcessedAt = book.ProcessedAt;
+            }
+            return existBooking;
+        }
+
+        public IEnumerable<Booking> GetPending()
+        {
+            return _bookings.Where(b => b.Status == Booking.BookingStatus.Pending.ToString());
         }
     }
 }

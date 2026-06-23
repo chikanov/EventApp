@@ -10,15 +10,14 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers();
-builder.Services.AddSingleton<IBookingQueue, InMemoryBookingQueue>();
+//builder.Services.AddSingleton<IBookingQueue, InMemoryBookingQueue>();
 builder.Services.AddHostedService<BookingBackgroundService>();
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
-builder.Services.AddScoped<IEventService, EventService>();
-builder.Services.AddScoped<IBookingService, BookingService>();
-
+builder.Services.AddTransient<IEventService, EventService>();
+builder.Services.AddTransient<IBookingService, BookingService>();
 
 builder.Services.AddSwaggerGen(options =>
 {

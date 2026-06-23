@@ -12,14 +12,11 @@ namespace EventApp.Controllers
     {
         private readonly IEventService _eventService;
         private readonly IBookingService _bookingService;
-        private readonly IBookingQueue _bookingQueue;
         /// text
-        public EventsController(IEventService eventService, IBookingService bookingService,
-             IBookingQueue bookingQueue)
+        public EventsController(IEventService eventService, IBookingService bookingService)
         {
             _eventService = eventService;
             _bookingService = bookingService;
-            _bookingQueue = bookingQueue;
         }
 
         /// <summary>
@@ -117,9 +114,8 @@ namespace EventApp.Controllers
             {
                 return NotFound();
             }
-            var newBooking = await _bookingService.CreateBookingAsync(id);
 
-            _bookingQueue.Enqueue(newBooking);
+            var newBooking = await _bookingService.CreateBookingAsync(id);
 
             return Accepted($"/bookings/{newBooking.Id}", newBooking);
         }
