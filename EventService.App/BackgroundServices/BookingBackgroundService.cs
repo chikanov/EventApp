@@ -7,16 +7,16 @@ namespace EventApp.BackgroundServices
 {
     public class BookingBackgroundService : BackgroundService
     {
+        private readonly IServiceProvider _serviceProvider;
         private readonly IEventService _eventService;
-        private readonly IBookingService _bookingService;
         private readonly ILogger<BookingBackgroundService> _logger;
         private readonly SemaphoreSlim _processingSemaphore = new(1, 1);
-        public BookingBackgroundService(ILogger<BookingBackgroundService> logger,
-            IEventService eventService, IBookingService bookingService)
+        public BookingBackgroundService(IServiceProvider serviceProvider, ILogger<BookingBackgroundService> logger,
+            IEventService eventService)
         {
+            _serviceProvider = serviceProvider;
             _logger = logger;
             _eventService = eventService;
-            _bookingService = bookingService;
         }
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
@@ -29,10 +29,15 @@ namespace EventApp.BackgroundServices
                     await Task.Delay(TimeSpan.FromSeconds(20), stoppingToken);
                     _logger.LogInformation("Start booking processing.");
 
-                    var pendingBookings = _bookingService.GetPending().ToList();
-                    var tasks = pendingBookings.Select(booking => ProcessBookingAsync(booking, stoppingToken));
+                    using (var scope = _serviceProvider.CreateScope())
+                    {
+                        var _bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
 
-                    await Task.WhenAll(tasks);
+                        var pendingBookings = _bookingService.GetPending().ToList();
+                        var tasks = pendingBookings.Select(booking => ProcessBookingAsync(booking, _bookingService, stoppingToken));
+
+                        await Task.WhenAll(tasks);
+                    }
                 }
                 catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
                 {
@@ -47,7 +52,7 @@ namespace EventApp.BackgroundServices
             _logger.LogInformation("BookingBackgroundService has been stopped.");
         }
 
-        private async Task ProcessBookingAsync(Booking booking, CancellationToken stoppingToken)
+        private async Task ProcessBookingAsync(Booking booking, IBookingService _bookingService, CancellationToken stoppingToken)
         {
             await Task.Delay(TimeSpan.FromSeconds(2), stoppingToken);
 

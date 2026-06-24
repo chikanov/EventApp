@@ -16,7 +16,7 @@ builder.Services.AddHostedService<BookingBackgroundService>();
 builder.Services.AddOpenApi();
 
 builder.Services.AddSingleton<IEventService, EventService>();
-builder.Services.AddSingleton<IBookingService, BookingService>();
+builder.Services.AddScoped<IBookingService, BookingService>();
 
 builder.Services.AddSwaggerGen(options =>
 {
