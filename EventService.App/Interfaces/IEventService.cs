@@ -18,7 +18,7 @@ namespace EventApp.Interfaces
         Event Update(int id, EventDto ev);
         /// Event Delete
         Event Delete(int id);
-        Event Update(int id);
+        Event Update(int id, Event ev);
 
     }
 }

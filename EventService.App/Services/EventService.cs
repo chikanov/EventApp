@@ -102,7 +102,7 @@ namespace EventApp.Services
             return existEvent;
         }
 
-        public Event Update(int id)
+        public Event Update(int id, Event ev)
         {
             var existEvent = _events.FirstOrDefault(e => e.Id == id);
 
@@ -124,11 +124,12 @@ namespace EventApp.Services
             if (existEvent != null)
             {
                 existEvent.Id = id;
-                existEvent.Title = existEvent.Title;
-                existEvent.Description = existEvent.Description;
-                existEvent.StartAt = existEvent.StartAt;
-                existEvent.EndAt = existEvent.EndAt;
-                existEvent.TotalSeats = existEvent.TotalSeats;
+                existEvent.Title = ev.Title;
+                existEvent.Description = ev.Description;
+                existEvent.StartAt = ev.StartAt;
+                existEvent.EndAt = ev.EndAt;
+                existEvent.TotalSeats = ev.TotalSeats;
+                existEvent.AvailableSeats = ev.AvailableSeats;
             }
             return existEvent;
         }

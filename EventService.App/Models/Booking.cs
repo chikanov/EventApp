@@ -22,10 +22,12 @@ namespace EventApp.Models
         public void Confirm()
         {
             Status = BookingStatus.Confirmed.ToString();
+            ProcessedAt = DateTime.Now;
         }
         public void Reject()
         {
             Status = BookingStatus.Rejected.ToString();
+            ProcessedAt = DateTime.Now;
         }
     }
 }

@@ -104,8 +104,8 @@ namespace EventApp.Services
         {
             var expectedTitle = "Title2";
             var notExpectedTitle = "Title6";
-            var expectedStartAt = _eventService?.GetById(1)?.StartAt;
-            var expectedEndAt = _eventService?.GetById(1)?.EndAt;
+            var expectedStartAt = _eventService?.GetById(2)?.StartAt;
+            var expectedEndAt = _eventService?.GetById(2)?.EndAt;
 
             var result = _eventService?.GetAll(1, 10, expectedTitle, expectedStartAt, expectedEndAt);
 

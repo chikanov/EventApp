@@ -26,7 +26,7 @@ namespace EventApp.BackgroundServices
             {
                 try
                 {
-                    await Task.Delay(TimeSpan.FromSeconds(20), stoppingToken);
+                    await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
                     _logger.LogInformation("Start booking processing.");
 
                     using (var scope = _serviceProvider.CreateScope())
@@ -68,18 +68,13 @@ namespace EventApp.BackgroundServices
                     {
                         await _processingSemaphore.WaitAsync(stoppingToken);
                         var currentEvent = _eventService.GetById(booking.EventId);
-                        if (currentEvent != null && currentEvent.TryReserveSeats())
+                        if (currentEvent != null)
                         {
                             booking.Confirm();
-                            booking.ProcessedAt = DateTime.Now;
                             _bookingService.Update(booking);
-                        } else throw new NoAvailableSeatsException();
+                        } else throw new NotFoundException($"Event with Id = {booking.EventId} does not exist.");
                     }
                 }
-            }
-            catch (NoAvailableSeatsException ex)
-            {
-                _logger.LogWarning(ex?.InnerException?.ToString());
             }
             catch (Exception ex)
             {
@@ -93,7 +88,7 @@ namespace EventApp.BackgroundServices
                         currentEvent.ReleaseSeats();
                         booking.Reject();
                         _bookingService.Update(booking);
-                        _eventService.Update(booking.EventId);
+                        _eventService.Update(booking.EventId, currentEvent);
                     } else throw new NotFoundException($"Event with Id = {booking.EventId} does not exist.");
                 }
             }
