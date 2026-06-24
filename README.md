@@ -16,6 +16,17 @@ Event management Service.
 
 The REST API to the example app is described below.
 
+## Event
+** Description: **
+Class 'Event' is a template for storing Event information
+** Attributes **
+'Id' - unique int
+'Title' - event title string
+'Description' - event description string
+'StartAt' - Start event date DateTime
+'EndAt' - End event date DateTime
+'TotalSeats' - total number of seats at the event int
+'AvailableSeats' - current number of available seats int
 ## Booking
 ** Description: **
     Class 'Booking' is a template for storing booking information
@@ -36,9 +47,17 @@ The REST API to the example app is described below.
 
 ## BookingBackgroundService
 ** Description: **
-    This is a service that runs the program all the time and tries to process booking from the queue and change the status to Confirmed and add the processing date.
+    This is a service that runs the program all the time and tries to process booking and change the status to Confirmed and add the processing date.
 ** Example: **
-    User creates a booking by passing the event ID. The controller creates the booking and puts it in a queue. The BookingBagroundService tries to take the booking out of the queue, changes the status to Confirmed, and adds the processing time.
+    Every 10 seconds, the service polls the database for new pending bookings, processes all bookings in parallel, changes the status to cofirmed, and fills in ProcessedAt with the current date time.
+** Used synchronization primitives and why they are needed **
+Critical section protection in BookingService.
+The competitive problem here is classic: two threads read AvailableSeats > 0 at the same time, both decide to create a reservation, and the number of reservations exceeds the number of seats. A private lock field has been added to BookingService. This ensures that only one thread passes through the critical section at any given time.
+** Parallel processing in BookingBackgroundService **
+Previously, the background service processed requests sequentially. Now it processes multiple requests simultaneously while protecting the storage update.
+** An example of an overbooking scenario. **
+Given: an event with 5 seats and 20 competing requests.
+Expected: exactly 5 successful bookings, 15 - NoAvailableSeatsException, AvailableSeats = 0.
 
 ## Get list of Events
 
@@ -210,6 +229,22 @@ curl -X 'POST' \
     date: Tue,02 Jun 2026 15:52:52 GMT 
     location: /bookings/01eeba11-fa52-4857-a060-803c1670b78b 
     server: Kestrel
+
+## Create Booking on Event when Available Seats = 0
+### Request
+`POST /events/{id}/book`
+
+curl -X 'POST' \
+  'https://localhost:7124/api/Events/16/book' \
+  -H 'accept: */*' \
+  -d ''
+Error: response status is 409 Conflict
+
+{
+  "status": 409,
+  "detail": "No available seats for this event."
+}
+  
 
 ## Get booking by Id.
 
