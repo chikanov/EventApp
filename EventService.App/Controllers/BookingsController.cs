@@ -1,7 +1,5 @@
 ﻿using EventApp.Interfaces;
 using EventApp.Models;
-using EventApp.Services;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EventApp.Controllers

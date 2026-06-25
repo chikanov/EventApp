@@ -6,5 +6,7 @@ namespace EventApp.Interfaces
     {
         Task<Booking> CreateBookingAsync(int eventId);
         Task<Booking?> GetBookingByIdAsync(Guid bookingId);
+        IEnumerable<Booking> GetPending();
+        Booking Update(Booking book);
     }
 }

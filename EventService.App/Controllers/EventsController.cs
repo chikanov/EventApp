@@ -1,7 +1,6 @@
 ﻿using EventApp.Interfaces;
 using EventApp.Models;
 using EventApp.Models.DTO;
-using EventApp.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EventApp.Controllers
@@ -13,14 +12,11 @@ namespace EventApp.Controllers
     {
         private readonly IEventService _eventService;
         private readonly IBookingService _bookingService;
-        private readonly IBookingQueue _bookingQueue;
         /// text
-        public EventsController(IEventService eventService, IBookingService bookingService,
-             IBookingQueue bookingQueue)
+        public EventsController(IEventService eventService, IBookingService bookingService)
         {
             _eventService = eventService;
             _bookingService = bookingService;
-            _bookingQueue = bookingQueue;
         }
 
         /// <summary>
@@ -63,13 +59,13 @@ namespace EventApp.Controllers
         /// </summary>
         /// <returns>Event eventt</returns>
         [HttpPost]
-        public ActionResult<EventDto> CreateEvent(EventDto ev)
+        public ActionResult<Event> CreateEvent(CreateEventDto ev)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            var createdEvent = _eventService.Add(ev);
+            _eventService.Add(ev);
 
             return Created();
         }
@@ -111,15 +107,15 @@ namespace EventApp.Controllers
         /// <returns>Return Booking and link to booking in Headers</returns>
         [HttpPost]
         [Route("{id}/book")]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
         public async Task<ActionResult<Booking>> CreateBookingAsync([FromRoute]int id)
         {
             if (_eventService.GetById(id) == null)
             {
                 return NotFound();
             }
-            var newBooking = await _bookingService.CreateBookingAsync(id);
 
-            _bookingQueue.Enqueue(newBooking);
+            var newBooking = await _bookingService.CreateBookingAsync(id);
 
             return Accepted($"/bookings/{newBooking.Id}", newBooking);
         }

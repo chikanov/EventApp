@@ -62,6 +62,7 @@ namespace EventApp.Middleware
             {
                 ValidationException ve => StatusCodes.Status400BadRequest,
                 NotFoundException nfe => StatusCodes.Status404NotFound,
+                NoAvailableSeatsException nase => StatusCodes.Status409Conflict,
                 _ => StatusCodes.Status500InternalServerError
             };
     }

@@ -5,7 +5,7 @@ namespace EventApp.Services
     public class BookingServiceFixture
     {
         public BookingService bookingService { get; set; }
-        private readonly IEventService _eventService;
+        public IEventService _eventService;
 
         public BookingServiceFixture()
         {
