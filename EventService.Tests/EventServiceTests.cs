@@ -128,9 +128,13 @@ namespace EventApp.Services
         [Fact, Priority(7)]
         public void FiltringEventsTest_ReturnFiltredEventsByStartAtByEndAt()
         {
-            var expectedStartAt = _eventService?.GetById(14)?.StartAt;
-            var expectedEndAt = _eventService?.GetById(14)?.EndAt;
-            var expectedEventsCount = 2;
+            var expectedEvent = new CreateEventDto() { Title = "Expected Event title", Description = "Expected Event description",
+                StartAt = DateTime.Now.AddDays(100), EndAt = DateTime.Now.AddDays(101), TotalSeats = 100 };
+
+            _eventService.Add(expectedEvent);
+            var expectedStartAt = _eventService?.GetById(16)?.StartAt;
+            var expectedEndAt = _eventService?.GetById(16)?.EndAt;
+            var expectedEventsCount = 1;
 
             var result = _eventService?.GetAll(1, 10, null, expectedStartAt, expectedEndAt);
 

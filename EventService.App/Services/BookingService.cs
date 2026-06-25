@@ -34,14 +34,14 @@ namespace EventApp.Services
         };
         public async Task<Booking> CreateBookingAsync(int eventId)
         {
-            var currentEvent = _eventService.GetById(eventId);
-            if (currentEvent == null)
-            {
-                throw new NotFoundException($"Event with Id = {eventId} does not exist.");
-            }
-
             lock (_bookingLock)
             {
+                var currentEvent = _eventService.GetById(eventId);
+                if (currentEvent == null)
+                {
+                    throw new NotFoundException($"Event with Id = {eventId} does not exist.");
+                }
+
                 if (!currentEvent.TryReserveSeats())
                     throw new NoAvailableSeatsException();
                 else

@@ -11,6 +11,9 @@ namespace EventApp.BackgroundServices
         private readonly IEventService _eventService;
         private readonly ILogger<BookingBackgroundService> _logger;
         private readonly SemaphoreSlim _processingSemaphore = new(1, 1);
+        private const int PollingInterval = 2;
+        private const int ProcessingDelay = 10;
+
         public BookingBackgroundService(IServiceProvider serviceProvider, ILogger<BookingBackgroundService> logger,
             IEventService eventService)
         {
@@ -26,7 +29,7 @@ namespace EventApp.BackgroundServices
             {
                 try
                 {
-                    await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+                    await Task.Delay(TimeSpan.FromSeconds(ProcessingDelay), stoppingToken);
                     _logger.LogInformation("Start booking processing.");
 
                     using (var scope = _serviceProvider.CreateScope())
@@ -47,14 +50,14 @@ namespace EventApp.BackgroundServices
                 {
                     _logger.LogError($"Error when executing the BookingBackgroundService: {ex.Message}");
                 }
-                await Task.Delay(TimeSpan.FromSeconds(2), stoppingToken);
+                await Task.Delay(TimeSpan.FromSeconds(PollingInterval), stoppingToken);
             }
             _logger.LogInformation("BookingBackgroundService has been stopped.");
         }
 
         private async Task ProcessBookingAsync(Booking booking, IBookingService _bookingService, CancellationToken stoppingToken)
         {
-            await Task.Delay(TimeSpan.FromSeconds(2), stoppingToken);
+            await Task.Delay(TimeSpan.FromSeconds(PollingInterval), stoppingToken);
 
             try
             {
@@ -79,7 +82,7 @@ namespace EventApp.BackgroundServices
             catch (Exception ex)
             {
                 _logger.LogError($"Error when executing the ProcessBookingAsync: {ex.Message}");
-                if (booking.Status == BookingStatus.Confirmed.ToString())
+                if (booking.Status == BookingStatus.Confirmed.ToString() || booking.Status == BookingStatus.Pending.ToString())
                 {
                     await _processingSemaphore.WaitAsync(stoppingToken);
                     var currentEvent = _eventService.GetById(booking.EventId);
@@ -92,13 +95,15 @@ namespace EventApp.BackgroundServices
                     } else throw new NotFoundException($"Event with Id = {booking.EventId} does not exist.");
                 }
             }
-            finally 
-            { 
+            finally
+            {
                 _logger.LogInformation(
-                        "{DateTime} Booking with Id: {Id} has received a new status: {Status}.",DateTime.Now, booking.Id, booking.Status);
-                _processingSemaphore.Release();
+                        "{DateTime} Booking with Id: {Id} has received a new status: {Status}.", DateTime.Now, booking.Id, booking.Status);
+                if (booking.Status == BookingStatus.Confirmed.ToString())
+                {
+                    _processingSemaphore.Release();
+                }
             }
-
         }
     }
 }

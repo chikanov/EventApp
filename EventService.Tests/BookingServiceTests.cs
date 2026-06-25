@@ -274,6 +274,7 @@ namespace EventApp.Services
 
             Assert.Equal(expectedSaccesfullBooking, SaccesfullBookingCount);
             Assert.Equal(expectedNoAvailableSeatsExceptionCount, NoAvailableSeatsExceptionCount);
+            Assert.Equal(expectedAvailableSeats, expectedEvent.AvailableSeats);
         }
 
         [Fact, Priority(16)]
