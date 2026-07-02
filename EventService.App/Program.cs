@@ -1,13 +1,18 @@
 using EventApp.BackgroundServices;
+using EventApp.DataAccess;
 using EventApp.Interfaces;
 using EventApp.Middleware;
 using EventApp.Services;
+using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
 // Add services to the container.
-
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(connectionString));
 builder.Services.AddControllers();
 //builder.Services.AddSingleton<IBookingQueue, InMemoryBookingQueue>();
 builder.Services.AddHostedService<BookingBackgroundService>();
