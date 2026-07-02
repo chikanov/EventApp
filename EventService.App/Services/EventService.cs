@@ -186,7 +186,7 @@ namespace EventApp.Services
 
         DateTime? GetTheStartOfTheDayOrDefault(DateTime? from)
         {
-            return from.Value.AddHours(0 - from.Value.Hour).
+            return from!.Value.AddHours(0 - from.Value.Hour).
                 AddMinutes(0 - from.Value.Minute).
                 AddSeconds(0 - from.Value.Second);
         }

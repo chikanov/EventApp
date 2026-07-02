@@ -109,7 +109,7 @@ namespace EventApp.Services
 
             var result = _eventService?.GetAll(1, 10, expectedTitle, expectedStartAt, expectedEndAt);
 
-            Assert.All(result.ListEvents, events => expectedTitle.Contains(events.Title));
+            Assert.All(result!.ListEvents, events => expectedTitle.Contains(events.Title));
             Assert.DoesNotContain(notExpectedTitle, result.ListEvents.Select(events => events.Title));
         }
 
@@ -121,7 +121,7 @@ namespace EventApp.Services
 
             var result = _eventService?.GetAll(1, 10, expectedTitle);
 
-            Assert.All(result.ListEvents, events => expectedTitle.Contains(events.Title));
+            Assert.All(result!.ListEvents, events => expectedTitle.Contains(events.Title));
             Assert.DoesNotContain(notExpectedTitle, result.ListEvents.Select(events => events.Title));
         }
 
@@ -138,7 +138,7 @@ namespace EventApp.Services
 
             var result = _eventService?.GetAll(1, 10, null, expectedStartAt, expectedEndAt);
 
-            Assert.Equal(expectedEventsCount, result.EventsCount);
+            Assert.Equal(expectedEventsCount, result!.EventsCount);
         }
 
         [Fact, Priority(8)]

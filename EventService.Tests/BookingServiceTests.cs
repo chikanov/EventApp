@@ -61,12 +61,12 @@ namespace EventApp.Services
             var newBooking = await _bookingService.CreateBookingAsync(eventId);
 
             var expectedBookingWithPendingStatus = await _bookingService.GetBookingByIdAsync(newBooking.Id);
-            var pendingStatus = expectedBookingWithPendingStatus.Status;
+            var pendingStatus = expectedBookingWithPendingStatus!.Status;
             expectedBookingWithPendingStatus.Status = Booking.BookingStatus.Confirmed.ToString();
             var expectedBookingWithConfirmedStatus = await _bookingService.GetBookingByIdAsync(newBooking.Id);
 
             Assert.Equal(Booking.BookingStatus.Pending.ToString(), pendingStatus);
-            Assert.Equal(Booking.BookingStatus.Confirmed.ToString(), expectedBookingWithConfirmedStatus.Status);
+            Assert.Equal(Booking.BookingStatus.Confirmed.ToString(), expectedBookingWithConfirmedStatus!.Status);
         }
 
         [Fact, Priority(4)]
@@ -115,7 +115,7 @@ namespace EventApp.Services
 
             var currentEvent = _eventService.GetById(newBooking.EventId);
 
-            Assert.Equal(expectedAvailableSeats, currentEvent.AvailableSeats);
+            Assert.Equal(expectedAvailableSeats, currentEvent!.AvailableSeats);
         }
 
         [Fact, Priority(8)]
@@ -124,7 +124,7 @@ namespace EventApp.Services
             var expectedEventId = 14;
             var expectedTotalSeats = 3;
             var expectedEvent = _eventService.GetById(expectedEventId);
-            expectedEvent.TotalSeats = expectedTotalSeats;
+            expectedEvent!.TotalSeats = expectedTotalSeats;
             expectedEvent.AvailableSeats = expectedTotalSeats;
             _eventService.Update(expectedEventId, expectedEvent);
 
@@ -146,7 +146,7 @@ namespace EventApp.Services
             var expectedTotalSeats = 1;
             var expectedExceptionMessage = "No available seats for this event.";
             var expectedEvent = _eventService.GetById(expectedEventId);
-            expectedEvent.TotalSeats = expectedTotalSeats;
+            expectedEvent!.TotalSeats = expectedTotalSeats;
             expectedEvent.AvailableSeats = expectedTotalSeats;
             _eventService.Update(expectedEventId, expectedEvent);
 
@@ -194,7 +194,7 @@ namespace EventApp.Services
             booking.Confirm();
 
             booking.Reject();
-            expectedEvent.ReleaseSeats();
+            expectedEvent!.ReleaseSeats();
 
             Assert.Equal(expectedStatus, booking.Status);
             Assert.NotNull(booking.ProcessedAt);
@@ -212,7 +212,7 @@ namespace EventApp.Services
             booking.Confirm();
 
             booking.Reject();
-            expectedEvent.ReleaseSeats();
+            expectedEvent!.ReleaseSeats();
 
             Assert.Equal(expectedAvailableSeats, expectedEvent.AvailableSeats);
         }
@@ -224,7 +224,7 @@ namespace EventApp.Services
             var expectedSeats = 1;
             var expectedStatus = Booking.BookingStatus.Rejected.ToString();
             var expectedEvent = _eventService.GetById(expectedEventId);
-            expectedEvent.TotalSeats = expectedSeats;
+            expectedEvent!.TotalSeats = expectedSeats;
             expectedEvent.AvailableSeats = expectedSeats;
             _eventService.Update(expectedEventId, expectedEvent);
 
@@ -249,10 +249,9 @@ namespace EventApp.Services
             var NoAvailableSeatsExceptionCount = 0;
 
             var expectedEvent = _eventService.GetById(expectedEventId);
-            expectedEvent.TotalSeats = expectedSaccesfullBooking;
+            expectedEvent!.TotalSeats = expectedSaccesfullBooking;
             expectedEvent.AvailableSeats = expectedSaccesfullBooking;
             _eventService.Update(expectedEventId, expectedEvent);
-            var token = new CancellationToken();
             var numbers = Enumerable.Range(0, 20).ToArray();
             var options = new ParallelOptions { MaxDegreeOfParallelism = 2 };
 
@@ -266,7 +265,7 @@ namespace EventApp.Services
                         Interlocked.Increment(ref SaccesfullBookingCount);
                     }
                 }
-                catch (NoAvailableSeatsException ex)
+                catch (NoAvailableSeatsException)
                 {
                     Interlocked.Increment(ref NoAvailableSeatsExceptionCount);
                 }
@@ -282,16 +281,12 @@ namespace EventApp.Services
         {
             var expectedSaccesfullBooking = 10;
             var expectedNoAvailableSeatsExceptionCount = 10;
-            var expectedAvailableSeats = 0;
             var expectedEventId = 6;
-            var SaccesfullBookingCount = 0;
-            var NoAvailableSeatsExceptionCount = 0;
 
             var expectedEvent = _eventService.GetById(expectedEventId);
-            expectedEvent.TotalSeats = expectedSaccesfullBooking;
+            expectedEvent!.TotalSeats = expectedSaccesfullBooking;
             expectedEvent.AvailableSeats = expectedSaccesfullBooking;
             _eventService.Update(expectedEventId, expectedEvent);
-            var token = new CancellationToken();
             var numbers = Enumerable.Range(0, 10).ToArray();
             var options = new ParallelOptions { MaxDegreeOfParallelism = 5 };
             var cuncuretBookingIdsBag = new ConcurrentBag<Guid>();

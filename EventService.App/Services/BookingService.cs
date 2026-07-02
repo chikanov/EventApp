@@ -16,17 +16,17 @@ namespace EventApp.Services
         }
         public static List<Booking> _bookings = new()
         {
-            new Booking() {Id = Guid.NewGuid(), 
+            new Booking(true) {Id = Guid.NewGuid(), 
                            EventId = 1, 
                            CreatedAt = DateTime.Now, 
                            ProcessedAt = DateTime.Now.AddMinutes(5), 
                            Status = Booking.BookingStatus.Confirmed.ToString() },
-            new Booking() {Id = Guid.NewGuid(),
+            new Booking(true) {Id = Guid.NewGuid(),
                            EventId = 2,
                            CreatedAt = DateTime.Now,
                            ProcessedAt = DateTime.Now.AddMinutes(5),
                            Status = Booking.BookingStatus.Rejected.ToString() },
-            new Booking() {Id = Guid.NewGuid(),
+            new Booking(true) {Id = Guid.NewGuid(),
                            EventId = 3,
                            CreatedAt = DateTime.Now,
                            ProcessedAt = DateTime.Now.AddMinutes(5),
@@ -46,7 +46,7 @@ namespace EventApp.Services
                     throw new NoAvailableSeatsException();
                 else
                 {
-                    var newBooking = new Booking()
+                    var newBooking = new Booking(true)
                     {
                         Id = Guid.NewGuid(),
                         EventId = eventId,

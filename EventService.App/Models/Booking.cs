@@ -13,6 +13,7 @@ namespace EventApp.Models
         [Required]
         public DateTime CreatedAt { get; set; }
         public DateTime? ProcessedAt { get; set; }
+        public Event Event {  get; set; }
 
         public enum BookingStatus
         {
@@ -28,6 +29,14 @@ namespace EventApp.Models
         {
             Status = BookingStatus.Rejected.ToString();
             ProcessedAt = DateTime.Now;
+        }
+        public Booking(bool t)
+        {
+            
+        }
+        private Booking()
+        {
+            
         }
     }
 }

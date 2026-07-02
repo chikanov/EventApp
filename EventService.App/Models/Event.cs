@@ -26,9 +26,14 @@ namespace EventApp.Models
             get => _AvailableSeats;
             set { _AvailableSeats = value; }
         }
+        public List<Booking> Bookings { get; set; }
         public Event(int totalSeats)
         {
             _AvailableSeats = totalSeats;
+        }
+        private Event()
+        {
+
         }
         public bool TryReserveSeats(int count = 1)
         {
