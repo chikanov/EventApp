@@ -9,16 +9,16 @@ namespace EventApp.Interfaces
     public interface IEventService
     {
         /// Filtred collection Event GetAll
-        PaginatedResult GetAll(int page, int pageSize, string? title, DateTime? From, DateTime? to);
+        Task<PaginatedResult> GetAllAsync(int page, int pageSize, string? title, DateTime? From, DateTime? to, CancellationToken cancellationToken = default);
         /// Event? GetById
-        Event? GetById(int id);
+        Task<Event?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
         /// Event Add
-        Event Add(CreateEventDto ev);
+        Task<Event> CreateEventAsync(CreateEventDto ev, CancellationToken cancellationToken = default);
         /// Event Update
-        Event Update(int id, EventDto ev);
+        Task<Event> UpdateEventAsync(int id, EventDto ev, CancellationToken cancellationToken = default);
         /// Event Delete
-        Event Delete(int id);
-        Event Update(int id, Event ev);
+        Task<Event> DeleteEventAsync(int id, CancellationToken cancellationToken = default);
+        Task<Event> UpdateEventAsync(int id, Event ev, CancellationToken cancellationToken = default);
 
     }
 }

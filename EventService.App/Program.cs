@@ -11,17 +11,23 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
 // Add services to the container.
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(connectionString));
 builder.Services.AddControllers();
-//builder.Services.AddSingleton<IBookingQueue, InMemoryBookingQueue>();
-builder.Services.AddHostedService<BookingBackgroundService>();
 
+builder.Services.AddControllersWithViews()
+    .AddNewtonsoftJson(options =>
+    options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+);
+
+//builder.Services.AddSingleton<IBookingQueue, InMemoryBookingQueue>();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
-
-builder.Services.AddSingleton<IEventService, EventService>();
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(connectionString));
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IBookingService, BookingService>();
+
+builder.Services.AddHostedService<BookingBackgroundService>();
 
 builder.Services.AddSwaggerGen(options =>
 {
@@ -40,6 +46,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.EnsureCreated();
+}
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

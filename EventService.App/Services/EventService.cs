@@ -1,8 +1,10 @@
 ﻿using EventApp.CustomExceptions;
+using EventApp.DataAccess;
 using EventApp.Interfaces;
 using EventApp.Models;
 using EventApp.Models.DTO;
-using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace EventApp.Services
 {
@@ -11,69 +13,50 @@ namespace EventApp.Services
     /// </summary>
     public class EventService : IEventService
     {
-        /// Collection Events
-        public static List<Event> _events = new()
+        private readonly AppDbContext _context;
+        public EventService(AppDbContext context)
         {
-            new Event(100){ Id = 1, Title = "Title1", Description = "Description1", StartAt = DateTime.Now, EndAt = DateTime.Now.AddDays(1), TotalSeats = 100},
-            new Event(100){ Id = 2, Title = "Title2", Description = "Description2", StartAt = DateTime.Now, EndAt = DateTime.Now.AddDays(1), TotalSeats = 100},
-            new Event(100){ Id = 3, Title = "Title3", Description = "Description3", StartAt = DateTime.Now.AddDays(1), EndAt = DateTime.Now.AddDays(2), TotalSeats = 100},
-            new Event(100){ Id = 4, Title = "Title4", Description = "Description4", StartAt = DateTime.Now.AddDays(1), EndAt = DateTime.Now.AddDays(2), TotalSeats = 100},
-            new Event(100){ Id = 5, Title = "Title5", Description = "Description5", StartAt = DateTime.Now.AddDays(2), EndAt = DateTime.Now.AddDays(3), TotalSeats = 100},
-            new Event(100){ Id = 6, Title = "Title6", Description = "Description6", StartAt = DateTime.Now.AddDays(2), EndAt = DateTime.Now.AddDays(3), TotalSeats = 100},
-            new Event(100){ Id = 7, Title = "Title7", Description = "Description7", StartAt = DateTime.Now.AddDays(3), EndAt = DateTime.Now.AddDays(4), TotalSeats = 100},
-            new Event(100){ Id = 8, Title = "Title8", Description = "Description8", StartAt = DateTime.Now.AddDays(3), EndAt = DateTime.Now.AddDays(4), TotalSeats = 100},
-            new Event(100){ Id = 9, Title = "Title9", Description = "Description9", StartAt = DateTime.Now.AddDays(4), EndAt = DateTime.Now.AddDays(5), TotalSeats = 100},
-            new Event(100){ Id = 10, Title = "Title10", Description = "Description10", StartAt = DateTime.Now.AddDays(4), EndAt = DateTime.Now.AddDays(5), TotalSeats = 100},
-            new Event(100){ Id = 11, Title = "Title11", Description = "Description11", StartAt = DateTime.Now.AddDays(6), EndAt = DateTime.Now.AddDays(7), TotalSeats = 100},
-            new Event(100){ Id = 12, Title = "Title12", Description = "Description12", StartAt = DateTime.Now.AddDays(6), EndAt = DateTime.Now.AddDays(7), TotalSeats = 100},
-            new Event(100){ Id = 13, Title = "Title13", Description = "Description13", StartAt = DateTime.Now.AddDays(8), EndAt = DateTime.Now.AddDays(9), TotalSeats = 100},
-            new Event(100){ Id = 14, Title = "Title14", Description = "Description14", StartAt = DateTime.Now.AddDays(8), EndAt = DateTime.Now.AddDays(9), TotalSeats = 100},
-            new Event(100){ Id = 15, Title = "Title15", Description = "Description15", StartAt = DateTime.Now.AddDays(9), EndAt = DateTime.Now.AddDays(10), TotalSeats = 100}
-        };
-
-        ///GetAll() 
-        public List<Event> GetAll()
-        {
-            return _events;
+            _context = context;
         }
         ///GetAll() 
-        public PaginatedResult GetAll(int page, int pageSize, string? Title = null, 
-            DateTime? from = null, DateTime? to = null)
+        public async Task<List<Event>> GetAllAsync(CancellationToken cancellationToken = default)
         {
-            return GetEventList(_events, Title, from, to, page, pageSize);
+            return await _context.Events.AsNoTrackingWithIdentityResolution().Include(e => e.Bookings).ToListAsync(cancellationToken);
+        }
+        ///GetAll() 
+        public async Task<PaginatedResult> GetAllAsync(int page, int pageSize, string? Title = null, 
+            DateTime? from = null, DateTime? to = null, CancellationToken cancellationToken = default)
+        {
+            return await GetEventListAsync(Title, from, to, page, pageSize, cancellationToken);
         }
 
         ///GetById
-        public Event? GetById(int id)
+        public async Task<Event?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         {
-            return _events.FirstOrDefault(e => e.Id == id);
+            var @event = await _context.Events.FirstOrDefaultAsync(e => e.Id == id, cancellationToken)
+                ?? throw new NotFoundException("Event not found");
+            return @event;
         }
 
         /// Add
-        public Event Add(CreateEventDto ev)
+        public async Task<Event> CreateEventAsync(CreateEventDto ev, CancellationToken cancellationToken = default)
         {
             if (ev.TotalSeats <= 0)
             {
-                throw new ValidationException("Total seats value must be greater than zero.");
+                throw new ValidationException(nameof(ev.TotalSeats), "Total seats value must be greater than zero.");
             }
-            var newEventId = _events.Any() ? _events.Max(e => e.Id) + 1 : 1;
-            Event newEvent = new Event(ev.TotalSeats) 
-            {
-                Id = newEventId,
-                Title = ev.Title,
-                Description = ev.Description,
-                StartAt = ev.StartAt,
-                EndAt = ev.EndAt,
-                TotalSeats = ev.TotalSeats,
-            };
-            _events.Add(newEvent);
+            var newEventId = await _context.Events.AnyAsync(cancellationToken) ? await _context.Events.MaxAsync(e => e.Id, cancellationToken) + 1 : 1;
+            var newEvent = Event.Create(newEventId, ev.Title, ev.Description, ev.StartAt, ev.EndAt, ev.TotalSeats);
+
+            await _context.Events.AddAsync(newEvent, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
             return newEvent;
         }
 
         /// Update
-        public Event Update(int id, EventDto ev)
+        public async Task<Event> UpdateEventAsync(int id, EventDto ev, CancellationToken cancellationToken = default)
         {
-            var existEvent = _events.FirstOrDefault(e => e.Id == id);
+            var existEvent = await _context.Events.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
 
             if (existEvent == null)
             {
@@ -82,29 +65,26 @@ namespace EventApp.Services
 
             if (ev.StartAt > ev.EndAt)
             {
-                throw new ValidationException("The end date must be greater than the start date.");
+                throw new ValidationException(nameof(ev.StartAt), "The end date must be greater than the start date.");
             }
 
             if (ev.TotalSeats <= 0)
             {
-                throw new ValidationException("Total seats value must be greater than zero.");
+                throw new ValidationException(nameof(ev.TotalSeats), "Total seats value must be greater than zero.");
             }
 
             if (existEvent != null)
             {
-                existEvent.Id = id;
-                existEvent.Title = ev.Title;
-                existEvent.Description = ev.Description;
-                existEvent.StartAt = ev.StartAt;
-                existEvent.EndAt = ev.EndAt;
-                existEvent.TotalSeats = ev.TotalSeats;
+                existEvent.Update(ev.Title, ev.Description, ev.StartAt, ev.EndAt, ev.TotalSeats, ev.AvailableSeats);
             }
+            await _context.SaveChangesAsync(cancellationToken);
+
             return existEvent;
         }
 
-        public Event Update(int id, Event ev)
+        public async Task<Event> UpdateEventAsync(int id, Event ev, CancellationToken cancellationToken = default)
         {
-            var existEvent = _events.FirstOrDefault(e => e.Id == id);
+            var existEvent = await _context.Events.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
 
             if (existEvent == null)
             {
@@ -113,48 +93,46 @@ namespace EventApp.Services
 
             if (existEvent.StartAt > existEvent.EndAt)
             {
-                throw new ValidationException("The end date must be greater than the start date.");
+                throw new ValidationException(nameof(existEvent.StartAt), "The end date must be greater than the start date.");
             }
 
             if (existEvent.TotalSeats <= 0)
             {
-                throw new ValidationException("Total seats value must be greater than zero.");
+                throw new ValidationException(nameof(existEvent.TotalSeats), "Total seats value must be greater than zero.");
             }
 
-            if (existEvent != null)
+            if (existEvent!= null)
             {
-                existEvent.Id = id;
-                existEvent.Title = ev.Title;
-                existEvent.Description = ev.Description;
-                existEvent.StartAt = ev.StartAt;
-                existEvent.EndAt = ev.EndAt;
-                existEvent.TotalSeats = ev.TotalSeats;
-                existEvent.AvailableSeats = ev.AvailableSeats;
+                existEvent.Update(ev.Title, ev.Description, ev.StartAt, ev.EndAt, ev.TotalSeats, ev.AvailableSeats);
             }
+            await _context.SaveChangesAsync(cancellationToken);
             return existEvent;
         }
 
         /// Delete
-        public Event Delete(int id)
+        public async Task<Event> DeleteEventAsync(int id, CancellationToken cancellationToken = default)
         {
-            var existEvent = _events.FirstOrDefault(e => e.Id == id);
+            var existEvent = await _context.Events.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
             if (existEvent == null)
             {
                 throw new NotFoundException($"Event with Id = {id} does not exist.");
             }
             if (existEvent != null)
-                _events.Remove(existEvent);
+                _context.Events.Remove(existEvent);
 
+            await _context.SaveChangesAsync(cancellationToken);
             return existEvent;
         }
-        public PaginatedResult GetEventList(
-            IEnumerable<Event> events,
+        public async Task<PaginatedResult> GetEventListAsync(
             string? title,
             DateTime? from,
             DateTime? to,
             int page,
-            int pageSize)
+            int pageSize,
+            CancellationToken cancellationToken)
         {
+            var events = _context.Events.AsNoTrackingWithIdentityResolution().Include(e => e.Bookings).AsQueryable();
+
             if (!string.IsNullOrEmpty(title))
             {
                 events = events.Where(e => e.Title.Contains(title ?? "", StringComparison.OrdinalIgnoreCase));
@@ -172,7 +150,7 @@ namespace EventApp.Services
 
             int filteredCount = events.Count();
 
-            var items = events.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+            var items = await events.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(cancellationToken);
 
             int totalPages = (int)Math.Ceiling((double)filteredCount / pageSize);
 

@@ -1,6 +1,5 @@
 ﻿using EventApp.CustomExceptions;
 using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel.DataAnnotations;
 
 namespace EventApp.Middleware
 {
