@@ -4,7 +4,6 @@ using EventApp.Interfaces;
 using EventApp.Models;
 using EventApp.Models.DTO;
 using Microsoft.EntityFrameworkCore;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace EventApp.Services
 {
@@ -110,7 +109,7 @@ namespace EventApp.Services
         }
 
         /// Delete
-        public async Task<Event> DeleteEventAsync(int id, CancellationToken cancellationToken = default)
+        public async Task<bool> DeleteEventAsync(int id, CancellationToken cancellationToken = default)
         {
             var existEvent = await _context.Events.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
             if (existEvent == null)
@@ -121,7 +120,7 @@ namespace EventApp.Services
                 _context.Events.Remove(existEvent);
 
             await _context.SaveChangesAsync(cancellationToken);
-            return existEvent;
+            return true;
         }
         public async Task<PaginatedResult> GetEventListAsync(
             string? title,

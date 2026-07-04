@@ -96,7 +96,7 @@ namespace EventApp.Controllers
             if (await _eventService.GetByIdAsync(id) == null)
                 return NotFound();
 
-            var deletedEvent = await _eventService.DeleteEventAsync(id);
+            await _eventService.DeleteEventAsync(id);
             return NoContent();
         }
 

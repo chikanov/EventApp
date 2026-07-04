@@ -64,6 +64,7 @@ namespace EventApp.Services
                 existBooking.EventId = book.EventId;
                 existBooking.CreatedAt = book.CreatedAt;
                 existBooking.ProcessedAt = book.ProcessedAt;
+                existBooking.Status = book.Status;
             }
             await _context.SaveChangesAsync(cancellationToken);
             return existBooking;

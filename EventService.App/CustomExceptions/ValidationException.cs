@@ -2,16 +2,16 @@
 
 namespace EventApp.CustomExceptions
 {
-    internal sealed class ValidationException : Exception
+    public class ValidationException : Exception
     {
-        internal IDictionary<string, ICollection<string>> Errors { get; } = new Dictionary<string, ICollection<string>>();
+        public IDictionary<string, ICollection<string>> Errors { get; } = new Dictionary<string, ICollection<string>>();
 
-        internal ValidationException(IDictionary<string, ICollection<string>> errors) : base("Validation failed")
+        public ValidationException(IDictionary<string, ICollection<string>> errors) : base("Validation failed")
         {
             Errors = errors;
         }
 
-        internal ValidationException(string field, string error) : base("Validation failed")
+        public ValidationException(string field, string error) : base("Validation failed")
         {
             Errors = new Dictionary<string, ICollection<string>>
             {
@@ -19,7 +19,7 @@ namespace EventApp.CustomExceptions
             };
         }
 
-        internal ValidationProblemDetails ToProblemDetails()
+        public ValidationProblemDetails ToProblemDetails()
             => new ValidationProblemDetails(Errors.ToDictionary(
                 kvp => kvp.Key,
                 kvp => kvp.Value.ToArray()))
