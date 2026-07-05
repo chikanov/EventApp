@@ -37,6 +37,19 @@ namespace EventApp.Services
             _serviceProvider.Dispose();
         }
 
+        private async Task<int> CreateTestEventAsync(int totalSeats = 10)
+        {
+            var futureDate = DateTime.UtcNow.AddDays(1);
+            var created = await _eventService.CreateEventAsync(new CreateEventDto
+            {
+                Title = "Test Event",
+                StartAt = futureDate,
+                EndAt = futureDate.AddHours(2),
+                TotalSeats = totalSeats
+            });
+            return created.Id;
+        }
+
         [Fact, Priority(0)]
         public async Task CreateBookingWithExistEvent_ReturnBookingWithStatusPending()
         {
@@ -301,9 +314,11 @@ namespace EventApp.Services
 
             await Parallel.ForEachAsync(numbers, options, async (numbers, token) =>
             {
+                using var scope = _serviceProvider.CreateScope();
+                var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
                 try
                 {
-                    var newBooking = await _bookingService.CreateBookingAsync(expectedEventId);
+                    var newBooking = await bookingService.CreateBookingAsync(expectedEventId);
                     if (newBooking != null)
                     {
                         Interlocked.Increment(ref SaccesfullBookingCount);
@@ -321,6 +336,37 @@ namespace EventApp.Services
         }
 
         [Fact, Priority(16)]
+        public async Task CreateBookingAsync_ConcurrentRequests_DoesNotOverbookEvent()
+        {
+            const int totalSeats = 5;
+            const int concurrentRequests = 20;
+            var eventId = await CreateTestEventAsync(totalSeats: totalSeats);
+
+            var tasks = Enumerable.Range(0, concurrentRequests)
+                .Select(_ => Task.Run(async () =>
+                {
+                    using var scope = _serviceProvider.CreateScope();
+                    var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
+                    try
+                    {
+                        await bookingService.CreateBookingAsync(eventId);
+                        return true;
+                    }
+                    catch (NoAvailableSeatsException)
+                    {
+                        return false;
+                    }
+                }));
+
+            var results = await Task.WhenAll(tasks);
+
+            var successCount = results.Count(r => r);
+            var availableSeats = await _eventService.GetByIdAsync(eventId);
+            Assert.Equal(totalSeats, successCount);
+            Assert.Equal(0, availableSeats.AvailableSeats);
+        }
+
+        [Fact, Priority(17)]
         public async Task IdUniquenessTest_Return10UniqueBookingId()
         {
             await CreateEventsForTestsAsync();
@@ -339,9 +385,11 @@ namespace EventApp.Services
 
             await Parallel.ForEachAsync(numbers, options, async (numbers, token) =>
             {
+                using var scope = _serviceProvider.CreateScope();
+                var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
                 try
                 {
-                    var newBooking = await _bookingService.CreateBookingAsync(expectedEventId);
+                    var newBooking = await bookingService.CreateBookingAsync(expectedEventId);
                     if (newBooking != null)
                     {
                         cuncuretBookingIdsBag.Add(newBooking.Id);
