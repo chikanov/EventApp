@@ -1,42 +1,26 @@
 ﻿using EventApp.CustomExceptions;
+using EventApp.DataAccess;
 using EventApp.Interfaces;
 using EventApp.Models;
-using System.ComponentModel.DataAnnotations;
-using System.Net;
+using EventApp.Models.Models.Enum;
+using Microsoft.EntityFrameworkCore;
 
 namespace EventApp.Services
 {
     public class BookingService : IBookingService
     {
-        private readonly IEventService _eventService;
-        private readonly object _bookingLock = new();
-        public BookingService(IEventService eventService)
+        private static readonly SemaphoreSlim _processingSemaphore = new(1, 1);
+        private readonly AppDbContext _context;
+        public BookingService(AppDbContext context)
         {
-            _eventService = eventService;
+            _context = context;
         }
-        public static List<Booking> _bookings = new()
+        public async Task<Booking> CreateBookingAsync(int eventId, CancellationToken cancellationToken = default)
         {
-            new Booking() {Id = Guid.NewGuid(), 
-                           EventId = 1, 
-                           CreatedAt = DateTime.Now, 
-                           ProcessedAt = DateTime.Now.AddMinutes(5), 
-                           Status = Booking.BookingStatus.Confirmed.ToString() },
-            new Booking() {Id = Guid.NewGuid(),
-                           EventId = 2,
-                           CreatedAt = DateTime.Now,
-                           ProcessedAt = DateTime.Now.AddMinutes(5),
-                           Status = Booking.BookingStatus.Rejected.ToString() },
-            new Booking() {Id = Guid.NewGuid(),
-                           EventId = 3,
-                           CreatedAt = DateTime.Now,
-                           ProcessedAt = DateTime.Now.AddMinutes(5),
-                           Status = Booking.BookingStatus.Pending.ToString() },
-        };
-        public async Task<Booking> CreateBookingAsync(int eventId)
-        {
-            lock (_bookingLock)
+            await _processingSemaphore.WaitAsync(cancellationToken);
+            try
             {
-                var currentEvent = _eventService.GetById(eventId);
+                var currentEvent = await _context.Events.FirstOrDefaultAsync(e => e.Id == eventId, cancellationToken);
                 if (currentEvent == null)
                 {
                     throw new NotFoundException($"Event with Id = {eventId} does not exist.");
@@ -46,31 +30,28 @@ namespace EventApp.Services
                     throw new NoAvailableSeatsException();
                 else
                 {
-                    var newBooking = new Booking()
-                    {
-                        Id = Guid.NewGuid(),
-                        EventId = eventId,
-                        CreatedAt = DateTime.Now,
-                        Status = Booking.BookingStatus.Pending.ToString(),
-                    };
+                    var newBooking = Booking.CreatePending(eventId);
 
-                    _bookings.Add(newBooking);
+
+                    await _context.Bookings.AddAsync(newBooking, cancellationToken);
+                    await _context.SaveChangesAsync(cancellationToken);
 
                     return newBooking;
                 }
             }
+            finally { _processingSemaphore.Release(); }
         }
-        public async Task<Booking?> GetBookingByIdAsync(Guid bookingId)
+        public async Task<Booking?> GetBookingByIdAsync(Guid bookingId, CancellationToken cancellationToken = default)
         {
-            if (!_bookings.Any(b => b.Id == bookingId))
+            if (!await _context.Bookings.AnyAsync(b => b.Id == bookingId, cancellationToken))
             {
                 throw new NotFoundException($"Booking with Id = {bookingId} does not exist.");
             }
-            return _bookings.FirstOrDefault(b => b.Id == bookingId);
+            return await _context.Bookings.AsNoTrackingWithIdentityResolution().Include(b => b.Event).FirstOrDefaultAsync(b => b.Id == bookingId, cancellationToken);
         }
-        public Booking Update(Booking book)
+        public async Task<Booking> UpdateBookingAsync(Booking book, CancellationToken cancellationToken = default)
         {
-            var existBooking = _bookings.FirstOrDefault(e => e.Id == book.Id);
+            var existBooking = await _context.Bookings.FirstOrDefaultAsync(e => e.Id == book.Id, cancellationToken);
 
             if (existBooking == null)
             {
@@ -81,16 +62,19 @@ namespace EventApp.Services
             {
                 existBooking.Id = book.Id;
                 existBooking.EventId = book.EventId;
-                existBooking.Status = book.Status;
                 existBooking.CreatedAt = book.CreatedAt;
                 existBooking.ProcessedAt = book.ProcessedAt;
+                existBooking.Status = book.Status;
             }
+            await _context.SaveChangesAsync(cancellationToken);
             return existBooking;
         }
 
-        public IEnumerable<Booking> GetPending()
+        public async Task<List<Booking>> GetPendingAsync(CancellationToken cancellationToken = default)
         {
-            return _bookings.Where(b => b.Status == Booking.BookingStatus.Pending.ToString());
+            return await _context.Bookings
+                .Where(b => b.Status == BookingStatus.Pending)
+                .ToListAsync(cancellationToken);
         }
     }
 }

@@ -4,9 +4,9 @@ namespace EventApp.Interfaces
 {
     public interface IBookingService
     {
-        Task<Booking> CreateBookingAsync(int eventId);
-        Task<Booking?> GetBookingByIdAsync(Guid bookingId);
-        IEnumerable<Booking> GetPending();
-        Booking Update(Booking book);
+        Task<Booking> CreateBookingAsync(int eventId, CancellationToken cancellationToken = default);
+        Task<Booking?> GetBookingByIdAsync(Guid bookingId, CancellationToken cancellationToken = default);
+        Task<List<Booking>> GetPendingAsync(CancellationToken cancellationToken = default);
+        Task<Booking> UpdateBookingAsync(Booking book, CancellationToken cancellationToken = default);
     }
 }

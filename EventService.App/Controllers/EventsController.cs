@@ -29,11 +29,11 @@ namespace EventApp.Controllers
         /// <param name="pageSize">Page size</param>
         /// <returns>Collection Events</returns>
         [HttpGet]
-        public ActionResult<PaginatedResult> GetAllEvents([FromQuery] string? title = null,
+        public async Task<ActionResult<PaginatedResult>> GetAllEventsAsync([FromQuery] string? title = null,
             [FromQuery]  DateTime? from = null, [FromQuery]  DateTime? to = null, 
             [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
-            var result = _eventService.GetAll(page, pageSize, title, from, to);
+            var result = await _eventService.GetAllAsync(page, pageSize, title, from, to);
             return Ok(result);
         }
 
@@ -43,9 +43,9 @@ namespace EventApp.Controllers
         /// <param name="id">Id</param>
         /// <returns>Event event</returns>
         [HttpGet("{id}")]
-        public ActionResult<Event> GetEventById([FromRoute] int id)
+        public async Task<ActionResult<Event>> GetEventByIdAsync([FromRoute] int id)
         {
-            var ev = _eventService.GetById(id);
+            var ev = await _eventService.GetByIdAsync(id);
             if (ev == null)
             {
                 return NotFound();
@@ -59,13 +59,13 @@ namespace EventApp.Controllers
         /// </summary>
         /// <returns>Event eventt</returns>
         [HttpPost]
-        public ActionResult<Event> CreateEvent(CreateEventDto ev)
+        public async Task<ActionResult<Event>> CreateEventAsync(CreateEventDto ev)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            _eventService.Add(ev);
+            await _eventService.CreateEventAsync(ev);
 
             return Created();
         }
@@ -75,14 +75,14 @@ namespace EventApp.Controllers
         /// </summary>
         /// <returns>Event eventt</returns>
         [HttpPut("{id}")]
-        public ActionResult<EventDto> UpdateEvent([FromRoute] int id, EventDto ev)
+        public async Task<ActionResult<EventDto>> UpdateEventAsync([FromRoute] int id, EventDto ev)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            if (_eventService.GetById(id) == null)
+            if (await _eventService.GetByIdAsync(id) == null)
                 return NotFound(ev);
 
-            var updatedEvent = _eventService.Update(id, ev);
+            var updatedEvent = await _eventService.UpdateEventAsync(id, ev);
             return Ok(updatedEvent);
         }
 
@@ -91,12 +91,12 @@ namespace EventApp.Controllers
         /// </summary>
         /// <returns>Event eventt</returns>
         [HttpDelete("{id}")]
-        public ActionResult<Event> DeleteEvent([FromRoute] int id)
+        public async Task<ActionResult<Event>> DeleteEventAsync([FromRoute] int id)
         {
-            if (_eventService.GetById(id) == null)
+            if (await _eventService.GetByIdAsync(id) == null)
                 return NotFound();
 
-            var deletedEvent = _eventService.Delete(id);
+            await _eventService.DeleteEventAsync(id);
             return NoContent();
         }
 
@@ -110,7 +110,7 @@ namespace EventApp.Controllers
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
         public async Task<ActionResult<Booking>> CreateBookingAsync([FromRoute]int id)
         {
-            if (_eventService.GetById(id) == null)
+            if (await _eventService.GetByIdAsync(id) == null)
             {
                 return NotFound();
             }

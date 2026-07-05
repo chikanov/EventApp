@@ -21,9 +21,9 @@ namespace EventApp.Controllers
         /// <param name="id">Booking guid Id</param>
         /// <returns>Return Booking</returns>
         [HttpGet("{id}")]
-        public async Task<ActionResult<Booking>> GetBookingByIdAsync([FromRoute] Guid id)
+        public async Task<ActionResult<Booking>> GetBookingByIdAsync([FromRoute] Guid id,CancellationToken cancellationToken)
         {
-            var booking = await _bookingService.GetBookingByIdAsync(id);
+            var booking = await _bookingService.GetBookingByIdAsync(id, cancellationToken);
             if (booking == null)
             {
                 return NotFound();

@@ -1,13 +1,18 @@
-﻿namespace EventApp.CustomExceptions
+﻿using Microsoft.AspNetCore.Mvc;
+
+namespace EventApp.CustomExceptions
 {
     public class NotFoundException : Exception
     {
-        public NotFoundException() : base("Resource not found.") { }
+        internal NotFoundException(string message) : base(message) { }
 
-        public NotFoundException(string message) : base(message) { }
-
-        public NotFoundException(string message, Exception inner) : base(message, inner) { }
-
-        protected NotFoundException(System.Runtime.Serialization.SerializationInfo si, System.Runtime.Serialization.StreamingContext sc) : base(si, sc) { }
+        internal ProblemDetails ToProblemDetails()
+            => new ProblemDetails
+            {
+                Status = StatusCodes.Status404NotFound,
+                Title = "Resource Not Found",
+                Detail = Message,
+                Type = "https://tools.ietf.org/html/rfc9110#section-15.5.5"
+            };
     }
 }

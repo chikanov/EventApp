@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/EventApp/">
+    <File Path=".gitignore" />
+    <File Path="docker-compose.yml" />
+    <File Path="README.md" />
+    <Project Path="EventService.App/EventService.App.csproj" />
+    <Project Path="EventService.Tests/EventService.Tests.csproj" Id="c96579e5-65b8-4592-b0bc-aed840a456bc" />
+  </Folder>
+</Solution>

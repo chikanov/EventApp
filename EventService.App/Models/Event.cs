@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
+﻿
 namespace EventApp.Models
 {
     /// <summary>
@@ -17,32 +16,67 @@ namespace EventApp.Models
         public DateTime? StartAt { get; set; }
         /// EndAt
         public DateTime? EndAt { get; set; }
-        [Required]
-        public int TotalSeats { get; set; }
+        public int TotalSeats { get;  set; }
+        public int AvailableSeats { get; set; }
+        public ICollection<Booking> Bookings { get; set; } = [];
+        private Event() { Title = null!; }
 
-        private int _AvailableSeats;
-        public int AvailableSeats
+        private Event(
+            int id,
+            string title,
+            string? description,
+            DateTime startAt,
+            DateTime endAt,
+            int totalSeats
+            )
         {
-            get => _AvailableSeats;
-            set { _AvailableSeats = value; }
+            Id = id;
+            Title = title;
+            StartAt = startAt;
+            EndAt = endAt;
+            TotalSeats = totalSeats;
+            AvailableSeats = totalSeats;
+            Description = description;
         }
-        public Event(int totalSeats)
+        public static Event Create(
+            int id,
+            string? title,
+            string? description,
+            DateTime? startAt,
+            DateTime? endAt,
+            int? totalSeats = null
+        )
         {
-            _AvailableSeats = totalSeats;
+            return new Event(id, title!.Trim(), description, startAt!.Value, endAt!.Value, totalSeats!.Value);
+        }
+        public void Update(
+            string? title,
+            string? description,
+            DateTime? startAt,
+            DateTime? endAt,
+            int totalSeats,
+            int availebleSeats)
+        {
+            Title = title!;
+            Description = description!;
+            StartAt = startAt!.Value;
+            EndAt = endAt!.Value;
+            TotalSeats = totalSeats;
+            AvailableSeats = availebleSeats;
         }
         public bool TryReserveSeats(int count = 1)
         {
-            if ((_AvailableSeats - count) < 0)
+            if ((AvailableSeats - count) < 0)
                 return false;
             else
             {
-                _AvailableSeats -= count;
+                AvailableSeats -= count;
                 return true;
             }
         }
         public void ReleaseSeats(int count = 1)
         {
-            _AvailableSeats += count;
+            AvailableSeats += count;
         }
     }
 }

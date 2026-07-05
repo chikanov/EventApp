@@ -17,12 +17,12 @@ namespace EventApp.Helper
         /// ValidationResult IsValid
         protected override ValidationResult IsValid(object? value, ValidationContext validationContext)
         {
-            DateTime earlierDate = (DateTime)value;
-            DateTime laterDate = (DateTime)validationContext.ObjectType.GetProperty(DateToCompareToFieldName).GetValue(validationContext.ObjectInstance, null);
+            DateTime earlierDate = (DateTime)value!;
+            DateTime laterDate = (DateTime)validationContext.ObjectType.GetProperty(DateToCompareToFieldName)!.GetValue(validationContext.ObjectInstance, null)!;
 
             if (laterDate > earlierDate)
             {
-                return ValidationResult.Success;
+                return ValidationResult.Success!;
             }
             return new ValidationResult("The end date must be greater than the start date.");
         }
