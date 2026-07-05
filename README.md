@@ -5,12 +5,24 @@ Event management Service.
 
 ## Run the app
 
+    docker compose up -d
     dotnet build
     dotnet run
 
 ## To start test
 
     dotnet test
+
+## Сonfigure the connection string
+
+    To configure the connection string, change the settings in appsettings.json "ConnectionStrings".
+
+## Database schema
+
+    The database schema is created automatically when the application is launched using EnsureCreated.
+
+## Tests
+    The tests use InMemory provider.
 
 # REST API
 
