@@ -9,7 +9,7 @@ namespace EventApp.Services
 {
     public class BookingService : IBookingService
     {
-        private readonly SemaphoreSlim _processingSemaphore = new(1, 1);
+        private static readonly SemaphoreSlim _processingSemaphore = new(1, 1);
         private readonly AppDbContext _context;
         public BookingService(AppDbContext context)
         {

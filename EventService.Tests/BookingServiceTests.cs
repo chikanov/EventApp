@@ -330,43 +330,17 @@ namespace EventApp.Services
                 }
             });
 
+            using var scope = _serviceProvider.CreateScope();
+            var eventsService = scope.ServiceProvider.GetRequiredService<IEventService>();
+
+            var curEvent = await eventsService.GetByIdAsync(expectedEventId, token);
+
             Assert.Equal(expectedSaccesfullBooking, SaccesfullBookingCount);
             Assert.Equal(expectedNoAvailableSeatsExceptionCount, NoAvailableSeatsExceptionCount);
-            Assert.Equal(expectedAvailableSeats, expectedEvent.AvailableSeats);
+            Assert.Equal(expectedAvailableSeats, curEvent?.AvailableSeats);
         }
 
         [Fact, Priority(16)]
-        public async Task CreateBookingAsync_ConcurrentRequests_DoesNotOverbookEvent()
-        {
-            const int totalSeats = 5;
-            const int concurrentRequests = 20;
-            var eventId = await CreateTestEventAsync(totalSeats: totalSeats);
-
-            var tasks = Enumerable.Range(0, concurrentRequests)
-                .Select(_ => Task.Run(async () =>
-                {
-                    using var scope = _serviceProvider.CreateScope();
-                    var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
-                    try
-                    {
-                        await bookingService.CreateBookingAsync(eventId);
-                        return true;
-                    }
-                    catch (NoAvailableSeatsException)
-                    {
-                        return false;
-                    }
-                }));
-
-            var results = await Task.WhenAll(tasks);
-
-            var successCount = results.Count(r => r);
-            var availableSeats = await _eventService.GetByIdAsync(eventId);
-            Assert.Equal(totalSeats, successCount);
-            Assert.Equal(0, availableSeats.AvailableSeats);
-        }
-
-        [Fact, Priority(17)]
         public async Task IdUniquenessTest_Return10UniqueBookingId()
         {
             await CreateEventsForTestsAsync();
