@@ -1,9 +1,7 @@
 ﻿using EventApp.CustomExceptions;
-using EventApp.DataAccess;
 using EventApp.Interfaces;
 using EventApp.Models;
 using EventApp.Models.DTO;
-using Microsoft.EntityFrameworkCore;
 
 namespace EventApp.Services
 {
@@ -12,15 +10,15 @@ namespace EventApp.Services
     /// </summary>
     public class EventService : IEventService
     {
-        private readonly AppDbContext _context;
-        public EventService(AppDbContext context)
+        private readonly IEventRepository _eventRepository;
+        public EventService(IEventRepository eventRepository)
         {
-            _context = context;
+            _eventRepository = eventRepository;
         }
         ///GetAll() 
-        public async Task<List<Event>> GetAllAsync(CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyList<Event>> GetAllAsync(CancellationToken cancellationToken = default)
         {
-            return await _context.Events.AsNoTrackingWithIdentityResolution().Include(e => e.Bookings).ToListAsync(cancellationToken);
+            return await _eventRepository.GetAllAsync();
         }
         ///GetAll() 
         public async Task<PaginatedResult> GetAllAsync(int page, int pageSize, string? Title = null, 
@@ -32,7 +30,7 @@ namespace EventApp.Services
         ///GetById
         public async Task<Event?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         {
-            var @event = await _context.Events.FirstOrDefaultAsync(e => e.Id == id, cancellationToken)
+            var @event = await _eventRepository.GetByIdAsync(id, cancellationToken)
                 ?? throw new NotFoundException("Event not found");
             return @event;
         }
@@ -44,18 +42,17 @@ namespace EventApp.Services
             {
                 throw new ValidationException(nameof(ev.TotalSeats), "Total seats value must be greater than zero.");
             }
-            var newEventId = await _context.Events.AnyAsync(cancellationToken) ? await _context.Events.MaxAsync(e => e.Id, cancellationToken) + 1 : 1;
+            var newEventId = await _eventRepository.AnyAsync(cancellationToken) ? await _eventRepository.MaxAsync(cancellationToken) + 1 : 1;
             var newEvent = Event.Create(newEventId, ev.Title, ev.Description, ev.StartAt, ev.EndAt, ev.TotalSeats);
 
-            await _context.Events.AddAsync(newEvent, cancellationToken);
-            await _context.SaveChangesAsync(cancellationToken);
+            await _eventRepository.AddAsync(newEvent, cancellationToken);
             return newEvent;
         }
 
         /// Update
         public async Task<Event> UpdateEventAsync(int id, EventDto ev, CancellationToken cancellationToken = default)
         {
-            var existEvent = await _context.Events.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
+            var existEvent = await _eventRepository.GetByIdAsync(id, cancellationToken);
 
             if (existEvent == null)
             {
@@ -74,16 +71,15 @@ namespace EventApp.Services
 
             if (existEvent != null)
             {
-                existEvent.Update(ev.Title, ev.Description, ev.StartAt, ev.EndAt, ev.TotalSeats, ev.AvailableSeats);
+                await _eventRepository.UpdateAsync(existEvent, cancellationToken);
             }
-            await _context.SaveChangesAsync(cancellationToken);
 
             return existEvent;
         }
 
         public async Task<Event> UpdateEventAsync(int id, Event ev, CancellationToken cancellationToken = default)
         {
-            var existEvent = await _context.Events.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
+            var existEvent = await _eventRepository.GetByIdAsync(id, cancellationToken);
 
             if (existEvent == null)
             {
@@ -102,24 +98,23 @@ namespace EventApp.Services
 
             if (existEvent!= null)
             {
-                existEvent.Update(ev.Title, ev.Description, ev.StartAt, ev.EndAt, ev.TotalSeats, ev.AvailableSeats);
+                await _eventRepository.UpdateAsync(existEvent, cancellationToken);
             }
-            await _context.SaveChangesAsync(cancellationToken);
+
             return existEvent;
         }
 
         /// Delete
         public async Task<bool> DeleteEventAsync(int id, CancellationToken cancellationToken = default)
         {
-            var existEvent = await _context.Events.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
+            var existEvent = await _eventRepository.GetByIdAsync(id, cancellationToken);
             if (existEvent == null)
             {
                 throw new NotFoundException($"Event with Id = {id} does not exist.");
             }
             if (existEvent != null)
-                _context.Events.Remove(existEvent);
+                await _eventRepository.DeleteAsync(existEvent, cancellationToken);
 
-            await _context.SaveChangesAsync(cancellationToken);
             return true;
         }
         public async Task<PaginatedResult> GetEventListAsync(
@@ -130,26 +125,26 @@ namespace EventApp.Services
             int pageSize,
             CancellationToken cancellationToken)
         {
-            var events = _context.Events.AsNoTrackingWithIdentityResolution().Include(e => e.Bookings).AsQueryable();
+            var events = await _eventRepository.GetAllAsync(cancellationToken);
 
             if (!string.IsNullOrEmpty(title))
             {
-                events = events.Where(e => e.Title.Contains(title ?? "", StringComparison.OrdinalIgnoreCase));
+                events = (List<Event>)events.Where(e => e.Title.Contains(title ?? "", StringComparison.OrdinalIgnoreCase));
             }
 
             if (from != null)
             {
-                events = events.Where(e => e.StartAt >= GetTheStartOfTheDayOrDefault(from));
+                events = (List<Event>)events.Where(e => e.StartAt >= GetTheStartOfTheDayOrDefault(from));
             }
 
             if (to != null)
             {
-                events = events.Where(e => e.EndAt <= GetTheEndOfTheDayOrDefault(to));
+                events = (List<Event>)events.Where(e => e.EndAt <= GetTheEndOfTheDayOrDefault(to));
             }
 
             int filteredCount = events.Count();
 
-            var items = await events.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(cancellationToken);
+            var items = (List<Event>)events.Skip((page - 1) * pageSize).Take(pageSize);
 
             int totalPages = (int)Math.Ceiling((double)filteredCount / pageSize);
 
