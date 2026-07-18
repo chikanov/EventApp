@@ -144,7 +144,7 @@ namespace EventApp.Services
 
             int filteredCount = events.Count();
 
-            var items = (List<Event>)events.Skip((page - 1) * pageSize).Take(pageSize);
+            var items = events.Skip((page - 1) * pageSize).Take(pageSize).ToList();
 
             int totalPages = (int)Math.Ceiling((double)filteredCount / pageSize);
 
