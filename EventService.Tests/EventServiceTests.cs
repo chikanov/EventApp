@@ -2,11 +2,13 @@
 using EventApp.DataAccess;
 using EventApp.Interfaces;
 using EventApp.Models.DTO;
+using EventApp.Repositories;
+using EventApp.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit.v3.Priority;
 
-namespace EventApp.Services
+namespace EventApp.EventServiceTests
 {
     [TestCaseOrderer(typeof(PriorityOrderer))]
     public class EventServiceTests : IDisposable
@@ -20,7 +22,8 @@ namespace EventApp.Services
             var services = new ServiceCollection();
             services.AddDbContext<AppDbContext>(options =>
                 options.UseInMemoryDatabase(dbName));
-            services.AddScoped<IEventService, EventService>();
+            services.AddScoped<IEventRepository, EventRepository>();
+            services.AddScoped<IEventService, EventApp.Services.EventService>();
 
             _serviceProvider = services.BuildServiceProvider();
             _scope = _serviceProvider.CreateScope();

@@ -1,6 +1,7 @@
 ﻿using EventApp.DataAccess;
 using EventApp.Interfaces;
 using EventApp.Models;
+using EventApp.Models.DTO;
 using Microsoft.EntityFrameworkCore;
 
 namespace EventApp.Repositories
@@ -34,10 +35,17 @@ namespace EventApp.Repositories
             return await _context.Events.FirstOrDefaultAsync(e => e.Id == id, ct);
         }
 
-        public async Task UpdateAsync(Event @event, CancellationToken ct = default)
+        public async Task<Event?> UpdateAsync(EventDto dto, Event @event, CancellationToken ct = default)
+        {
+            @event.Update(dto.Title, dto.Description, dto.StartAt, dto.EndAt, dto.TotalSeats, dto.AvailableSeats);
+            await _context.SaveChangesAsync(ct);
+            return @event;
+        }
+        public async Task<Event?> UpdateAsync(Event @event, CancellationToken ct = default)
         {
             @event.Update(@event.Title, @event.Description, @event.StartAt, @event.EndAt, @event.TotalSeats, @event.AvailableSeats);
             await _context.SaveChangesAsync(ct);
+            return @event;
         }
 
         public async Task<bool> AnyAsync(CancellationToken ct = default)

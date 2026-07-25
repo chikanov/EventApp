@@ -1,5 +1,5 @@
 ﻿using EventApp.Interfaces;
-using EventApp.Models.Models.Enum;
+using EventApp.Models.Enum;
 
 namespace EventApp.BackgroundServices
 {

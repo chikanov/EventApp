@@ -1,7 +1,7 @@
 ﻿using EventApp.DataAccess;
 using EventApp.Interfaces;
 using EventApp.Models;
-using EventApp.Models.Models.Enum;
+using EventApp.Models.Enum;
 using Microsoft.EntityFrameworkCore;
 
 namespace EventApp.Repositories

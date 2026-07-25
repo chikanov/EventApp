@@ -71,7 +71,7 @@ namespace EventApp.Services
 
             if (existEvent != null)
             {
-                await _eventRepository.UpdateAsync(existEvent, cancellationToken);
+                existEvent = await _eventRepository.UpdateAsync(ev, existEvent, cancellationToken);
             }
 
             return existEvent;
@@ -98,7 +98,7 @@ namespace EventApp.Services
 
             if (existEvent!= null)
             {
-                await _eventRepository.UpdateAsync(existEvent, cancellationToken);
+                existEvent = await _eventRepository.UpdateAsync(existEvent, cancellationToken);
             }
 
             return existEvent;
@@ -129,17 +129,17 @@ namespace EventApp.Services
 
             if (!string.IsNullOrEmpty(title))
             {
-                events = (List<Event>)events.Where(e => e.Title.Contains(title ?? "", StringComparison.OrdinalIgnoreCase));
+                events = events.Where(e => e.Title.Contains(title ?? "", StringComparison.OrdinalIgnoreCase)).ToList();
             }
 
             if (from != null)
             {
-                events = (List<Event>)events.Where(e => e.StartAt >= GetTheStartOfTheDayOrDefault(from));
+                events = events.Where(e => e.StartAt >= GetTheStartOfTheDayOrDefault(from)).ToList();
             }
 
             if (to != null)
             {
-                events = (List<Event>)events.Where(e => e.EndAt <= GetTheEndOfTheDayOrDefault(to));
+                events = events.Where(e => e.EndAt <= GetTheEndOfTheDayOrDefault(to)).ToList();
             }
 
             int filteredCount = events.Count();
