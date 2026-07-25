@@ -19,10 +19,18 @@ Event management Service.
 
 ## Database schema
 
-    The database schema is created automatically when the application is launched using EnsureCreated.
+    The schema is managed by EF Core migrations.
+    Deploying a new database instance based on existing migrations - dotnet ef database update.
+    To add migration - dotnet ef migrations add MigrationName.
 
 ## Tests
+
     The tests use InMemory provider.
+
+## Integration Tests
+    
+    Integration Tests with Testcontainers integrated with PostgreSQL.
+    To run the tests, you need to run docker.
 
 # REST API
 
