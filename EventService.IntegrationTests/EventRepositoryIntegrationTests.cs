@@ -72,7 +72,9 @@ namespace EventApp.EventServiceIntagrationTests
                 await repository.AddAsync(@event, token);
             }
 
-            var savedListEvents = await repository.GetAllAsync(token);
+            await using var verifyContext = CreateContext();
+            var savedRepository = new EventRepository(verifyContext);
+            var savedListEvents = await savedRepository.GetAllAsync(token);
 
             Assert.Equal(expectedEventsCount, savedListEvents.Count);
         }
@@ -89,7 +91,9 @@ namespace EventApp.EventServiceIntagrationTests
             var repository = new EventRepository(context);
             await repository.AddAsync(@event, token);
 
-            var result = await repository.GetByIdAsync(1, token);
+            await using var verifyContext = CreateContext();
+            var savedRepository = new EventRepository(verifyContext);
+            var result = await savedRepository.GetByIdAsync(1, token);
 
             Assert.NotNull(result);
             Assert.Equal("Description test 777", result.Description);
@@ -136,7 +140,9 @@ namespace EventApp.EventServiceIntagrationTests
             await repository.DeleteAsync(curEvent!, token);
 
             await using var verifyContext = CreateContext();
-            var deleted = await repository.GetByIdAsync(1, token);
+            var savedRepository = new EventRepository(verifyContext);
+
+            var deleted = await savedRepository.GetByIdAsync(1, token);
             Assert.Null(deleted);
         }
 

@@ -82,7 +82,9 @@ namespace EventApp.EventServiceIntagrationTests
                 await bookingRepository.AddAsync(newBooking, token);
             }
 
-            var savedListBookings = await bookingRepository.GetAllAsync(token);
+            await using var verifyContext = CreateContext();
+            var savedBookingRepository = new BookingRepository(verifyContext);
+            var savedListBookings = await savedBookingRepository.GetAllAsync(token);
 
             Assert.Equal(expectedBookingsCount, savedListBookings.Count);
         }
@@ -104,7 +106,8 @@ namespace EventApp.EventServiceIntagrationTests
             await bookingRepository.AddAsync(newBooking, token);
 
             await using var verifyContext = CreateContext();
-            var savedBooking = await bookingRepository.GetByIdAsync(newBooking.Id, token);
+            var savedBookingRepository = new BookingRepository(verifyContext);
+            var savedBooking = await savedBookingRepository.GetByIdAsync(newBooking.Id, token);
 
             Assert.NotNull(savedBooking);
             Assert.Equal(newBooking.Id, savedBooking.Id);
