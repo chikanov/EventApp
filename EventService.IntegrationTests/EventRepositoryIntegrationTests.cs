@@ -2,9 +2,10 @@
 using EventApp.Models;
 using EventApp.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Testcontainers.PostgreSql;
 
-namespace EventApp.EventServiceIntagrationTests
+namespace EventApp.EventServiceIntegrationTests
 {
     public class EventRepositoryIntegrationTests : IAsyncLifetime
     {
@@ -23,19 +24,18 @@ namespace EventApp.EventServiceIntagrationTests
         private AppDbContext CreateContext()
         {
             var options = new DbContextOptionsBuilder<AppDbContext>()
-                .UseNpgsql(_postgres.GetConnectionString())
+                .UseNpgsql(_postgres.GetConnectionString()).ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning))
                 .Options;
 
             var context = new AppDbContext(options);
-            context.Database.EnsureCreated();
+
             return context;
         }
 
         private async Task ResetDatabaseAsync()
         {
             await using var context = CreateContext();
-            await context.Database.ExecuteSqlRawAsync(
-                "TRUNCATE TABLE events, bookings RESTART IDENTITY CASCADE");
+            context.Database.Migrate();
         }
 
         [Fact]
@@ -114,9 +114,9 @@ namespace EventApp.EventServiceIntagrationTests
             await using var actContext = CreateContext();
             var saved = await actContext.Events
                 .FirstOrDefaultAsync(b => b.Description == "Description test 777", cancellationToken: TestContext.Current.CancellationToken);
+            var actRepository = new EventRepository(actContext);
             saved?.Description = "Description test 777 - updated";
-            actContext.Events.Update(saved!);
-            await actContext.SaveChangesAsync(token);
+            await actRepository.UpdateAsync(saved!, token);
 
             await using var verifyContext = CreateContext();
             var updated = await verifyContext.Events
@@ -136,14 +136,81 @@ namespace EventApp.EventServiceIntagrationTests
             await repository.AddAsync(@event, token);
 
             await using var actContext = CreateContext();
-            var curEvent = await repository.GetByIdAsync(1, token);
-            await repository.DeleteAsync(curEvent!, token);
+            var actRepository = new EventRepository(actContext);
+            var curEvent = await actRepository.GetByIdAsync(1, token);
+            await actRepository.DeleteAsync(curEvent!, token);
 
             await using var verifyContext = CreateContext();
             var savedRepository = new EventRepository(verifyContext);
 
             var deleted = await savedRepository.GetByIdAsync(1, token);
             Assert.Null(deleted);
+        }
+
+        [Fact]
+        public async Task AnyAsync_ReturnNotNullEvent()
+        {
+            await ResetDatabaseAsync();
+
+            var token = new CancellationToken();
+            await using var arrangeContext = CreateContext();
+            var @event = CreateEventForTest();
+            var repository = new EventRepository(arrangeContext);
+            await repository.AddAsync(@event, token);
+
+            await using var actContext = CreateContext();
+            var actRepository = new EventRepository(actContext);
+            var actEvent = await actRepository.AnyAsync(token);
+
+            Assert.NotNull(actEvent);
+        }
+
+        [Fact]
+        public async Task MaxAsync_ReturnCorrectMaxId()
+        {
+            await ResetDatabaseAsync();
+            await using var context = CreateContext();
+            var token = new CancellationToken();
+            var expectedEventsCount = 5;
+            var listEvents = CreateMultipleEventsForTest(expectedEventsCount);
+
+            var repository = new EventRepository(context);
+            foreach (var @event in listEvents)
+            {
+                await repository.AddAsync(@event, token);
+            }
+
+            await using var verifyContext = CreateContext();
+            var savedRepository = new EventRepository(verifyContext);
+            var maxEventId = await savedRepository.MaxAsync(token);
+
+            Assert.Equal(expectedEventsCount, maxEventId);
+        }
+
+        [Fact]
+
+        public async Task SaveChangesAsync_ReturnCorrectUpdatedEvent()
+        {
+            await ResetDatabaseAsync();
+            var token = new CancellationToken();
+
+            await using var arrangeContext = CreateContext();
+            var @event = CreateEventForTest();
+
+            var repository = new EventRepository(arrangeContext);
+            await repository.AddAsync(@event, token);
+
+            await using var actContext = CreateContext();
+            var saved = await actContext.Events
+                .FirstOrDefaultAsync(b => b.Description == "Description test 777", cancellationToken: TestContext.Current.CancellationToken);
+            var actRepository = new EventRepository(actContext);
+            saved?.Description = "Description test 777 - updated";
+            await actRepository.SaveChangesAsync(token);
+
+            await using var verifyContext = CreateContext();
+            var updated = await verifyContext.Events
+                .FirstOrDefaultAsync(b => b.Description == "Description test 777 - updated", cancellationToken: TestContext.Current.CancellationToken);
+            Assert.Equal("Description test 777 - updated", updated?.Description);
         }
 
         public Event CreateEventForTest()
@@ -153,8 +220,8 @@ namespace EventApp.EventServiceIntagrationTests
                 1,
                 "Test event title",
                 "Description test 777",
-                new DateTime().ToUniversalTime(),
-                new DateTime().ToUniversalTime().AddDays(1),
+                DateTime.Now.ToUniversalTime(),
+                DateTime.Now.ToUniversalTime().AddDays(1),
                 100
             );
         }
@@ -169,8 +236,8 @@ namespace EventApp.EventServiceIntagrationTests
                     i,
                     "Test event title " + i,
                     "Description test " + i,
-                    new DateTime().ToUniversalTime().AddDays(i),
-                    new DateTime().ToUniversalTime().AddDays(1 + i),
+                    DateTime.Now.ToUniversalTime().AddDays(i),
+                    DateTime.Now.ToUniversalTime().AddDays(1 + i),
                     100
                 ));
             }

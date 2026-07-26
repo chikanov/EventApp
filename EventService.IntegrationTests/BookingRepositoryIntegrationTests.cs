@@ -1,10 +1,12 @@
 ﻿using EventApp.DataAccess;
 using EventApp.Models;
+using EventApp.Models.Enum;
 using EventApp.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Testcontainers.PostgreSql;
 
-namespace EventApp.EventServiceIntagrationTests
+namespace EventApp.EventServiceIntegrationTests
 {
     public class BookingRepositoryIntegrationTests : IAsyncLifetime
     {
@@ -23,19 +25,18 @@ namespace EventApp.EventServiceIntagrationTests
         private AppDbContext CreateContext()
         {
             var options = new DbContextOptionsBuilder<AppDbContext>()
-                .UseNpgsql(_postgres.GetConnectionString())
+                .UseNpgsql(_postgres.GetConnectionString()).ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning))
                 .Options;
 
             var context = new AppDbContext(options);
-            context.Database.EnsureCreated();
+
             return context;
         }
 
         private async Task ResetDatabaseAsync()
         {
             await using var context = CreateContext();
-            await context.Database.ExecuteSqlRawAsync(
-                "TRUNCATE TABLE events, bookings RESTART IDENTITY CASCADE");
+            context.Database.Migrate();
         }
 
         [Fact]
@@ -113,6 +114,83 @@ namespace EventApp.EventServiceIntagrationTests
             Assert.Equal(newBooking.Id, savedBooking.Id);
         }
 
+        [Fact]
+
+        public async Task GetPendingAsync_ReturnBokingWithPendingStatus()
+        {
+            await ResetDatabaseAsync();
+            await using var context = CreateContext();
+            var token = new CancellationToken();
+            var @event = CreateEventForTest();
+
+            var eventRrepository = new EventRepository(context);
+            await eventRrepository.AddAsync(@event, token);
+
+            var bookingRepository = new BookingRepository(context);
+            var eventId = context.Events.First().Id;
+            var newBooking1 = Booking.CreatePending(eventId);
+            await bookingRepository.AddAsync(newBooking1, token);
+            var newBooking2 = Booking.CreatePending(eventId);
+            await bookingRepository.AddAsync(newBooking2, token);
+
+            await using var verifyContext = CreateContext();
+            var savedBookingRepository = new BookingRepository(verifyContext);
+            var bookingListWithPendingStatus = await savedBookingRepository.GetPendingAsync(token);
+
+            Assert.Equal(2, bookingListWithPendingStatus.Count);
+        }
+
+        [Fact]
+        public async Task AnyAsync_ReturnNotNullBooking()
+        {
+            await ResetDatabaseAsync();
+            await using var context = CreateContext();
+            var token = new CancellationToken();
+            var @event = CreateEventForTest();
+
+            var eventRrepository = new EventRepository(context);
+            await eventRrepository.AddAsync(@event, token);
+
+            var bookingRepository = new BookingRepository(context);
+            var eventId = context.Events.First().Id;
+            var newBooking = Booking.CreatePending(eventId);
+            await bookingRepository.AddAsync(newBooking, token);
+
+            await using var verifyContext = CreateContext();
+            var savedBookingRepository = new BookingRepository(verifyContext);
+            var savedBooking = await savedBookingRepository.AnyAsync(token);
+
+            Assert.NotNull(savedBooking);
+        }
+        [Fact]
+        public async Task SaveChangesAsync_CorrectUpdateBookingStatus()
+        {
+            await ResetDatabaseAsync();
+            await using var context = CreateContext();
+            var token = new CancellationToken();
+            var @event = CreateEventForTest();
+
+            var eventRrepository = new EventRepository(context);
+            await eventRrepository.AddAsync(@event, token);
+
+            var bookingRepository = new BookingRepository(context);
+            var eventId = context.Events.First().Id;
+            var newBooking = Booking.CreatePending(eventId);
+            await bookingRepository.AddAsync(newBooking, token);
+
+            await using var actContext = CreateContext();
+            var savedBookingRepository = new BookingRepository(actContext);
+            var savedBooking = await savedBookingRepository.GetByIdAsync(newBooking.Id, token);
+            savedBooking?.Status = BookingStatus.Rejected;
+            await savedBookingRepository.SaveChangesAsync(token);
+
+            await using var verifyContext = CreateContext();
+            var verifyBookingRepository = new BookingRepository(verifyContext);
+            var verifyBooking = await verifyBookingRepository.GetByIdAsync(newBooking.Id, token);
+
+            Assert.Equal(BookingStatus.Rejected, verifyBooking?.Status);
+        }
+
         public Event CreateEventForTest()
         {
             return Event.Create
@@ -120,8 +198,8 @@ namespace EventApp.EventServiceIntagrationTests
                 1,
                 "Test event title",
                 "Description test 777",
-                new DateTime().ToUniversalTime(),
-                new DateTime().ToUniversalTime().AddDays(1),
+                DateTime.Now.ToUniversalTime(),
+                DateTime.Now.ToUniversalTime().AddDays(1),
                 100
             );
         }
