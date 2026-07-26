@@ -132,12 +132,14 @@ namespace EventApp.EventServiceIntegrationTests
             await bookingRepository.AddAsync(newBooking1, token);
             var newBooking2 = Booking.CreatePending(eventId);
             await bookingRepository.AddAsync(newBooking2, token);
+            newBooking2.Status = BookingStatus.Rejected;
+            await bookingRepository.SaveChangesAsync(token);
 
             await using var verifyContext = CreateContext();
             var savedBookingRepository = new BookingRepository(verifyContext);
             var bookingListWithPendingStatus = await savedBookingRepository.GetPendingAsync(token);
 
-            Assert.Equal(2, bookingListWithPendingStatus.Count);
+            Assert.Equal(1, bookingListWithPendingStatus.Count);
         }
 
         [Fact]
