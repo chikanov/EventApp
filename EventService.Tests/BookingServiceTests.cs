@@ -1,10 +1,11 @@
-﻿using EventApp.CustomExceptions;
-using EventApp.DataAccess;
-using EventApp.Interfaces;
-using EventApp.Models.DTO;
-using EventApp.Models.Enum;
-using EventApp.Repositories;
-using EventApp.Services;
+﻿using EventService.Application.Abstractions.Persistence.Repositories;
+using EventService.Application.Abstractions.Services;
+using EventService.Application.DTOs;
+using EventService.Application.Services;
+using EventService.Domain.CustomExceptions;
+using EventService.Domain.Models.Enum;
+using EventService.Infrastructure.Persistence.DataAccess;
+using EventService.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Concurrent;
@@ -27,7 +28,7 @@ namespace EventApp.EventServiceTests
                 options.UseInMemoryDatabase(dbName));
             services.AddScoped<IEventRepository, EventRepository>();
             services.AddScoped<IBookingRepository, BookingRepository>();
-            services.AddScoped<IEventService, EventApp.Services.EventService>();
+            services.AddScoped<IEventService, EventService.Application.Services.EventService>();
             services.AddScoped<IBookingService, BookingService>();
 
             _serviceProvider = services.BuildServiceProvider();

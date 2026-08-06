@@ -1,7 +1,6 @@
-﻿using EventApp.DataAccess;
-using EventApp.Models;
-using EventApp.Repositories;
-using EventService.Domain.Entities;
+﻿using EventService.Domain.Entities;
+using EventService.Infrastructure.Persistence.DataAccess;
+using EventService.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Testcontainers.PostgreSql;

@@ -1,9 +1,9 @@
-﻿using EventApp.CustomExceptions;
-using EventApp.DataAccess;
-using EventApp.Interfaces;
-using EventApp.Models.DTO;
-using EventApp.Repositories;
-using EventApp.Services;
+﻿using EventService.Application.Abstractions.Persistence.Repositories;
+using EventService.Application.Abstractions.Services;
+using EventService.Application.DTOs;
+using EventService.Domain.CustomExceptions;
+using EventService.Infrastructure.Persistence.DataAccess;
+using EventService.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit.v3.Priority;
@@ -23,7 +23,7 @@ namespace EventApp.EventServiceTests
             services.AddDbContext<AppDbContext>(options =>
                 options.UseInMemoryDatabase(dbName));
             services.AddScoped<IEventRepository, EventRepository>();
-            services.AddScoped<IEventService, EventApp.Services.EventService>();
+            services.AddScoped<IEventService, EventService.Application.Services.EventService>();
 
             _serviceProvider = services.BuildServiceProvider();
             _scope = _serviceProvider.CreateScope();
