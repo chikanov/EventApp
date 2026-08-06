@@ -4,7 +4,7 @@ using EventService.Application.DTOs;
 using EventService.Domain.CustomExceptions;
 using EventService.Domain.Entities;
 
-namespace EventApp.Services
+namespace EventService.Application.Services
 {
     /// <summary>
     /// EventService
