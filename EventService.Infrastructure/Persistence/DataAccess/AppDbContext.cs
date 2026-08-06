@@ -1,7 +1,7 @@
-﻿using EventApp.Models;
+﻿using EventService.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace EventApp.DataAccess
+namespace EventService.Infrastructure.Persistence.DataAccess
 {
     public class AppDbContext : DbContext
     {

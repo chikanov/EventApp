@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace EventService.Application.BackgroundServices
 {
-    internal sealed class BookingBackgroundService : BackgroundService
+    public class BookingBackgroundService : BackgroundService
     {
         private static readonly TimeSpan PollingInterval = TimeSpan.FromSeconds(5);
         private static readonly TimeSpan ProcessingDelay = TimeSpan.FromSeconds(2);

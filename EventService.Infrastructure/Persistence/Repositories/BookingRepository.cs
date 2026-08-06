@@ -1,10 +1,10 @@
-﻿using EventApp.DataAccess;
-using EventApp.Interfaces;
-using EventApp.Models;
-using EventApp.Models.Enum;
+﻿using EventService.Application.Abstractions.Persistence.Repositories;
+using EventService.Domain.Entities;
+using EventService.Domain.Models.Enum;
+using EventService.Infrastructure.Persistence.DataAccess;
 using Microsoft.EntityFrameworkCore;
 
-namespace EventApp.Repositories
+namespace EventService.Infrastructure.Persistence.Repositories
 {
     public class BookingRepository : IBookingRepository
     {

@@ -1,8 +1,8 @@
-﻿using EventApp.Models;
+﻿using EventService.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace EventApp.DataAccess.Configurations
+namespace EventService.Infrastructure.Persistence.DataAccess.Configurations
 {
     public class BookingConfiguration : IEntityTypeConfiguration<Booking>
     {
