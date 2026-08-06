@@ -1,9 +1,9 @@
-﻿using EventApp.Interfaces;
-using EventApp.Models;
-using EventApp.Models.DTO;
+﻿using EventService.Application.Abstractions.Services;
+using EventService.Application.DTOs;
+using EventService.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EventApp.Controllers
+namespace EventService.App.Controllers
 {
     /// EventsController
     [ApiController]
