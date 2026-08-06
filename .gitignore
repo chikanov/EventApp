@@ -1,11 +1,14 @@
 /obj
 /EventService.App/obj
 /EventService.Tests/obj
+/EventService.IntegrationTests/obj
 
 /bin
 /EventService.App/bin
 /EventService.Tests/bin
+/EventService.IntegrationTests/bin
 
 /.vs
 /EventService.App/.vs
 /EventService.Tests/.vs
+/EventService.IntegrationTests/.vs

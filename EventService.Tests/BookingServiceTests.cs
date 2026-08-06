@@ -2,13 +2,15 @@
 using EventApp.DataAccess;
 using EventApp.Interfaces;
 using EventApp.Models.DTO;
-using EventApp.Models.Models.Enum;
+using EventApp.Models.Enum;
+using EventApp.Repositories;
+using EventApp.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Concurrent;
 using Xunit.v3.Priority;
 
-namespace EventApp.Services
+namespace EventApp.EventServiceTests
 {
     [TestCaseOrderer(typeof(PriorityOrderer))]
     public class BookingServiceTests : IDisposable
@@ -23,7 +25,9 @@ namespace EventApp.Services
             var services = new ServiceCollection();
             services.AddDbContext<AppDbContext>(options =>
                 options.UseInMemoryDatabase(dbName));
-            services.AddScoped<IEventService, EventService>();
+            services.AddScoped<IEventRepository, EventRepository>();
+            services.AddScoped<IBookingRepository, BookingRepository>();
+            services.AddScoped<IEventService, EventApp.Services.EventService>();
             services.AddScoped<IBookingService, BookingService>();
 
             _serviceProvider = services.BuildServiceProvider();

@@ -1,4 +1,4 @@
-﻿using EventApp.Models.Models.Enum;
+﻿using EventApp.Models.Enum;
 using EventApp.CustomExceptions;
 
 namespace EventApp.Models

@@ -2,6 +2,7 @@ using EventApp.BackgroundServices;
 using EventApp.DataAccess;
 using EventApp.Interfaces;
 using EventApp.Middleware;
+using EventApp.Repositories;
 using EventApp.Services;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
@@ -24,6 +25,8 @@ builder.Services.AddOpenApi();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+builder.Services.AddScoped<IEventRepository, EventRepository>();
+builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IBookingService, BookingService>();
 
@@ -41,7 +44,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.EnsureCreated();
+    db.Database.Migrate();
 }
 app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 
