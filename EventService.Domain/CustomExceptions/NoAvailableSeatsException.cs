@@ -1,4 +1,4 @@
-﻿namespace EventApp.CustomExceptions
+﻿namespace EventService.Domain.CustomExceptions
 {
     public class NoAvailableSeatsException : Exception
     {

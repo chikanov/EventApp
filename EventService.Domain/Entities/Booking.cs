@@ -1,7 +1,7 @@
 ﻿using EventApp.Models.Enum;
 using EventApp.CustomExceptions;
 
-namespace EventApp.Models
+namespace EventService.Domain.Entities
 {
     public class Booking
     {

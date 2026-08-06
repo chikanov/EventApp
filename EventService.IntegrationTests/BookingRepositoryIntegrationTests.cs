@@ -2,6 +2,7 @@
 using EventApp.Models;
 using EventApp.Models.Enum;
 using EventApp.Repositories;
+using EventService.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Testcontainers.PostgreSql;

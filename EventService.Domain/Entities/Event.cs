@@ -1,5 +1,4 @@
-﻿
-namespace EventApp.Models
+﻿namespace EventService.Domain.Entities
 {
     /// <summary>
     /// Event

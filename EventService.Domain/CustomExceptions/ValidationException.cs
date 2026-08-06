@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-
-namespace EventApp.CustomExceptions
+﻿namespace EventService.Domain.CustomExceptions
 {
     public class ValidationException : Exception
     {
@@ -18,16 +16,5 @@ namespace EventApp.CustomExceptions
                 { field, new[] { error } }
             };
         }
-
-        public ValidationProblemDetails ToProblemDetails()
-            => new ValidationProblemDetails(Errors.ToDictionary(
-                kvp => kvp.Key,
-                kvp => kvp.Value.ToArray()))
-            {
-                Status = StatusCodes.Status400BadRequest,
-                Title = "Validation Failed",
-                Detail = "One or more validation errors occurred.",
-                Type = "https://tools.ietf.org/html/rfc9110#section-15.5.1"
-            };
     }
 }
