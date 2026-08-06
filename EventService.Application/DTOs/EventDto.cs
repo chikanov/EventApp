@@ -1,15 +1,18 @@
-﻿using EventApp.Helper;
+﻿using EventService.Domain.Helper;
 using System.ComponentModel.DataAnnotations;
 
-namespace EventApp.Models.DTO
+namespace EventService.Application.DTOs
 {
-    public class CreateEventDto
+    /// <summary>
+    /// EventDto
+    /// </summary>
+    public class EventDto
     {
         /// Title
         [Required]
         [StringLength(50, MinimumLength = 2,
             ErrorMessage = "The title should be between 2 and 50 characters long.")]
-        public string Title { get; set; } = string.Empty;
+        public string Title { get; set; }= string.Empty;
         /// Description
         [StringLength(1000, MinimumLength = 2,
             ErrorMessage = "The description should be between 2 and 1000 characters long.")]
@@ -25,5 +28,6 @@ namespace EventApp.Models.DTO
         public DateTime? EndAt { get; set; }
         [Required]
         public int TotalSeats { get; set; }
+        public int AvailableSeats { get; set; }
     }
 }

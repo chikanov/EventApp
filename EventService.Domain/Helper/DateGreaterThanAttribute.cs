@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace EventApp.Helper
+namespace EventService.Domain.Helper
 {
     /// DateGreaterThanAttribute
     [AttributeUsage(AttributeTargets.Property)]

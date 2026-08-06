@@ -1,4 +1,4 @@
-﻿namespace EventApp.Models.Enum
+﻿namespace EventService.Domain.Models.Enum
 {
     public enum BookingStatus
     {

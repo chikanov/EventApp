@@ -1,7 +1,7 @@
-﻿using EventApp.Models;
-using EventApp.Models.DTO;
+﻿using EventService.Application.DTOs;
+using EventService.Domain.Entities;
 
-namespace EventApp.Interfaces
+namespace EventService.Application.Abstractions.Services
 {
     /// <summary>
     /// IEventService

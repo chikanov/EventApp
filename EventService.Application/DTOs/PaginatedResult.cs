@@ -1,4 +1,6 @@
-﻿namespace EventApp.Models.DTO
+﻿using EventService.Domain.Entities;
+
+namespace EventService.Application.DTOs
 {
     public class PaginatedResult
     {

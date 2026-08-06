@@ -1,6 +1,6 @@
-﻿using EventApp.Models;
+﻿using EventService.Domain.Entities;
 
-namespace EventApp.Interfaces
+namespace EventService.Application.Abstractions.Services
 {
     public interface IBookingService
     {

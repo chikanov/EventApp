@@ -1,5 +1,5 @@
-﻿using EventApp.Models.Enum;
-using EventApp.CustomExceptions;
+﻿using EventService.Domain.Models.Enum;
+using EventService.Domain.CustomExceptions;
 
 namespace EventService.Domain.Entities
 {
