@@ -1,7 +1,10 @@
-﻿using EventApp.Interfaces;
-using EventApp.Models.Enum;
+﻿using EventService.Application.Abstractions.Persistence.Repositories;
+using EventService.Domain.Models.Enum;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
-namespace EventApp.BackgroundServices
+namespace EventService.Application.BackgroundServices
 {
     internal sealed class BookingBackgroundService : BackgroundService
     {

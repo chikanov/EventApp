@@ -1,7 +1,8 @@
-﻿using EventApp.CustomExceptions;
-using EventApp.Interfaces;
-using EventApp.Models;
-using EventApp.Models.DTO;
+﻿using EventService.Application.Abstractions.Persistence.Repositories;
+using EventService.Application.Abstractions.Services;
+using EventService.Application.DTOs;
+using EventService.Domain.CustomExceptions;
+using EventService.Domain.Entities;
 
 namespace EventApp.Services
 {

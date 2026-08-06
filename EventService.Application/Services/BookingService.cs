@@ -1,8 +1,9 @@
-﻿using EventApp.CustomExceptions;
-using EventApp.Interfaces;
-using EventApp.Models;
+﻿using EventService.Application.Abstractions.Persistence.Repositories;
+using EventService.Application.Abstractions.Services;
+using EventService.Domain.CustomExceptions;
+using EventService.Domain.Entities;
 
-namespace EventApp.Services
+namespace EventService.Application.Services
 {
     public class BookingService : IBookingService
     {
