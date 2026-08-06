@@ -2,13 +2,22 @@
 /EventService.App/obj
 /EventService.Tests/obj
 /EventService.IntegrationTests/obj
+/EventService.Domain/obj
+/EventService.Application/obj
+/EventService.Infrastructure/obj
 
 /bin
 /EventService.App/bin
 /EventService.Tests/bin
 /EventService.IntegrationTests/bin
+/EventService.Domain/bin
+/EventService.Application/bin
+/EventService.Infrastructure/bin
 
 /.vs
 /EventService.App/.vs
 /EventService.Tests/.vs
 /EventService.IntegrationTests/.vs
+/EventService.Domain/.vs
+/EventService.Application/.vs
+/EventService.Infrastructure/.vs

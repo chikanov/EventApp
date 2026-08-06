@@ -4,6 +4,9 @@
     <File Path="docker-compose.yml" />
     <File Path="README.md" />
     <Project Path="EventService.App/EventService.App.csproj" />
+    <Project Path="EventService.Application/EventService.Application.csproj" Id="05ae0aff-1770-4cd9-b67e-3620710d97d3" />
+    <Project Path="EventService.Domain/EventService.Domain.csproj" Id="398580f6-1f07-48e9-a867-fa257083acfd" />
+    <Project Path="EventService.Infrastructure/EventService.Infrastructure.csproj" Id="e3642eff-390b-4144-b68a-3e678b47a7a2" />
     <Project Path="EventService.IntegrationTests/EventService.IntegrationTests.csproj" Id="b229825e-bf57-46c9-80ef-84cf1db7f25c" />
     <Project Path="EventService.Tests/EventService.Tests.csproj" Id="c96579e5-65b8-4592-b0bc-aed840a456bc" />
   </Folder>

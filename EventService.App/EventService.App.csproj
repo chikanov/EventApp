@@ -20,4 +20,9 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\EventService.Application\EventService.Application.csproj" />
+    <ProjectReference Include="..\EventService.Infrastructure\EventService.Infrastructure.csproj" />
+  </ItemGroup>
+
 </Project>
