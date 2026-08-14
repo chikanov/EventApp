@@ -1,8 +1,8 @@
-﻿using EventApp.Interfaces;
-using EventApp.Models;
+﻿using EventService.Application.Abstractions.Services;
+using EventService.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EventApp.Controllers
+namespace EventService.App.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
@@ -10,24 +10,20 @@ namespace EventApp.Controllers
     {
         private readonly IBookingService _bookingService;
 
-        public BookingsController(IBookingService bookingService, IConfiguration config)
+        public BookingsController(IBookingService bookingService)
         {
             _bookingService = bookingService;
         }
-        
+
         /// <summary>
         /// GET: Get Booking by id.
         /// </summary>
         /// <param name="id">Booking guid Id</param>
         /// <returns>Return Booking</returns>
         [HttpGet("{id}")]
-        public async Task<ActionResult<Booking>> GetBookingByIdAsync([FromRoute] Guid id,CancellationToken cancellationToken)
+        public async Task<ActionResult<Booking>> GetBookingByIdAsync([FromRoute] Guid id, CancellationToken cancellationToken)
         {
             var booking = await _bookingService.GetBookingByIdAsync(id, cancellationToken);
-            if (booking == null)
-            {
-                return NotFound();
-            }
 
             return Ok(booking);
         }

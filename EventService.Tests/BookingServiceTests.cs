@@ -1,10 +1,12 @@
-﻿using EventApp.CustomExceptions;
-using EventApp.DataAccess;
-using EventApp.Interfaces;
-using EventApp.Models.DTO;
-using EventApp.Models.Enum;
-using EventApp.Repositories;
-using EventApp.Services;
+﻿using EventService.Application.Abstractions.Persistence.Repositories;
+using EventService.Application.Abstractions.Services;
+using EventService.Application.DTOs;
+using EventService.Application.Services;
+using EventService.Domain.CustomExceptions;
+using EventService.Domain.Models.Enum;
+using EventService.Infrastructure;
+using EventService.Infrastructure.Persistence.DataAccess;
+using EventService.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Concurrent;
@@ -27,7 +29,7 @@ namespace EventApp.EventServiceTests
                 options.UseInMemoryDatabase(dbName));
             services.AddScoped<IEventRepository, EventRepository>();
             services.AddScoped<IBookingRepository, BookingRepository>();
-            services.AddScoped<IEventService, EventApp.Services.EventService>();
+            services.AddScoped<IEventService, EventService.Application.Services.EventService>();
             services.AddScoped<IBookingService, BookingService>();
 
             _serviceProvider = services.BuildServiceProvider();
@@ -176,7 +178,8 @@ namespace EventApp.EventServiceTests
             var expectedEvent = await _eventService.GetByIdAsync(expectedEventId, token);
             expectedEvent!.TotalSeats = expectedTotalSeats;
             expectedEvent.AvailableSeats = expectedTotalSeats;
-            await _eventService.UpdateEventAsync(expectedEventId, expectedEvent, token);
+            var eventDto = ObjectMapperExtensions.MapEventToEventDto(expectedEvent);
+            await _eventService.UpdateEventAsync(expectedEventId, eventDto, token);
 
             var firstBooking = await _bookingService.CreateBookingAsync(expectedEventId, token);
             var secondBooking = await _bookingService.CreateBookingAsync(expectedEventId, token);
@@ -200,7 +203,8 @@ namespace EventApp.EventServiceTests
             var expectedEvent = await _eventService.GetByIdAsync(expectedEventId, token);
             expectedEvent!.TotalSeats = expectedTotalSeats;
             expectedEvent.AvailableSeats = expectedTotalSeats;
-            await _eventService.UpdateEventAsync(expectedEventId, expectedEvent, token);
+            var eventDto = ObjectMapperExtensions.MapEventToEventDto(expectedEvent);
+            await _eventService.UpdateEventAsync(expectedEventId, eventDto, token);
 
             var firstBooking = await _bookingService.CreateBookingAsync(expectedEventId, token);
 
@@ -285,7 +289,8 @@ namespace EventApp.EventServiceTests
             var expectedEvent = await _eventService.GetByIdAsync(expectedEventId, token);
             expectedEvent!.TotalSeats = expectedSeats;
             expectedEvent.AvailableSeats = expectedSeats;
-            await _eventService.UpdateEventAsync(expectedEventId, expectedEvent, token);
+            var eventDto = ObjectMapperExtensions.MapEventToEventDto(expectedEvent);
+            await _eventService.UpdateEventAsync(expectedEventId, eventDto, token);
 
             var booking = await _bookingService.CreateBookingAsync(expectedEventId, token);
             booking.Confirm();
@@ -312,7 +317,8 @@ namespace EventApp.EventServiceTests
             var expectedEvent = await _eventService.GetByIdAsync(expectedEventId, token);
             expectedEvent!.TotalSeats = expectedSaccesfullBooking;
             expectedEvent.AvailableSeats = expectedSaccesfullBooking;
-            await _eventService.UpdateEventAsync(expectedEventId, expectedEvent, token);
+            var eventDto = ObjectMapperExtensions.MapEventToEventDto(expectedEvent);
+            await _eventService.UpdateEventAsync(expectedEventId, eventDto, token);
             var numbers = Enumerable.Range(0, 20).ToArray();
             var options = new ParallelOptions { MaxDegreeOfParallelism = 2 };
 
@@ -356,7 +362,8 @@ namespace EventApp.EventServiceTests
             var expectedEvent = await _eventService.GetByIdAsync(expectedEventId, token);
             expectedEvent!.TotalSeats = expectedSaccesfullBooking;
             expectedEvent.AvailableSeats = expectedSaccesfullBooking;
-            await _eventService.UpdateEventAsync(expectedEventId, expectedEvent, token);
+            var eventDto = ObjectMapperExtensions.MapEventToEventDto(expectedEvent);
+            await _eventService.UpdateEventAsync(expectedEventId, eventDto, token);
             var numbers = Enumerable.Range(0, 10).ToArray();
             var options = new ParallelOptions { MaxDegreeOfParallelism = 5 };
             var cuncuretBookingIdsBag = new ConcurrentBag<Guid>();
@@ -373,7 +380,7 @@ namespace EventApp.EventServiceTests
                         cuncuretBookingIdsBag.Add(newBooking.Id);
                     }
                 }
-                finally {  }
+                finally { }
             });
             var uniqueIdsCount = cuncuretBookingIdsBag.Distinct().Count();
 
@@ -383,7 +390,7 @@ namespace EventApp.EventServiceTests
         public async Task CreateEventsForTestsAsync()
         {
             var token = new CancellationToken();
-            var events = await _eventService.GetAllAsync(1,15,null, null, null, token);
+            var events = await _eventService.GetAllAsync(1, 15, null, null, null, token);
             var expectedEvents = new List<CreateEventDto>()
                 {
                     new CreateEventDto(){ Title = "Title1", Description = "Description1", StartAt = DateTime.Now, EndAt = DateTime.Now.AddDays(1), TotalSeats = 100},

@@ -2,7 +2,15 @@
 
 Event management Service.
 
+## Project structure
 
+    EventService.App - Presentation layer of the project. Provides the user (or the client application) with access to the implemented Use Case.
+    EventService.Application - Here, we define what enables the user to solve specific tasks.
+    EventService.Domain - This is the central layer, the core of the system. Here, the classes of business entities and the rules of business logic are defined.
+    EventService.Infrastructure - This layer defines the work with the infrastructure — the DBMS server, caching, and external dependencies. It is here that the repositories are defined.
+    EventService.IntegrationTests - Integration Tests EventRepository and BookingRepository.
+    EventService.Tests - Unit tests EventService and BookingService.
+    
 ## Run the app
 
     docker compose up -d

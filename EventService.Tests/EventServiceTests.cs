@@ -1,9 +1,9 @@
-﻿using EventApp.CustomExceptions;
-using EventApp.DataAccess;
-using EventApp.Interfaces;
-using EventApp.Models.DTO;
-using EventApp.Repositories;
-using EventApp.Services;
+﻿using EventService.Application.Abstractions.Persistence.Repositories;
+using EventService.Application.Abstractions.Services;
+using EventService.Application.DTOs;
+using EventService.Domain.CustomExceptions;
+using EventService.Infrastructure.Persistence.DataAccess;
+using EventService.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit.v3.Priority;
@@ -23,7 +23,7 @@ namespace EventApp.EventServiceTests
             services.AddDbContext<AppDbContext>(options =>
                 options.UseInMemoryDatabase(dbName));
             services.AddScoped<IEventRepository, EventRepository>();
-            services.AddScoped<IEventService, EventApp.Services.EventService>();
+            services.AddScoped<IEventService, EventService.Application.Services.EventService>();
 
             _serviceProvider = services.BuildServiceProvider();
             _scope = _serviceProvider.CreateScope();
@@ -46,7 +46,8 @@ namespace EventApp.EventServiceTests
                 EndAt = new DateTime().AddDays(1),
                 StartAt = new DateTime(),
                 Title = "Test event title",
-                TotalSeats = 100 };
+                TotalSeats = 100
+            };
 
             var result = await _eventService.CreateEventAsync(eventDto, token);
 
@@ -82,12 +83,14 @@ namespace EventApp.EventServiceTests
             await CreateEventsForTestsAsync();
             var expextedEventId = 5;
             var token = new CancellationToken();
-            var eventDto = new EventDto() { 
-                Title = "Title5 - updated", 
-                Description = "Description5 - updated", 
-                StartAt = DateTime.Now.AddDays(3), 
+            var eventDto = new EventDto()
+            {
+                Title = "Title5 - updated",
+                Description = "Description5 - updated",
+                StartAt = DateTime.Now.AddDays(3),
                 EndAt = DateTime.Now.AddDays(4),
-                TotalSeats = 100 };
+                TotalSeats = 100
+            };
 
             var result = await _eventService.UpdateEventAsync(expextedEventId, eventDto, token);
 
@@ -134,7 +137,7 @@ namespace EventApp.EventServiceTests
             var notExpectedTitle = "Title6";
             var token = new CancellationToken();
 
-            var result = await _eventService.GetAllAsync(1, 10, expectedTitle,null, null, token);
+            var result = await _eventService.GetAllAsync(1, 10, expectedTitle, null, null, token);
 
             Assert.All(result!.ListEvents, events => expectedTitle.Contains(events.Title));
             Assert.DoesNotContain(notExpectedTitle, result.ListEvents.Select(events => events.Title));
@@ -144,8 +147,14 @@ namespace EventApp.EventServiceTests
         public async Task FiltringEventsTest_ReturnFiltredEventsByStartAtByEndAt()
         {
             var token = new CancellationToken();
-            var newEvent = new CreateEventDto() { Title = "Expected Event title", Description = "Expected Event description",
-                StartAt = DateTime.Now.AddDays(100), EndAt = DateTime.Now.AddDays(101), TotalSeats = 100 };
+            var newEvent = new CreateEventDto()
+            {
+                Title = "Expected Event title",
+                Description = "Expected Event description",
+                StartAt = DateTime.Now.AddDays(100),
+                EndAt = DateTime.Now.AddDays(101),
+                TotalSeats = 100
+            };
 
             var expectedEvent = await _eventService.CreateEventAsync(newEvent, token);
             var expectedStartAt = expectedEvent.StartAt;
@@ -221,7 +230,7 @@ namespace EventApp.EventServiceTests
             };
 
             var exception = await Assert
-        .ThrowsAsync<ValidationException>(async() => await _eventService.UpdateEventAsync(expectedId, eventDto, token));
+        .ThrowsAsync<ValidationException>(async () => await _eventService.UpdateEventAsync(expectedId, eventDto, token));
 
             Assert.Equal(expectedParamName, exception.Message);
         }
