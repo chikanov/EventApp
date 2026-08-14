@@ -6,11 +6,11 @@ namespace EventService.Domain.Entities
     public class Booking
     {
         public Guid Id { get; set; }
-        public int EventId {  get; set; }
+        public int EventId { get; set; }
         public BookingStatus Status { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? ProcessedAt { get; set; }
-        public Event Event {  get; set; }
+        public Event Event { get; set; }
 
         public void Confirm()
         {

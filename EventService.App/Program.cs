@@ -1,7 +1,8 @@
+using EventApp;
+using EventService.App.Middleware;
 using EventService.Application.Abstractions.Services;
 using EventService.Application.BackgroundServices;
 using EventService.Application.Services;
-using EventService.App.Middleware;
 using EventService.Infrastructure;
 using System.Reflection;
 
@@ -15,11 +16,7 @@ builder.Services.AddControllersWithViews()
     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
 );
 InfrastructureServiceCollectionExtensions.AddInfrastructureServices(builder);
-
-builder.Services.AddScoped<IEventService, EventService.Application.Services.EventService>();
-builder.Services.AddScoped<IBookingService, BookingService>();
-
-builder.Services.AddHostedService<BookingBackgroundService>();
+ApplicationServiceCollectionExtensionscs.AddInfrastructureServices(builder);
 
 builder.Services.AddSwaggerGen(options =>
 {

@@ -14,14 +14,14 @@ namespace EventService.App.Controllers
         {
             _bookingService = bookingService;
         }
-        
+
         /// <summary>
         /// GET: Get Booking by id.
         /// </summary>
         /// <param name="id">Booking guid Id</param>
         /// <returns>Return Booking</returns>
         [HttpGet("{id}")]
-        public async Task<ActionResult<Booking>> GetBookingByIdAsync([FromRoute] Guid id,CancellationToken cancellationToken)
+        public async Task<ActionResult<Booking>> GetBookingByIdAsync([FromRoute] Guid id, CancellationToken cancellationToken)
         {
             var booking = await _bookingService.GetBookingByIdAsync(id, cancellationToken);
 

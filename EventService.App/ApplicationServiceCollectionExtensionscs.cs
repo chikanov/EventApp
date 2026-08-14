@@ -1,14 +1,14 @@
 ﻿using EventService.Application.Abstractions.Persistence.Repositories;
+using EventService.Application.Abstractions.Services;
+using EventService.Application.BackgroundServices;
+using EventService.Application.Services;
 using EventService.Infrastructure.Persistence.DataAccess;
 using EventService.Infrastructure.Persistence.Repositories;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 
-namespace EventService.Infrastructure
+namespace EventApp
 {
-    public static class InfrastructureServiceCollectionExtensions
+    public static class ApplicationServiceCollectionExtensionscs
     {
         public static IServiceCollection AddInfrastructureServices(this WebApplicationBuilder builder)
         {
@@ -19,19 +19,12 @@ namespace EventService.Infrastructure
                 options.UseNpgsql(connectionString));
             AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
-            builder.Services.AddScoped<IEventRepository, EventRepository>();
-            builder.Services.AddScoped<IBookingRepository, BookingRepository>();
+            builder.Services.AddScoped<IEventService, EventService.Application.Services.EventService>();
+            builder.Services.AddScoped<IBookingService, BookingService>();
+
+            builder.Services.AddHostedService<BookingBackgroundService>();
 
             return builder.Services;
-        }
-
-        public static void DatabaseMigrate(WebApplication app)
-        {
-            using (var scope = app.Services.CreateScope())
-            {
-                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                db.Database.Migrate();
-            }
         }
     }
 }

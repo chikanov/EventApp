@@ -12,7 +12,7 @@ namespace EventService.Application.DTOs
         [Required]
         [StringLength(50, MinimumLength = 2,
             ErrorMessage = "The title should be between 2 and 50 characters long.")]
-        public string Title { get; set; }= string.Empty;
+        public string Title { get; set; } = string.Empty;
         /// Description
         [StringLength(1000, MinimumLength = 2,
             ErrorMessage = "The description should be between 2 and 1000 characters long.")]

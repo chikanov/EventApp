@@ -380,7 +380,7 @@ namespace EventApp.EventServiceTests
                         cuncuretBookingIdsBag.Add(newBooking.Id);
                     }
                 }
-                finally {  }
+                finally { }
             });
             var uniqueIdsCount = cuncuretBookingIdsBag.Distinct().Count();
 
@@ -390,7 +390,7 @@ namespace EventApp.EventServiceTests
         public async Task CreateEventsForTestsAsync()
         {
             var token = new CancellationToken();
-            var events = await _eventService.GetAllAsync(1,15,null, null, null, token);
+            var events = await _eventService.GetAllAsync(1, 15, null, null, null, token);
             var expectedEvents = new List<CreateEventDto>()
                 {
                     new CreateEventDto(){ Title = "Title1", Description = "Description1", StartAt = DateTime.Now, EndAt = DateTime.Now.AddDays(1), TotalSeats = 100},

@@ -40,7 +40,7 @@ namespace EventService.Application.BackgroundServices
                     var tasks = pendingBookingIds.Select(id =>
                         ProcessBookingAsync(id, stoppingToken));
 
-                    await Task.WhenAll(tasks); 
+                    await Task.WhenAll(tasks);
                 }
                 catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
                 {

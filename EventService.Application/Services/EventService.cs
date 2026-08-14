@@ -22,7 +22,7 @@ namespace EventService.Application.Services
             return await _eventRepository.GetAllAsync();
         }
         ///GetAll() 
-        public async Task<PaginatedResult> GetAllAsync(int page, int pageSize, string? Title = null, 
+        public async Task<PaginatedResult> GetAllAsync(int page, int pageSize, string? Title = null,
             DateTime? from = null, DateTime? to = null, CancellationToken cancellationToken = default)
         {
             return await GetEventListAsync(Title, from, to, page, pageSize, cancellationToken);
@@ -122,10 +122,11 @@ namespace EventService.Application.Services
 
             int totalPages = (int)Math.Ceiling((double)filteredCount / pageSize);
 
-            return new PaginatedResult() { 
+            return new PaginatedResult()
+            {
                 CountEventsOnPage = items.Count,
-                ListEvents = items, 
-                EventsCount = filteredCount, 
+                ListEvents = items,
+                EventsCount = filteredCount,
                 Page = page
             };
         }

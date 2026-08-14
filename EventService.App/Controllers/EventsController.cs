@@ -30,7 +30,7 @@ namespace EventService.App.Controllers
         /// <returns>Collection Events</returns>
         [HttpGet]
         public async Task<ActionResult<PaginatedResult>> GetAllEventsAsync([FromQuery] string? title = null,
-            [FromQuery]  DateTime? from = null, [FromQuery]  DateTime? to = null, 
+            [FromQuery] DateTime? from = null, [FromQuery] DateTime? to = null,
             [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             var result = await _eventService.GetAllAsync(page, pageSize, title, from, to);
@@ -46,7 +46,7 @@ namespace EventService.App.Controllers
         public async Task<ActionResult<Event>> GetEventByIdAsync([FromRoute] int id)
         {
             var ev = await _eventService.GetByIdAsync(id);
-            
+
             return Ok(ev);
         }
 
@@ -99,7 +99,7 @@ namespace EventService.App.Controllers
         [HttpPost]
         [Route("{id}/book")]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<Booking>> CreateBookingAsync([FromRoute]int id)
+        public async Task<ActionResult<Booking>> CreateBookingAsync([FromRoute] int id)
         {
             var newBooking = await _bookingService.CreateBookingAsync(id);
 

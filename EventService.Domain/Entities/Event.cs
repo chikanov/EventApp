@@ -17,7 +17,7 @@ namespace EventService.Domain.Entities
         public DateTime? StartAt { get; set; }
         /// EndAt
         public DateTime? EndAt { get; set; }
-        public int TotalSeats { get;  set; }
+        public int TotalSeats { get; set; }
         public int AvailableSeats { get; set; }
         public ICollection<Booking> Bookings { get; set; } = [];
         private Event() { Title = null!; }
@@ -58,8 +58,8 @@ namespace EventService.Domain.Entities
             int totalSeats,
             int availableSeats)
         {
-            if(availableSeats < 0 || availableSeats > totalSeats)
-                new ValidationException(nameof(availableSeats), 
+            if (availableSeats < 0 || availableSeats > totalSeats)
+                new ValidationException(nameof(availableSeats),
                     "The AvailableSeats parameter must not be less than 0 or greater than the TotalSeats parameter.");
             Title = title!;
             Description = description!;
