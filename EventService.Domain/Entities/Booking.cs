@@ -33,9 +33,6 @@ namespace EventService.Domain.Entities
         }
         public static Booking CreatePending(int eventId)
         {
-            if (eventId == null)
-                throw new ValidationException(nameof(EventId), "EventId cannot be empty");
-
             return new Booking(Guid.NewGuid(), eventId, BookingStatus.Pending, DateTime.UtcNow);
         }
     }

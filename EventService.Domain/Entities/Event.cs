@@ -37,7 +37,7 @@ namespace EventService.Domain.Entities
             EndAt = endAt;
             TotalSeats = totalSeats;
             AvailableSeats = totalSeats;
-            Description = description;
+            Description = description!;
         }
         public static Event Create(
             int id,

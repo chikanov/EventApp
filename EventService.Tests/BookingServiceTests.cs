@@ -409,7 +409,7 @@ namespace EventApp.EventServiceTests
                     new CreateEventDto(){ Title = "Title14", Description = "Description14", StartAt = DateTime.Now.AddDays(8), EndAt = DateTime.Now.AddDays(9), TotalSeats = 100},
                     new CreateEventDto(){ Title = "Title15", Description = "Description15", StartAt = DateTime.Now.AddDays(9), EndAt = DateTime.Now.AddDays(10), TotalSeats = 100}
                 };
-            if (!events.ListEvents.Any())
+            if (!events.ListEvents!.Any())
             {
                 foreach (var @event in expectedEvents)
                 {
@@ -418,7 +418,7 @@ namespace EventApp.EventServiceTests
             }
             else
             {
-                foreach (var ev in events.ListEvents)
+                foreach (var ev in events.ListEvents!)
                 {
                     await _eventService.DeleteEventAsync(ev.Id, token);
                 }

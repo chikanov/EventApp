@@ -94,7 +94,7 @@ namespace EventService.App.Controllers
         /// <summary>
         /// POST: Create new booking.
         /// </summary>
-        /// <param name="eventId">Event Id</param>
+        /// <param name="id">Event Id</param>
         /// <returns>Return Booking and link to booking in Headers</returns>
         [HttpPost]
         [Route("{id}/book")]

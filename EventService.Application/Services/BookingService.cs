@@ -66,7 +66,7 @@ namespace EventService.Application.Services
                 existBooking.Status = book.Status;
             }
             await _bookingRepository.SaveChangesAsync(cancellationToken);
-            return existBooking;
+            return existBooking!;
         }
 
         public async Task<List<Booking>> GetPendingAsync(CancellationToken cancellationToken = default)

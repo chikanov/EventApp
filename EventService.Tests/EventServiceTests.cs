@@ -125,8 +125,8 @@ namespace EventApp.EventServiceTests
 
             var result = await _eventService.GetAllAsync(1, 10, expectedTitle, expectedStartAt, expectedEndAt, token);
 
-            Assert.All(result!.ListEvents, events => expectedTitle.Contains(events.Title));
-            Assert.DoesNotContain(notExpectedTitle, result.ListEvents.Select(events => events.Title));
+            Assert.All(result!.ListEvents!, events => expectedTitle.Contains(events.Title));
+            Assert.DoesNotContain(notExpectedTitle, result.ListEvents!.Select(events => events.Title));
         }
 
         [Fact, Priority(6)]
@@ -139,8 +139,8 @@ namespace EventApp.EventServiceTests
 
             var result = await _eventService.GetAllAsync(1, 10, expectedTitle, null, null, token);
 
-            Assert.All(result!.ListEvents, events => expectedTitle.Contains(events.Title));
-            Assert.DoesNotContain(notExpectedTitle, result.ListEvents.Select(events => events.Title));
+            Assert.All(result!.ListEvents!, events => expectedTitle.Contains(events.Title));
+            Assert.DoesNotContain(notExpectedTitle, result.ListEvents!.Select(events => events.Title));
         }
 
         [Fact, Priority(7)]
@@ -177,8 +177,8 @@ namespace EventApp.EventServiceTests
 
             var result = await _eventService.GetAllAsync(expectedPageNumber, expectedPageCount, null, null, null, token);
 
-            Assert.Equal(expectedPageCount, result?.ListEvents.Count());
-            Assert.All(result!.ListEvents, events => expectedListEventsTitles.Contains(events.Title));
+            Assert.Equal(expectedPageCount, result?.ListEvents!.Count());
+            Assert.All(result!.ListEvents!, events => expectedListEventsTitles.Contains(events.Title));
         }
 
         [Fact, Priority(9)]
@@ -257,7 +257,7 @@ namespace EventApp.EventServiceTests
                     new CreateEventDto(){ Title = "Title14", Description = "Description14", StartAt = DateTime.Now.AddDays(8), EndAt = DateTime.Now.AddDays(9), TotalSeats = 100},
                     new CreateEventDto(){ Title = "Title15", Description = "Description15", StartAt = DateTime.Now.AddDays(9), EndAt = DateTime.Now.AddDays(10), TotalSeats = 100}
                 };
-            if (!events.ListEvents.Any())
+            if (!events.ListEvents!.Any())
             {
                 foreach (var @event in expectedEvents)
                 {
@@ -266,7 +266,7 @@ namespace EventApp.EventServiceTests
             }
             else
             {
-                foreach (var ev in events.ListEvents)
+                foreach (var ev in events.ListEvents!)
                 {
                     await _eventService.DeleteEventAsync(ev.Id, token);
                 }
