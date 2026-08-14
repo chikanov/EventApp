@@ -1,4 +1,6 @@
-﻿using EventService.Domain.Entities;
+﻿using EventService.Application.DTOs;
+using EventService.Domain.Entities;
+using EventService.Infrastructure;
 using EventService.Infrastructure.Persistence.DataAccess;
 using EventService.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -116,7 +118,8 @@ namespace EventApp.EventServiceIntegrationTests
                 .FirstOrDefaultAsync(b => b.Description == "Description test 777", cancellationToken: TestContext.Current.CancellationToken);
             var actRepository = new EventRepository(actContext);
             saved?.Description = "Description test 777 - updated";
-            await actRepository.UpdateAsync(saved!, token);
+            var eventDto = ObjectMapperExtensions.MapEventToEventDto(saved!);
+            await actRepository.UpdateAsync(eventDto!, saved!, token);
 
             await using var verifyContext = CreateContext();
             var updated = await verifyContext.Events

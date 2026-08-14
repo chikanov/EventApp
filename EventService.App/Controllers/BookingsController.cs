@@ -10,7 +10,7 @@ namespace EventService.App.Controllers
     {
         private readonly IBookingService _bookingService;
 
-        public BookingsController(IBookingService bookingService, IConfiguration config)
+        public BookingsController(IBookingService bookingService)
         {
             _bookingService = bookingService;
         }
@@ -24,10 +24,6 @@ namespace EventService.App.Controllers
         public async Task<ActionResult<Booking>> GetBookingByIdAsync([FromRoute] Guid id,CancellationToken cancellationToken)
         {
             var booking = await _bookingService.GetBookingByIdAsync(id, cancellationToken);
-            if (booking == null)
-            {
-                return NotFound();
-            }
 
             return Ok(booking);
         }

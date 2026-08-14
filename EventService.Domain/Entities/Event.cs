@@ -1,4 +1,6 @@
-﻿namespace EventService.Domain.Entities
+﻿using EventService.Domain.CustomExceptions;
+
+namespace EventService.Domain.Entities
 {
     /// <summary>
     /// Event
@@ -54,14 +56,17 @@
             DateTime? startAt,
             DateTime? endAt,
             int totalSeats,
-            int availebleSeats)
+            int availableSeats)
         {
+            if(availableSeats < 0 || availableSeats > totalSeats)
+                new ValidationException(nameof(availableSeats), 
+                    "The AvailableSeats parameter must not be less than 0 or greater than the TotalSeats parameter.");
             Title = title!;
             Description = description!;
             StartAt = startAt!.Value;
             EndAt = endAt!.Value;
             TotalSeats = totalSeats;
-            AvailableSeats = availebleSeats;
+            AvailableSeats = availableSeats;
         }
         public bool TryReserveSeats(int count = 1)
         {

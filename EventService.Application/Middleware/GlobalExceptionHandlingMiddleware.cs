@@ -1,5 +1,7 @@
 ﻿using EventService.Domain.CustomExceptions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace EventService.App.Middleware
 {

@@ -10,6 +10,8 @@ namespace EventService.Application.Abstractions.Services
     {
         /// Filtred collection Event GetAll
         Task<PaginatedResult> GetAllAsync(int page, int pageSize, string? title = null, DateTime? From = null, DateTime? to = null, CancellationToken cancellationToken = default);
+        /// Filtred read only collection Event GetAll
+        Task<IReadOnlyList<Event>> GetAllAsync(CancellationToken cancellationToken = default);
         /// Event? GetById
         Task<Event?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
         /// Event Add
@@ -18,7 +20,6 @@ namespace EventService.Application.Abstractions.Services
         Task<Event> UpdateEventAsync(int id, EventDto ev, CancellationToken cancellationToken = default);
         /// Event Delete
         Task<bool> DeleteEventAsync(int id, CancellationToken cancellationToken = default);
-        Task<Event> UpdateEventAsync(int id, Event ev, CancellationToken cancellationToken = default);
 
     }
 }

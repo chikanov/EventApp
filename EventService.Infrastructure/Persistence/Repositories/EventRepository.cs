@@ -41,12 +41,6 @@ namespace EventService.Infrastructure.Persistence.Repositories
             await _context.SaveChangesAsync(ct);
             return @event;
         }
-        public async Task<Event?> UpdateAsync(Event @event, CancellationToken ct = default)
-        {
-            @event.Update(@event.Title, @event.Description, @event.StartAt, @event.EndAt, @event.TotalSeats, @event.AvailableSeats);
-            await _context.SaveChangesAsync(ct);
-            return @event;
-        }
 
         public async Task<bool> AnyAsync(CancellationToken ct = default)
         {

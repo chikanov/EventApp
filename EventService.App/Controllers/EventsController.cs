@@ -46,10 +46,6 @@ namespace EventService.App.Controllers
         public async Task<ActionResult<Event>> GetEventByIdAsync([FromRoute] int id)
         {
             var ev = await _eventService.GetByIdAsync(id);
-            if (ev == null)
-            {
-                return NotFound();
-            }
             
             return Ok(ev);
         }
@@ -65,9 +61,9 @@ namespace EventService.App.Controllers
             {
                 return BadRequest(ModelState);
             }
-            await _eventService.CreateEventAsync(ev);
+            var createdEvent = await _eventService.CreateEventAsync(ev);
 
-            return Created();
+            return CreatedAtAction(nameof(GetEventByIdAsync), new { id = createdEvent.Id }, createdEvent);
         }
 
         /// <summary>
@@ -79,8 +75,6 @@ namespace EventService.App.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            if (await _eventService.GetByIdAsync(id) == null)
-                return NotFound(ev);
 
             var updatedEvent = await _eventService.UpdateEventAsync(id, ev);
             return Ok(updatedEvent);
@@ -93,9 +87,6 @@ namespace EventService.App.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<Event>> DeleteEventAsync([FromRoute] int id)
         {
-            if (await _eventService.GetByIdAsync(id) == null)
-                return NotFound();
-
             await _eventService.DeleteEventAsync(id);
             return NoContent();
         }
@@ -110,11 +101,6 @@ namespace EventService.App.Controllers
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
         public async Task<ActionResult<Booking>> CreateBookingAsync([FromRoute]int id)
         {
-            if (await _eventService.GetByIdAsync(id) == null)
-            {
-                return NotFound();
-            }
-
             var newBooking = await _bookingService.CreateBookingAsync(id);
 
             return Accepted($"/bookings/{newBooking.Id}", newBooking);

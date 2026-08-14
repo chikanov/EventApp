@@ -78,33 +78,6 @@ namespace EventService.Application.Services
             return existEvent;
         }
 
-        public async Task<Event> UpdateEventAsync(int id, Event ev, CancellationToken cancellationToken = default)
-        {
-            var existEvent = await _eventRepository.GetByIdAsync(id, cancellationToken);
-
-            if (existEvent == null)
-            {
-                throw new NotFoundException($"Event with Id = {id} does not exist.");
-            }
-
-            if (existEvent.StartAt > existEvent.EndAt)
-            {
-                throw new ValidationException(nameof(existEvent.StartAt), "The end date must be greater than the start date.");
-            }
-
-            if (existEvent.TotalSeats <= 0)
-            {
-                throw new ValidationException(nameof(existEvent.TotalSeats), "Total seats value must be greater than zero.");
-            }
-
-            if (existEvent!= null)
-            {
-                existEvent = await _eventRepository.UpdateAsync(existEvent, cancellationToken);
-            }
-
-            return existEvent;
-        }
-
         /// Delete
         public async Task<bool> DeleteEventAsync(int id, CancellationToken cancellationToken = default)
         {
