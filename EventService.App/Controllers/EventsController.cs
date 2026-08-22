@@ -2,6 +2,7 @@
 using EventService.Application.DTOs;
 using EventService.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace EventService.App.Controllers
 {
@@ -12,11 +13,13 @@ namespace EventService.App.Controllers
     {
         private readonly IEventService _eventService;
         private readonly IBookingService _bookingService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         /// text
-        public EventsController(IEventService eventService, IBookingService bookingService)
+        public EventsController(IEventService eventService, IBookingService bookingService, IHttpContextAccessor httpContextAccessor)
         {
             _eventService = eventService;
             _bookingService = bookingService;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         /// <summary>
@@ -95,13 +98,18 @@ namespace EventService.App.Controllers
         /// POST: Create new booking.
         /// </summary>
         /// <param name="id">Event Id</param>
+        /// <param name="token">CancellationToken</param>
         /// <returns>Return Booking and link to booking in Headers</returns>
         [HttpPost]
         [Route("{id}/book")]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<Booking>> CreateBookingAsync([FromRoute] int id)
+        public async Task<ActionResult<Booking>> CreateBookingAsync([FromRoute] int id, CancellationToken token)
         {
-            var newBooking = await _bookingService.CreateBookingAsync(id);
+            var currentUser = _httpContextAccessor?.HttpContext?.User;
+            var userIdClaim = currentUser?.FindFirst(ClaimTypes.NameIdentifier);
+            var userId = userIdClaim?.Value;
+
+            var newBooking = await _bookingService.CreateBookingAsync(id, userId, token);
 
             return Accepted($"/bookings/{newBooking.Id}", newBooking);
         }

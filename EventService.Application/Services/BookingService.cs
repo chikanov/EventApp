@@ -15,7 +15,7 @@ namespace EventService.Application.Services
             _bookingRepository = bookingRepository;
             _eventRepository = eventRepository;
         }
-        public async Task<Booking> CreateBookingAsync(int eventId, CancellationToken cancellationToken = default)
+        public async Task<Booking> CreateBookingAsync(int eventId, Guid userId, CancellationToken cancellationToken = default)
         {
             await _processingSemaphore.WaitAsync(cancellationToken);
             try
@@ -30,7 +30,7 @@ namespace EventService.Application.Services
                     throw new NoAvailableSeatsException();
                 else
                 {
-                    var newBooking = Booking.CreatePending(eventId);
+                    var newBooking = Booking.CreatePending(eventId, userId);
 
                     await _bookingRepository.AddAsync(newBooking, cancellationToken);
 
