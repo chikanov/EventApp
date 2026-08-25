@@ -2,6 +2,7 @@
 using EventService.Application.DTOs;
 using EventService.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.JsonWebTokens;
 using System.Security.Claims;
 
 namespace EventService.App.Controllers
@@ -106,8 +107,8 @@ namespace EventService.App.Controllers
         public async Task<ActionResult<Booking>> CreateBookingAsync([FromRoute] int id, CancellationToken token)
         {
             var currentUser = _httpContextAccessor?.HttpContext?.User;
-            var userIdClaim = currentUser?.FindFirst(ClaimTypes.NameIdentifier);
-            var userId = Guid.NewGuid();
+            var userIdClaim = currentUser?.Claims?.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub);
+            var userId = Guid.Parse(userIdClaim!.Value);
 
             var newBooking = await _bookingService.CreateBookingAsync(id, userId, token);
 

@@ -1,8 +1,4 @@
-﻿using EventService.Domain.Entities.Enum;
-using Microsoft.IdentityModel.Tokens;
-using Newtonsoft.Json.Linq;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
+﻿using Microsoft.IdentityModel.Tokens;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -10,16 +6,10 @@ namespace EventService.App
 {
     public static class AuthenticationComponent
     {
-
         public static IServiceCollection AddAuthentication(this WebApplicationBuilder builder)
         {
-            var ValidIssuer = builder.Configuration.GetValue<string>("TokenValidationParameters: ValidIssuer")
-                ?? throw new InvalidOperationException("TokenValidationParameters 'ValidIssuer' not found.");
-            var ValidAudience = builder.Configuration.GetValue<string>("TokenValidationParameters: ValidAudience")
-                            ?? throw new InvalidOperationException("TokenValidationParameters 'ValidAudience' not found.");
-            var SecretKey = builder.Configuration.GetValue<string>("TokenValidationParameters: SecretKey")
-                            ?? throw new InvalidOperationException("TokenValidationParameters 'SecretKey' not found.");
-
+            var authenticationParams = GetAuthenticationParams(builder.Configuration);
+            
             builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = "JwtBearerScheme";
@@ -32,16 +22,16 @@ namespace EventService.App
                     RoleClaimType = "role",
                     NameClaimType = "login",
                     ValidateIssuer = true,
-                    ValidIssuer = ValidIssuer,
+                    ValidIssuer = authenticationParams["ValidIssuer"],
 
                     ValidateAudience = true,
-                    ValidAudience = ValidAudience,
+                    ValidAudience = authenticationParams["ValidAudience"],
 
                     ValidateLifetime = true,
 
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(
-                        Encoding.UTF8.GetBytes(SecretKey))
+                        Encoding.UTF8.GetBytes(authenticationParams["SecretKey"]))
                 };
             });
             return builder.Services;
@@ -68,6 +58,28 @@ namespace EventService.App
 
             storedHash = HashPassword(password); 
             return storedHash.Equals(storedHash);
+        }
+
+        public static IReadOnlyDictionary<string, string> GetAuthenticationParams(IConfiguration configuration)
+        {
+            var ValidIssuer = configuration.GetValue<string>("TokenValidationParameters: ValidIssuer")
+                ?? throw new InvalidOperationException("TokenValidationParameters 'ValidIssuer' not found.");
+            var ValidAudience = configuration.GetValue<string>("TokenValidationParameters: ValidAudience")
+                ?? throw new InvalidOperationException("TokenValidationParameters 'ValidAudience' not found.");
+            var SecretKey = configuration.GetValue<string>("TokenValidationParameters: SecretKey")
+                ?? throw new InvalidOperationException("TokenValidationParameters 'SecretKey' not found.");
+            var TokenLifeTimeMinutes = configuration.GetValue<int>("TokenValidationParameters:TokenLifeTimeMinutes");
+            if (TokenLifeTimeMinutes == null)
+            {
+                throw new InvalidOperationException("TokenValidationParameters 'TokenLifeTimeMinutes' not found.");
+            }
+            return new Dictionary<string, string>
+            {
+                { "ValidIssuer",  ValidIssuer},
+                { "ValidAudience",  ValidIssuer},
+                { "SecretKey",  ValidIssuer},
+                { "TokenLifeTimeMinutes",  TokenLifeTimeMinutes.ToString()},
+            }.AsReadOnly();
         }
     }
 }

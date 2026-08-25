@@ -17,52 +17,54 @@ namespace EventService.App.Controllers
     {
         private readonly IUserService _userService;
         private readonly IConfiguration _configuration;
-        private readonly IHttpContextAccessor _httpContextAccessor;
         /// text
-        public UsersController(IUserService userService, IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
+        public UsersController(IUserService userService, IConfiguration configuration)
         {
             _userService = userService;
             _configuration = configuration;
-            _httpContextAccessor = httpContextAccessor;
         }
 
         [HttpPost("login")]
         public async Task<ActionResult> Login([FromBody] string login, [FromBody] string password, CancellationToken cancellationToken)
         {
-            var currentUser = await _userService.GetByLogin(login);
-            if (currentUser == null || AuthenticationComponent.VerifyPassword(password, currentUser.Password))
+            try
+            {
+                var currentUser = await _userService.GetByLogin(login);
+                if (currentUser == null || AuthenticationComponent.VerifyPassword(password, currentUser.Password))
+                {
+                    return new UnauthorizedResult();
+                }
+
+                var claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.Name, login),
+                    new Claim(ClaimTypes.Role, currentUser.Role.ToString()),
+                    new Claim(JwtRegisteredClaimNames.Sub, currentUser.Id.ToString()),
+                    new Claim(JwtRegisteredClaimNames.Iat, new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString()),
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                };
+
+                var authenticationParams = AuthenticationComponent.GetAuthenticationParams(_configuration);
+
+                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(authenticationParams["secretKey"]));
+                var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+                var token = new JwtSecurityToken(
+                    issuer: authenticationParams["ValidIssuer"],
+                    audience: authenticationParams["validAudience"],
+                    claims: claims,
+                    expires: DateTime.Now.AddMinutes(int.Parse(authenticationParams["TokenLifeTimeMinutes"])),
+                    signingCredentials: creds
+                );
+
+                string accessToken = new JwtSecurityTokenHandler().WriteToken(token);
+
+                return Ok(new { Token = accessToken });
+            }
+            catch (Exception ex)
             {
                 return new UnauthorizedResult();
             }
-
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Name, login),
-                new Claim(ClaimTypes.Role, currentUser.Role.ToString()),
-                new Claim(JwtRegisteredClaimNames.Sub, currentUser.Id.ToString()),
-                new Claim(JwtRegisteredClaimNames.Iat, new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString()),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-            };
-
-            var secretKey = _configuration.GetValue<string>("TokenValidationParameters:SecretKey");
-            var validIssuer = _configuration.GetValue<string>("TokenValidationParameters:ValidIssuer");
-            var validAudience = _configuration.GetValue<string>("TokenValidationParameters:ValidAudience");
-            var TokenLifeTimeMinutes = _configuration.GetValue<int>("TokenValidationParameters:TokenLifeTimeMinutes");
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey!));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var token = new JwtSecurityToken(
-                issuer: validIssuer,
-                audience: validAudience,
-                claims: claims,
-                expires: DateTime.Now.AddMinutes(TokenLifeTimeMinutes),
-                signingCredentials: creds
-            );
-
-            string accessToken = new JwtSecurityTokenHandler().WriteToken(token);
-
-            return Ok(new { Token = accessToken });
         }
 
         /// <summary>
