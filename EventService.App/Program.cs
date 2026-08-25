@@ -1,9 +1,5 @@
-using EventApp;
+using EventService.App;
 using EventService.App.Middleware;
-using EventService.Application.Abstractions.Services;
-using EventService.Application.BackgroundServices;
-using EventService.Application.Services;
-using EventService.Infrastructure;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -43,6 +39,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 

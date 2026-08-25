@@ -1,12 +1,10 @@
-﻿using EventService.Application.Abstractions.Persistence.Repositories;
-using EventService.Application.Abstractions.Services;
+﻿using EventService.Application.Abstractions.Services;
 using EventService.Application.BackgroundServices;
 using EventService.Application.Services;
 using EventService.Infrastructure.Persistence.DataAccess;
-using EventService.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 
-namespace EventApp
+namespace EventService.App
 {
     public static class ApplicationServiceCollectionExtensionscs
     {

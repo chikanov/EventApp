@@ -1,4 +1,5 @@
 ﻿using EventService.Domain.Entities;
+using EventService.Domain.Entities.Enum;
 using System.ComponentModel.DataAnnotations;
 
 namespace EventService.Application.DTOs
@@ -17,7 +18,7 @@ namespace EventService.Application.DTOs
         public string Password { get; set; }
         // Role
         [Required]
-        public string Role { get; set; }
+        public UserRoles Role { get; set; }
         public ICollection<Booking> Bookings { get; set; } = [];
     }
 }

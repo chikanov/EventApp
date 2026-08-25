@@ -69,7 +69,7 @@ namespace EventService.Domain.Entities
             AvailableSeats = availableSeats;
         }
         public bool TryReserveSeats(int count = 1)
-        {
+        {   
             if ((AvailableSeats - count) < 0)
                 return false;
             else

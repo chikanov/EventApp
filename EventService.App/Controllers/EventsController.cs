@@ -107,7 +107,7 @@ namespace EventService.App.Controllers
         {
             var currentUser = _httpContextAccessor?.HttpContext?.User;
             var userIdClaim = currentUser?.FindFirst(ClaimTypes.NameIdentifier);
-            var userId = userIdClaim?.Value;
+            var userId = Guid.NewGuid();
 
             var newBooking = await _bookingService.CreateBookingAsync(id, userId, token);
 
