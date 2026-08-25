@@ -11,5 +11,6 @@ namespace EventService.Application.Abstractions.Persistence.Repositories
         Task<User?> UpdateAsync(UserDto dto, User user, CancellationToken ct = default);
         Task DeleteAsync(User user, CancellationToken ct = default);
         Task SaveChangesAsync(CancellationToken ct = default);
+        Task<User?> GetByLogin(string login, CancellationToken ct = default);
     }
 }

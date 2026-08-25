@@ -38,6 +38,11 @@ namespace EventService.Infrastructure.Persistence.Repositories
             return await _context.Users.FirstOrDefaultAsync(e => e.Id == id, ct);
         }
 
+        public async Task<User?> GetByLogin(string login, CancellationToken ct = default)
+        {
+            return await _context.Users.FirstOrDefaultAsync(u => u.Login == login, ct);
+        }
+
         public async Task SaveChangesAsync(CancellationToken ct = default)
         {
             await _context.SaveChangesAsync(ct);

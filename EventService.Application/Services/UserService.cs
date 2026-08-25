@@ -33,7 +33,7 @@ namespace EventService.Application.Services
             return true;
         }
 
-        public async Task<List<User>> GetAllAsync(string login, UserRoles role, CancellationToken cancellationToken = default)
+        public async Task<List<User>> GetAllAsync(string? login, UserRoles? role, CancellationToken cancellationToken = default)
         {
             var users = await _userRepo.GetAllAsync();
 
@@ -56,6 +56,11 @@ namespace EventService.Application.Services
             return user;
         }
 
+        public async Task<User> GetByLogin(string login, CancellationToken cancellationToken = default)
+        {
+            return await _userRepo.GetByLogin(login, cancellationToken);
+        }
+
         public async Task<User> UpdateUserAsync(Guid id, UserDto user, CancellationToken cancellationToken = default)
         {
             var existUser = await _userRepo.GetByIdAsync(id);
@@ -69,6 +74,5 @@ namespace EventService.Application.Services
 
             return updatedUser!;
         }
-
     }
 }
