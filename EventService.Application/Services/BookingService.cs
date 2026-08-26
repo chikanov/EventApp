@@ -52,12 +52,17 @@ namespace EventService.Application.Services
             }
             finally { _processingSemaphore.Release(); }
         }
-        public async Task<Booking?> GetBookingByIdAsync(Guid bookingId, CancellationToken cancellationToken = default)
+        public async Task<Booking?> GetBookingByIdAsync(Guid bookingId, Guid userId, CancellationToken cancellationToken = default)
         {
             var book = await _bookingRepository.GetByIdAsync(bookingId, cancellationToken);
+            var curUser = await _userRepository.GetByIdAsync(userId, cancellationToken);
             if (book == null)
             {
                 throw new NotFoundException($"Booking with Id = {bookingId} does not exist.");
+            }
+            if (curUser == null)
+            {
+                throw new NotFoundException($"User with Id = {userId} does not exist.");
             }
             return book;
         }

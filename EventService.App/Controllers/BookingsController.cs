@@ -1,6 +1,7 @@
 ﻿using EventService.Application.Abstractions.Services;
 using EventService.Domain.CustomExceptions;
 using EventService.Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
 
@@ -24,22 +25,22 @@ namespace EventService.App.Controllers
         /// </summary>
         /// <param name="id">Booking guid Id</param>
         /// <returns>Return Booking</returns>
+        [Authorize(Roles = "User,Admin")]
         [HttpGet("{id}")]
         public async Task<ActionResult<Booking>> GetBookingByIdAsync([FromRoute] Guid id, CancellationToken cancellationToken)
         {
-            var booking = await _bookingService.GetBookingByIdAsync(id, cancellationToken);
+            var userId = GetUserId();
+            var booking = await _bookingService.GetBookingByIdAsync(id, userId, cancellationToken);
 
             return Ok(booking);
         }
-
+        [Authorize(Roles = "User,Admin")]
         [HttpPost("{id}")]
         public async Task<ActionResult<Booking>> CancellationBooking([FromRoute] Guid id, CancellationToken cancellationToken)
         {
             try
             {
-                var currentUser = _httpContextAccessor?.HttpContext?.User;
-                var userIdClaim = currentUser?.Claims?.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub);
-                var userId = Guid.Parse(userIdClaim!.Value);
+                var userId = GetUserId();
 
                 var cancellationBookig = await _bookingService.CancellationBookingAsync(id, userId, cancellationToken);
                 return Ok(cancellationBookig);
@@ -52,6 +53,14 @@ namespace EventService.App.Controllers
             {
                 return NotFound(ex.Message);
             }
+        }
+
+        public Guid GetUserId()
+        {
+            var currentUser = _httpContextAccessor?.HttpContext?.User;
+            var userIdClaim = currentUser?.Claims?.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub);
+            var userId = Guid.Parse(userIdClaim!.Value);
+            return userId;
         }
     }
 }

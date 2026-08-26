@@ -2,6 +2,7 @@
 using EventService.Application.DTOs;
 using EventService.Domain.CustomExceptions;
 using EventService.Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.JsonWebTokens;
 
@@ -32,6 +33,7 @@ namespace EventService.App.Controllers
         /// <param name="page">Number of page</param>
         /// <param name="pageSize">Page size</param>
         /// <returns>Collection Events</returns>
+        [AllowAnonymous]
         [HttpGet]
         public async Task<ActionResult<PaginatedResult>> GetAllEventsAsync([FromQuery] string? title = null,
             [FromQuery] DateTime? from = null, [FromQuery] DateTime? to = null,
@@ -46,6 +48,7 @@ namespace EventService.App.Controllers
         /// </summary>
         /// <param name="id">Id</param>
         /// <returns>Event event</returns>
+        [AllowAnonymous]
         [HttpGet("{id}")]
         public async Task<ActionResult<Event>> GetEventByIdAsync([FromRoute] int id)
         {
@@ -58,6 +61,7 @@ namespace EventService.App.Controllers
         /// POST: Create new event.
         /// </summary>
         /// <returns>Event eventt</returns>
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<ActionResult<Event>> CreateEventAsync(CreateEventDto ev)
         {
@@ -74,6 +78,7 @@ namespace EventService.App.Controllers
         /// PUT: Update Event
         /// </summary>
         /// <returns>Event eventt</returns>
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         public async Task<ActionResult<EventDto>> UpdateEventAsync([FromRoute] int id, EventDto ev)
         {
@@ -88,6 +93,7 @@ namespace EventService.App.Controllers
         /// DELETE: Delete Event
         /// </summary>
         /// <returns>Event eventt</returns>
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<ActionResult<Event>> DeleteEventAsync([FromRoute] int id)
         {
@@ -101,14 +107,13 @@ namespace EventService.App.Controllers
         /// <param name="id">Event Id</param>
         /// <param name="token">CancellationToken</param>
         /// <returns>Return Booking and link to booking in Headers</returns>
+        [Authorize(Roles = "User, Admin")]
         [HttpPost]
         [Route("{id}/book")]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
         public async Task<ActionResult<Booking>> CreateBookingAsync([FromRoute] int id, CancellationToken token)
         {
-            var currentUser = _httpContextAccessor?.HttpContext?.User;
-            var userIdClaim = currentUser?.Claims?.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub);
-            var userId = Guid.Parse(userIdClaim!.Value);
+            var userId = GetUserId();
 
             try
             {
@@ -125,6 +130,13 @@ namespace EventService.App.Controllers
                 return Conflict(ex.Message);
             }
             
+        }
+        public Guid GetUserId()
+        {
+            var currentUser = _httpContextAccessor?.HttpContext?.User;
+            var userIdClaim = currentUser?.Claims?.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub);
+            var userId = Guid.Parse(userIdClaim!.Value);
+            return userId;
         }
     }
 }

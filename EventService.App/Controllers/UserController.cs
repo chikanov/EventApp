@@ -2,6 +2,7 @@
 using EventService.Application.DTOs;
 using EventService.Domain.Entities;
 using EventService.Domain.Entities.Enum;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -23,8 +24,8 @@ namespace EventService.App.Controllers
             _userService = userService;
             _configuration = configuration;
         }
-
-        [HttpPost("login")]
+        [AllowAnonymous]
+        [HttpPost("auth/login")]
         public async Task<ActionResult> Login([FromBody] string login, [FromBody] string password, CancellationToken cancellationToken)
         {
             try
@@ -73,6 +74,7 @@ namespace EventService.App.Controllers
         /// <param name="login">User login</param>
         /// <param name="role">User role</param>
         /// <returns>Collection Users</returns>
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<ActionResult<List<User>?>> GetAllUsersAsync([FromQuery] string? login = null,
             [FromQuery] UserRoles? role = null)
@@ -87,6 +89,7 @@ namespace EventService.App.Controllers
         /// </summary>
         /// <param name="id">Id</param>
         /// <returns>User user</returns>
+        [Authorize(Roles = "Admin")]
         [HttpGet("{id}")]
         public async Task<ActionResult<User>> GetUserByIdAsync([FromRoute] Guid id)
         {
@@ -99,7 +102,8 @@ namespace EventService.App.Controllers
         /// POST: Create new user.
         /// </summary>
         /// <returns>User user</returns>
-        [HttpPost]
+        [AllowAnonymous]
+        [HttpPost("auth/register")]
         public async Task<ActionResult<User>> CreateUserAsync(UserDto user)
         {
             if (!ModelState.IsValid)
@@ -116,8 +120,9 @@ namespace EventService.App.Controllers
         /// PUT: Update User
         /// </summary>
         /// <returns>User user</returns>
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
-        public async Task<ActionResult<UserDto>> UpdateEventAsync([FromRoute] Guid id, UserDto user)
+        public async Task<ActionResult<UserDto>> UpdateUserAsync([FromRoute] Guid id, UserDto user)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -130,8 +135,9 @@ namespace EventService.App.Controllers
         /// DELETE: Delete User
         /// </summary>
         /// <returns>User user</returns>
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
-        public async Task<ActionResult<User>> DeleteEventAsync([FromRoute] Guid id)
+        public async Task<ActionResult<User>> DeleteUserAsync([FromRoute] Guid id)
         {
             await _userService.DeleteUserAsync(id);
             return NoContent();
