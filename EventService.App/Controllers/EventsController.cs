@@ -1,9 +1,9 @@
 ﻿using EventService.Application.Abstractions.Services;
 using EventService.Application.DTOs;
+using EventService.Domain.CustomExceptions;
 using EventService.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.JsonWebTokens;
-using System.Security.Claims;
 
 namespace EventService.App.Controllers
 {
@@ -110,9 +110,21 @@ namespace EventService.App.Controllers
             var userIdClaim = currentUser?.Claims?.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub);
             var userId = Guid.Parse(userIdClaim!.Value);
 
-            var newBooking = await _bookingService.CreateBookingAsync(id, userId, token);
+            try
+            {
+                var newBooking = await _bookingService.CreateBookingAsync(id, userId, token);
 
-            return Accepted($"/bookings/{newBooking.Id}", newBooking);
+                return Accepted($"/bookings/{newBooking.Id}", newBooking);
+            }
+            catch (PastEventBookingException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (ActiveLeasesExceededException ex)
+            {
+                return Conflict(ex.Message);
+            }
+            
         }
     }
 }

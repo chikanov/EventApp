@@ -2,6 +2,7 @@
 using EventService.Application.Abstractions.Services;
 using EventService.Domain.CustomExceptions;
 using EventService.Domain.Entities;
+using EventService.Domain.Entities.Enum;
 
 namespace EventService.Application.Services
 {
@@ -10,10 +11,12 @@ namespace EventService.Application.Services
         private static readonly SemaphoreSlim _processingSemaphore = new(1, 1);
         private readonly IBookingRepository _bookingRepository;
         private readonly IEventRepository _eventRepository;
-        public BookingService(IBookingRepository bookingRepository, IEventRepository eventRepository)
+        private readonly IUserRepository _userRepository;
+        public BookingService(IBookingRepository bookingRepository, IEventRepository eventRepository, IUserRepository userRepository)
         {
             _bookingRepository = bookingRepository;
             _eventRepository = eventRepository;
+            _userRepository = userRepository;
         }
         public async Task<Booking> CreateBookingAsync(int eventId, Guid userId, CancellationToken cancellationToken = default)
         {
@@ -21,10 +24,20 @@ namespace EventService.Application.Services
             try
             {
                 var currentEvent = await _eventRepository.GetByIdAsync(eventId, cancellationToken);
+                var currentUser = await _userRepository.GetByIdAsync(userId, cancellationToken);
                 if (currentEvent == null)
                 {
                     throw new NotFoundException($"Event with Id = {eventId} does not exist.");
                 }
+                if (currentEvent.EndAt > DateTime.UtcNow)
+                {
+                    throw new PastEventBookingException("You cannot book an event that has already taken place.");
+                }
+                if (currentUser!.Bookings.Count == 10)
+                {
+                    throw new ActiveLeasesExceededException("The limit of active armor has been reached.");
+                }
+
 
                 if (!currentEvent.TryReserveSeats())
                     throw new NoAvailableSeatsException();
@@ -72,6 +85,30 @@ namespace EventService.Application.Services
         public async Task<List<Booking>> GetPendingAsync(CancellationToken cancellationToken = default)
         {
             return await _bookingRepository.GetPendingAsync(cancellationToken);
+        }
+
+        public async Task<Booking> CancellationBookingAsync(Guid bookingId, Guid userId, CancellationToken cancellationToken = default)
+        {
+            var curUser = await _userRepository.GetByIdAsync(userId, cancellationToken);
+            var curBooking = await _bookingRepository.GetByIdAsync(bookingId, cancellationToken);
+
+            if (curUser == null) 
+            {
+                throw new NotFoundException($"User with id - {userId} dose not exist.");
+            }
+            if (curBooking == null)
+            {
+                throw new NotFoundException($"Booking with id - {bookingId} dose not exist.");
+            }
+            if (curUser.Role == UserRoles.User && !curUser.Bookings.Select(b => b.Id).Contains(bookingId))
+            {
+                throw new PermissionDeniedException("The user does not have the rights to perform this operation.");
+            }
+
+            curBooking.Cancel();
+            await _bookingRepository.SaveChangesAsync(cancellationToken);
+
+            return curBooking;
         }
     }
 }
