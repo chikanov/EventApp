@@ -35,7 +35,7 @@ namespace EventService.App.Controllers
             return Ok(booking);
         }
         [Authorize(Roles = "User,Admin")]
-        [HttpPost("{id}")]
+        [HttpDelete("{id}")]
         public async Task<ActionResult<Booking>> CancellationBooking([FromRoute] Guid id, CancellationToken cancellationToken)
         {
             try
@@ -43,7 +43,7 @@ namespace EventService.App.Controllers
                 var userId = GetUserId();
 
                 var cancellationBookig = await _bookingService.CancellationBookingAsync(id, userId, cancellationToken);
-                return Ok(cancellationBookig);
+                return NoContent();
             }
             catch (PermissionDeniedException ex)
             {

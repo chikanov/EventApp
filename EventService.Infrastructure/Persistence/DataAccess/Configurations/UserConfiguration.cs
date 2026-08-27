@@ -18,6 +18,7 @@ namespace EventService.Infrastructure.Persistence.DataAccess.Configurations
             builder.Property(b => b.Role).HasColumnName("role").IsRequired().HasMaxLength(20).HasConversion<string>();
 
             builder.HasMany(b => b.Bookings).WithOne(b => b.User).HasForeignKey(b => b.UserId).OnDelete(DeleteBehavior.Cascade);
+            builder.HasIndex(e => e.Login).IsUnique();
         }
     }
 }

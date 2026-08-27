@@ -3,6 +3,7 @@ using EventService.Application.Abstractions.Services;
 using EventService.Domain.CustomExceptions;
 using EventService.Domain.Entities;
 using EventService.Domain.Entities.Enum;
+using EventService.Domain.Models.Enum;
 
 namespace EventService.Application.Services
 {
@@ -34,11 +35,15 @@ namespace EventService.Application.Services
                 {
                     throw new NotFoundException($"User with Id = {userId} does not exist.");
                 }
-                if (currentEvent.EndAt < DateTime.UtcNow)
+                if (currentEvent.StartAt < DateTime.UtcNow)
                 {
                     throw new PastEventBookingException("You cannot book an event that has already taken place.");
                 }
-                if (currentUser!.Bookings != null && currentUser!.Bookings.Count == bookingLimit)
+
+                var bookings = await _bookingRepository.GetAllAsync(cancellationToken);
+                var bookingsCount = bookings.Where(b => b.UserId == userId && b.EventId == eventId &&
+                                    b.Status == BookingStatus.Pending || b.Status == BookingStatus.Confirmed).Count();
+                if (currentUser!.Bookings != null && bookingsCount == bookingLimit)
                 {
                     throw new ActiveLeasesExceededException("The limit of active armor has been reached.");
                 }
@@ -110,7 +115,10 @@ namespace EventService.Application.Services
             {
                 throw new NotFoundException($"Booking with id - {bookingId} dose not exist.");
             }
-            if (curUser.Role == UserRoles.User && !curUser.Bookings.Select(b => b.Id).Contains(bookingId))
+            var bookings = await _bookingRepository.GetAllAsync(cancellationToken);
+            var bookingsCurUser = bookings.Where(b => b.UserId == userId && b.EventId == curBooking.EventId &&
+                                b.Status == BookingStatus.Pending || b.Status == BookingStatus.Confirmed);
+            if (curUser.Role == UserRoles.User && !bookingsCurUser.Select(b => b.Id).Contains(bookingId))
             {
                 throw new PermissionDeniedException("The user does not have the rights to perform this operation.");
             }

@@ -588,6 +588,99 @@ namespace EventApp.EventServiceTests
             Assert.Equal(expectedSuccessfulBookingCount, successfulBookingCount);
         }
 
+        [Fact, Priority(19)]
+        public async Task CancellationSomeoneElsesBooking_Return_PermissionDeniedException()
+        {
+            var expectedExceptionMessage = "The user does not have the rights to perform this operation.";
+            var token = new CancellationToken();
+            var expectedEventId = await CreateTestEventAsync();
+            var userForTest1 = await _userRepository.GetByLogin("UserForTests", token);
+            if (userForTest1 == null)
+            {
+                userForTest1 = CreateUserForTest();
+                await _userRepository.AddAsync(userForTest1, token);
+            }
+            string hashPassword;
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                var passwordBytes = Encoding.UTF8.GetBytes("12345678");
+                var hashBytes = sha256.ComputeHash(passwordBytes);
+
+                hashPassword = Convert.ToHexString(hashBytes);
+            }
+            var userForTest2 = User.CreateUser(
+                    "UserForTests2",
+                    hashPassword,
+                    UserRoles.User
+                );
+            await _userRepository.AddAsync(userForTest2, token);
+
+            var expextedBooking = await _bookingService.CreateBookingAsync(expectedEventId, userForTest1.Id, token);
+
+            var exception = await Assert
+            .ThrowsAsync<PermissionDeniedException>(async () => await _bookingService.CancellationBookingAsync(expextedBooking.Id, userForTest2.Id, token));
+            Assert.Equal(expectedExceptionMessage, exception.Message);
+        }
+        [Fact, Priority(20)]
+        public async Task CancelUserOwnBooking_Return_CancelledBookingStatus()
+        {
+            var token = new CancellationToken();
+            var expectedBookingStatus = BookingStatus.Cancelled;
+            var expectedEventId = await CreateTestEventAsync();
+            string hashPassword;
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                var passwordBytes = Encoding.UTF8.GetBytes("12345678");
+                var hashBytes = sha256.ComputeHash(passwordBytes);
+
+                hashPassword = Convert.ToHexString(hashBytes);
+            }
+            var userForTest = User.CreateUser(
+                    "UserForTests2",
+                    hashPassword,
+                    UserRoles.User
+                );
+            await _userRepository.AddAsync(userForTest, token);
+
+            var expextedBooking = await _bookingService.CreateBookingAsync(expectedEventId, userForTest.Id, token);
+            var cancelsedBooking = await _bookingService.CancellationBookingAsync(expextedBooking.Id, userForTest.Id, token);
+
+            Assert.Equal(expectedBookingStatus, cancelsedBooking.Status);
+        }
+
+        [Fact, Priority(21)]
+        public async Task CancelAdminSomeoneElsesBooking_Return_CancelledBookingStatus()
+        {
+            var token = new CancellationToken();
+            var expectedBookingStatus = BookingStatus.Cancelled;
+            var expectedEventId = await CreateTestEventAsync();
+            var adminForTest = await _userRepository.GetByLogin("UserForTests", token);
+            if (adminForTest == null)
+            {
+                adminForTest = CreateUserForTest();
+                await _userRepository.AddAsync(adminForTest, token);
+            }
+            string hashPassword;
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                var passwordBytes = Encoding.UTF8.GetBytes("12345678");
+                var hashBytes = sha256.ComputeHash(passwordBytes);
+
+                hashPassword = Convert.ToHexString(hashBytes);
+            }
+            var userForTest = User.CreateUser(
+                    "UserForTests2",
+                    hashPassword,
+                    UserRoles.User
+                );
+            await _userRepository.AddAsync(userForTest, token);
+
+            var expextedBooking = await _bookingService.CreateBookingAsync(expectedEventId, userForTest.Id, token);
+            var cancelsedBooking = await _bookingService.CancellationBookingAsync(expextedBooking.Id, adminForTest.Id, token);
+
+            Assert.Equal(expectedBookingStatus, cancelsedBooking.Status);
+        }
+
         public async Task CreateEventsForTestsAsync()
         {
             var token = new CancellationToken();

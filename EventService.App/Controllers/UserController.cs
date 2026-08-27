@@ -13,7 +13,6 @@ namespace EventService.App.Controllers
 {
     /// UsersController
     [ApiController]
-    [Route("api/[controller]")]
     public class UsersController : ControllerBase
     {
         private readonly IUserService _userService;
@@ -31,9 +30,13 @@ namespace EventService.App.Controllers
             try
             {
                 var currentUser = await _userService.GetByLogin(login);
-                if (currentUser == null || !AuthenticationComponent.VerifyPassword(password, currentUser.Password))
+                if (currentUser == null)
                 {
-                    return new UnauthorizedResult();
+                    return Unauthorized();
+                }
+                if (!AuthenticationComponent.VerifyPassword(password, currentUser.Password))
+                {
+                    return BadRequest();
                 }
 
                 var claims = new List<Claim>
@@ -75,7 +78,7 @@ namespace EventService.App.Controllers
         /// <param name="role">User role</param>
         /// <returns>Collection Users</returns>
         [Authorize(Roles = "Admin")]
-        [HttpGet]
+        [HttpGet("api/[controller]")]
         public async Task<ActionResult<List<User>?>> GetAllUsersAsync([FromQuery] string? login = null,
             [FromQuery] UserRoles? role = null)
         {
@@ -90,7 +93,7 @@ namespace EventService.App.Controllers
         /// <param name="id">Id</param>
         /// <returns>User user</returns>
         [Authorize(Roles = "Admin")]
-        [HttpGet("{id}")]
+        [HttpGet("api/[controller]/{id}")]
         [ActionName("GetUserByIdAsync")]
         public async Task<ActionResult<User>> GetUserByIdAsync([FromRoute] Guid id)
         {
@@ -114,7 +117,7 @@ namespace EventService.App.Controllers
             user.Password = AuthenticationComponent.HashPassword(user.Password);
             var createdUser = await _userService.CreateUserAsync(user);
 
-            return CreatedAtAction(nameof(GetUserByIdAsync), new { id = createdUser.Id }, createdUser);
+            return NoContent();
         }
 
         /// <summary>
@@ -122,7 +125,7 @@ namespace EventService.App.Controllers
         /// </summary>
         /// <returns>User user</returns>
         [Authorize(Roles = "Admin")]
-        [HttpPut("{id}")]
+        [HttpPut("api/[controller]/{id}")]
         public async Task<ActionResult<UserDto>> UpdateUserAsync([FromRoute] Guid id, UserDto user)
         {
             if (!ModelState.IsValid)
@@ -137,7 +140,7 @@ namespace EventService.App.Controllers
         /// </summary>
         /// <returns>User user</returns>
         [Authorize(Roles = "Admin")]
-        [HttpDelete("{id}")]
+        [HttpDelete("api/[controller]/{id}")]
         public async Task<ActionResult<User>> DeleteUserAsync([FromRoute] Guid id)
         {
             await _userService.DeleteUserAsync(id);
