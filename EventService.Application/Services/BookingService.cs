@@ -101,7 +101,7 @@ namespace EventService.Application.Services
         {
             var curUser = await _userRepository.GetByIdAsync(userId, cancellationToken);
             var curBooking = await _bookingRepository.GetByIdAsync(bookingId, cancellationToken);
-
+            
             if (curUser == null) 
             {
                 throw new NotFoundException($"User with id - {userId} dose not exist.");
@@ -117,6 +117,14 @@ namespace EventService.Application.Services
 
             curBooking.Cancel();
             await _bookingRepository.SaveChangesAsync(cancellationToken);
+
+            var curEvent = await _eventRepository.GetByIdAsync(curBooking.EventId, cancellationToken);
+            if (curEvent == null)
+            {
+                throw new NotFoundException($"Event with id - {curBooking.EventId} dose not exist.");
+            }
+            curEvent.AvailableSeats = curEvent.AvailableSeats + 1;
+            await _eventRepository.SaveChangesAsync(cancellationToken);
 
             return curBooking;
         }

@@ -19,7 +19,7 @@ namespace EventService.App
             {
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    RoleClaimType = "role",
+                    RoleClaimType = "Role",
                     NameClaimType = "login",
                     ValidateIssuer = true,
                     ValidIssuer = authenticationParams["ValidIssuer"],
@@ -56,17 +56,17 @@ namespace EventService.App
             if (password == null)
                 return false;
 
-            storedHash = HashPassword(password); 
-            return storedHash.Equals(storedHash);
+           var hash = HashPassword(password); 
+            return storedHash.Equals(hash);
         }
 
         public static IReadOnlyDictionary<string, string> GetAuthenticationParams(IConfiguration configuration)
         {
-            var ValidIssuer = configuration.GetValue<string>("TokenValidationParameters: ValidIssuer")
+            var ValidIssuer = configuration.GetValue<string>("TokenValidationParameters:ValidIssuer")
                 ?? throw new InvalidOperationException("TokenValidationParameters 'ValidIssuer' not found.");
-            var ValidAudience = configuration.GetValue<string>("TokenValidationParameters: ValidAudience")
+            var ValidAudience = configuration.GetValue<string>("TokenValidationParameters:ValidAudience")
                 ?? throw new InvalidOperationException("TokenValidationParameters 'ValidAudience' not found.");
-            var SecretKey = configuration.GetValue<string>("TokenValidationParameters: SecretKey")
+            var SecretKey = configuration.GetValue<string>("TokenValidationParameters:SecretKey")
                 ?? throw new InvalidOperationException("TokenValidationParameters 'SecretKey' not found.");
             var TokenLifeTimeMinutes = configuration.GetValue<int>("TokenValidationParameters:TokenLifeTimeMinutes");
             if (TokenLifeTimeMinutes == null)
@@ -76,8 +76,8 @@ namespace EventService.App
             return new Dictionary<string, string>
             {
                 { "ValidIssuer",  ValidIssuer},
-                { "ValidAudience",  ValidIssuer},
-                { "SecretKey",  ValidIssuer},
+                { "ValidAudience",  ValidAudience},
+                { "SecretKey",  SecretKey},
                 { "TokenLifeTimeMinutes",  TokenLifeTimeMinutes.ToString()},
             }.AsReadOnly();
         }

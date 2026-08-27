@@ -1,9 +1,11 @@
 ﻿using EventService.Application.Abstractions.Services;
+using EventService.Application.Services;
 using EventService.Domain.CustomExceptions;
 using EventService.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace EventService.App.Controllers
 {
@@ -55,10 +57,10 @@ namespace EventService.App.Controllers
             }
         }
 
-        public Guid GetUserId()
+        private Guid GetUserId()
         {
             var currentUser = _httpContextAccessor?.HttpContext?.User;
-            var userIdClaim = currentUser?.Claims?.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub);
+            var userIdClaim = currentUser!.FindFirst(ClaimTypes.NameIdentifier);
             var userId = Guid.Parse(userIdClaim!.Value);
             return userId;
         }

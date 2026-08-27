@@ -19,6 +19,7 @@ namespace EventService.App
 
             builder.Services.AddScoped<IEventService, EventService.Application.Services.EventService>();
             builder.Services.AddScoped<IBookingService, BookingService>();
+            builder.Services.AddScoped<IUserService, UserService>();
 
             builder.Services.AddHostedService<BookingBackgroundService>();
 

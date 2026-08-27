@@ -5,6 +5,7 @@ using EventService.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.JsonWebTokens;
+using System.Security.Claims;
 
 namespace EventService.App.Controllers
 {
@@ -50,6 +51,7 @@ namespace EventService.App.Controllers
         /// <returns>Event event</returns>
         [AllowAnonymous]
         [HttpGet("{id}")]
+        [ActionName("GetEventByIdAsync")]
         public async Task<ActionResult<Event>> GetEventByIdAsync([FromRoute] int id)
         {
             var ev = await _eventService.GetByIdAsync(id);
@@ -131,10 +133,10 @@ namespace EventService.App.Controllers
             }
             
         }
-        public Guid GetUserId()
+        private Guid GetUserId()
         {
             var currentUser = _httpContextAccessor?.HttpContext?.User;
-            var userIdClaim = currentUser?.Claims?.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub);
+            var userIdClaim = currentUser!.FindFirst(ClaimTypes.NameIdentifier);
             var userId = Guid.Parse(userIdClaim!.Value);
             return userId;
         }

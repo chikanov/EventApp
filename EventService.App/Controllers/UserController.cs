@@ -26,12 +26,12 @@ namespace EventService.App.Controllers
         }
         [AllowAnonymous]
         [HttpPost("auth/login")]
-        public async Task<ActionResult> Login([FromBody] string login, [FromBody] string password, CancellationToken cancellationToken)
+        public async Task<ActionResult> Login([FromQuery] string login, [FromQuery] string password, CancellationToken cancellationToken)
         {
             try
             {
                 var currentUser = await _userService.GetByLogin(login);
-                if (currentUser == null || AuthenticationComponent.VerifyPassword(password, currentUser.Password))
+                if (currentUser == null || !AuthenticationComponent.VerifyPassword(password, currentUser.Password))
                 {
                     return new UnauthorizedResult();
                 }
@@ -39,7 +39,7 @@ namespace EventService.App.Controllers
                 var claims = new List<Claim>
                 {
                     new Claim(ClaimTypes.Name, login),
-                    new Claim(ClaimTypes.Role, currentUser.Role.ToString()),
+                    new Claim("Role", currentUser.Role.ToString()),
                     new Claim(JwtRegisteredClaimNames.Sub, currentUser.Id.ToString()),
                     new Claim(JwtRegisteredClaimNames.Iat, new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString()),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
@@ -47,12 +47,12 @@ namespace EventService.App.Controllers
 
                 var authenticationParams = AuthenticationComponent.GetAuthenticationParams(_configuration);
 
-                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(authenticationParams["secretKey"]));
+                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(authenticationParams["SecretKey"]));
                 var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
                 var token = new JwtSecurityToken(
                     issuer: authenticationParams["ValidIssuer"],
-                    audience: authenticationParams["validAudience"],
+                    audience: authenticationParams["ValidAudience"],
                     claims: claims,
                     expires: DateTime.Now.AddMinutes(int.Parse(authenticationParams["TokenLifeTimeMinutes"])),
                     signingCredentials: creds
@@ -91,6 +91,7 @@ namespace EventService.App.Controllers
         /// <returns>User user</returns>
         [Authorize(Roles = "Admin")]
         [HttpGet("{id}")]
+        [ActionName("GetUserByIdAsync")]
         public async Task<ActionResult<User>> GetUserByIdAsync([FromRoute] Guid id)
         {
             var user = await _userService.GetByIdAsync(id);
@@ -126,7 +127,7 @@ namespace EventService.App.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-
+            user.Password = AuthenticationComponent.HashPassword(user.Password);
             var updatedEvent = await _userService.UpdateUserAsync(id, user);
             return Ok(updatedEvent);
         }
