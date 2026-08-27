@@ -40,6 +40,24 @@ Event management Service.
     Integration Tests with Testcontainers integrated with PostgreSQL.
     To run the tests, you need to run docker.
 
+## Roles
+    
+    The service has a role-based model with 2 roles: Admin and User.
+    Admin can do everything. User can get a booking by Id, reject only
+    their own bookings, get an event by Id, and create a booking.
+    Unauthorized users can log in, register a user, get a list of all
+    events, and retrieve an event by its ID.
+
+## Instructions for obtaining a JWT token via Swagger
+
+    POST /auth/login accepts credentials and returns a JWT token; 
+    it is available without a token. Copy the obtained token and paste it
+    using the Authorization button.
+
+## Secret key JWT
+
+    The JWT secret key is stored in appsettings.json. It is recommended to use a secure value in production.
+
 # REST API
 
 The REST API to the example app is described below.

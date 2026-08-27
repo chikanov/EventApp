@@ -4,7 +4,6 @@ using EventService.Domain.CustomExceptions;
 using EventService.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.JsonWebTokens;
 using System.Security.Claims;
 
 namespace EventService.App.Controllers

@@ -1,10 +1,8 @@
 ﻿using EventService.Application.Abstractions.Services;
-using EventService.Application.Services;
 using EventService.Domain.CustomExceptions;
 using EventService.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
 namespace EventService.App.Controllers
