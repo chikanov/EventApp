@@ -3,9 +3,6 @@ using EventService.Application.DTOs;
 using EventService.Domain.Entities;
 using EventService.Infrastructure.Persistence.DataAccess;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace EventService.Infrastructure.Persistence.Repositories
 {

@@ -29,11 +29,15 @@ namespace EventService.Application.Services
                 {
                     throw new NotFoundException($"Event with Id = {eventId} does not exist.");
                 }
-                if (currentEvent.EndAt > DateTime.UtcNow)
+                if (currentUser == null)
+                {
+                    throw new NotFoundException($"User with Id = {userId} does not exist.");
+                }
+                if (currentEvent.EndAt < DateTime.UtcNow)
                 {
                     throw new PastEventBookingException("You cannot book an event that has already taken place.");
                 }
-                if (currentUser!.Bookings.Count == 10)
+                if (currentUser!.Bookings != null && currentUser!.Bookings.Count == 10)
                 {
                     throw new ActiveLeasesExceededException("The limit of active armor has been reached.");
                 }
