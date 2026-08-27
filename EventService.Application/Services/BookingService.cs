@@ -9,6 +9,7 @@ namespace EventService.Application.Services
     public class BookingService : IBookingService
     {
         private static readonly SemaphoreSlim _processingSemaphore = new(1, 1);
+        private const int bookingLimit = 10;
         private readonly IBookingRepository _bookingRepository;
         private readonly IEventRepository _eventRepository;
         private readonly IUserRepository _userRepository;
@@ -37,7 +38,7 @@ namespace EventService.Application.Services
                 {
                     throw new PastEventBookingException("You cannot book an event that has already taken place.");
                 }
-                if (currentUser!.Bookings != null && currentUser!.Bookings.Count == 10)
+                if (currentUser!.Bookings != null && currentUser!.Bookings.Count == bookingLimit)
                 {
                     throw new ActiveLeasesExceededException("The limit of active armor has been reached.");
                 }

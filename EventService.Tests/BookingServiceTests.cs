@@ -51,7 +51,7 @@ namespace EventApp.EventServiceTests
             _serviceProvider.Dispose();
         }
 
-        private async Task<int> CreateTestEventAsync(int totalSeats = 10)
+        private async Task<int> CreateTestEventAsync(int totalSeats = 15)
         {
             var futureDate = DateTime.UtcNow.AddDays(1);
             var created = await _eventService.CreateEventAsync(new CreateEventDto
@@ -495,6 +495,97 @@ namespace EventApp.EventServiceTests
             var uniqueIdsCount = cuncuretBookingIdsBag.Distinct().Count();
 
             Assert.Equal(expectedNoAvailableSeatsExceptionCount, uniqueIdsCount);
+        }
+        [Fact, Priority(17)]
+        public async Task TryBookPastEvent_Return_PastEventBookingException()
+        {
+            var token = new CancellationToken();
+            var expectedExceptionMessage = "You cannot book an event that has already taken place.";
+            var pastEvent = new CreateEventDto
+            {
+                Title = "Test Event",
+                StartAt = DateTime.UtcNow.AddDays(-2),
+                EndAt = DateTime.UtcNow.AddDays(-1),
+                TotalSeats = 10
+            };
+            var expectedPastEvent = await _eventService.CreateEventAsync(pastEvent, token);
+            var userForTest = await _userRepository.GetByLogin("UserForTests", token);
+            if (userForTest == null)
+            {
+                userForTest = CreateUserForTest();
+                await _userRepository.AddAsync(userForTest, token);
+            }
+
+            var exception = await Assert
+            .ThrowsAsync<PastEventBookingException>(async () => await _bookingService.CreateBookingAsync(expectedPastEvent.Id, userForTest.Id, token));
+
+            Assert.Equal(expectedExceptionMessage, exception.Message);
+        }
+
+        [Fact, Priority(17)]
+        public async Task WhenThelimitOfActiveBookIsReached_ANewBookIsNotCreated()
+        {
+            var token = new CancellationToken();
+            var expectedExceptionMessage = "The limit of active armor has been reached.";
+            var expectedBookingLimitCount = 10;
+            int count = 0;
+            var expectedEventId = await CreateTestEventAsync();
+            var userForTest = await _userRepository.GetByLogin("UserForTests", token);
+            if (userForTest == null)
+            {
+                userForTest = CreateUserForTest();
+                await _userRepository.AddAsync(userForTest, token);
+            }
+            for (int i = 0; i < expectedBookingLimitCount; i++)
+            {
+                await _bookingService.CreateBookingAsync(expectedEventId, userForTest.Id, token);
+            }
+            var exception = await Assert
+            .ThrowsAsync<ActiveLeasesExceededException>(async () => await _bookingService.CreateBookingAsync(expectedEventId, userForTest.Id, token));
+            count++;
+            Assert.Equal(expectedExceptionMessage, exception.Message);
+        }
+
+        [Fact, Priority(18)]
+        public async Task TheLimitsSetByDifferentUsersDoNotAffectEachOther()
+        {
+            var token = new CancellationToken();
+            var expectedSuccessfulBookingCount = 11;
+            int successfulBookingCount = 0;
+            var expectedEventId = await CreateTestEventAsync();
+            var userForTest1 = await _userRepository.GetByLogin("UserForTests", token);
+            if (userForTest1 == null)
+            {
+                userForTest1 = CreateUserForTest();
+                await _userRepository.AddAsync(userForTest1, token);
+            }
+            string hashPassword;
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                var passwordBytes = Encoding.UTF8.GetBytes("12345678");
+                var hashBytes = sha256.ComputeHash(passwordBytes);
+
+                hashPassword = Convert.ToHexString(hashBytes);
+            }
+            var userForTest2 = User.CreateUser(
+                    "UserForTests2",
+                    hashPassword,
+                    UserRoles.Admin
+                );
+            await _userRepository.AddAsync(userForTest2, token);
+
+            for (int i = 0; i < 5; i++)
+            {
+                await _bookingService.CreateBookingAsync(expectedEventId, userForTest1.Id, token);
+                successfulBookingCount++;
+            }
+            for (int i = 0; i < 6; i++)
+            {
+                await _bookingService.CreateBookingAsync(expectedEventId, userForTest2.Id, token);
+                successfulBookingCount++;
+            }
+
+            Assert.Equal(expectedSuccessfulBookingCount, successfulBookingCount);
         }
 
         public async Task CreateEventsForTestsAsync()
