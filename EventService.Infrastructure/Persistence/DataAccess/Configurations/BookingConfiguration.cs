@@ -14,6 +14,7 @@ namespace EventService.Infrastructure.Persistence.DataAccess.Configurations
             builder.Property(b => b.Id).HasColumnName("id").ValueGeneratedNever();
 
             builder.Property(b => b.EventId).HasColumnName("event_id").IsRequired();
+            builder.Property(b => b.UserId).HasColumnName("user_id").IsRequired();
 
             builder.Property(b => b.Status).HasColumnName("status").IsRequired().HasMaxLength(20).HasConversion<string>();
 
@@ -22,6 +23,7 @@ namespace EventService.Infrastructure.Persistence.DataAccess.Configurations
             builder.Property(b => b.ProcessedAt).HasColumnName("processed_at");
 
             builder.HasOne(e => e.Event).WithMany(e => e.Bookings).HasForeignKey(b => b.EventId).OnDelete(DeleteBehavior.Cascade);
+            builder.HasOne(e => e.User).WithMany(e => e.Bookings).HasForeignKey(b => b.UserId).OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

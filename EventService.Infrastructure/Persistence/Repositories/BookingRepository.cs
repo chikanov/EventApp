@@ -45,5 +45,11 @@ namespace EventService.Infrastructure.Persistence.Repositories
         {
             return await _context.Bookings.AnyAsync(ct);
         }
+
+        public async Task<List<Booking>> GetUserOwnBookingAsync(Guid userId, int eventId, CancellationToken ct = default)
+        {
+            return await _context.Bookings.Where(b => b.UserId == userId && b.EventId == eventId &&
+                        b.Status == BookingStatus.Pending || b.Status == BookingStatus.Confirmed).ToListAsync(ct);
+        }
     }
 }

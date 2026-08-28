@@ -37,7 +37,7 @@ namespace EventService.Domain.Entities
             EndAt = endAt;
             TotalSeats = totalSeats;
             AvailableSeats = totalSeats;
-            Description = description;
+            Description = description!;
         }
         public static Event Create(
             int id,
@@ -69,7 +69,7 @@ namespace EventService.Domain.Entities
             AvailableSeats = availableSeats;
         }
         public bool TryReserveSeats(int count = 1)
-        {
+        {   
             if ((AvailableSeats - count) < 0)
                 return false;
             else

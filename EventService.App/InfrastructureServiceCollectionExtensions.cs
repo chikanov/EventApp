@@ -3,7 +3,7 @@ using EventService.Infrastructure.Persistence.DataAccess;
 using EventService.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 
-namespace EventService.Infrastructure
+namespace EventService.App
 {
     public static class InfrastructureServiceCollectionExtensions
     {
@@ -18,6 +18,7 @@ namespace EventService.Infrastructure
 
             builder.Services.AddScoped<IEventRepository, EventRepository>();
             builder.Services.AddScoped<IBookingRepository, BookingRepository>();
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
 
             return builder.Services;
         }

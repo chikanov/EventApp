@@ -64,6 +64,9 @@ namespace EventService.App.Middleware
                 ValidationException ve => StatusCodes.Status400BadRequest,
                 NotFoundException nfe => StatusCodes.Status404NotFound,
                 NoAvailableSeatsException nase => StatusCodes.Status409Conflict,
+                ActiveLeasesExceededException alee => StatusCodes.Status409Conflict,
+                PastEventBookingException pebe => StatusCodes.Status400BadRequest,
+                PermissionDeniedException pde => StatusCodes.Status403Forbidden,
                 _ => StatusCodes.Status500InternalServerError
             };
     }

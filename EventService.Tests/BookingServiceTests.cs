@@ -3,6 +3,8 @@ using EventService.Application.Abstractions.Services;
 using EventService.Application.DTOs;
 using EventService.Application.Services;
 using EventService.Domain.CustomExceptions;
+using EventService.Domain.Entities;
+using EventService.Domain.Entities.Enum;
 using EventService.Domain.Models.Enum;
 using EventService.Infrastructure;
 using EventService.Infrastructure.Persistence.DataAccess;
@@ -10,6 +12,8 @@ using EventService.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Concurrent;
+using System.Security.Cryptography;
+using System.Text;
 using Xunit.v3.Priority;
 
 namespace EventApp.EventServiceTests
@@ -21,6 +25,8 @@ namespace EventApp.EventServiceTests
         private readonly IServiceScope _scope;
         private readonly IEventService _eventService;
         private readonly IBookingService _bookingService;
+        private readonly IUserRepository _userRepository;
+
         public BookingServiceTests()
         {
             var dbName = Guid.NewGuid().ToString();
@@ -29,6 +35,7 @@ namespace EventApp.EventServiceTests
                 options.UseInMemoryDatabase(dbName));
             services.AddScoped<IEventRepository, EventRepository>();
             services.AddScoped<IBookingRepository, BookingRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IEventService, EventService.Application.Services.EventService>();
             services.AddScoped<IBookingService, BookingService>();
 
@@ -36,6 +43,7 @@ namespace EventApp.EventServiceTests
             _scope = _serviceProvider.CreateScope();
             _eventService = _scope.ServiceProvider.GetRequiredService<IEventService>();
             _bookingService = _scope.ServiceProvider.GetRequiredService<IBookingService>();
+            _userRepository = _scope.ServiceProvider.GetRequiredService<IUserRepository>();
         }
         public void Dispose()
         {
@@ -43,7 +51,7 @@ namespace EventApp.EventServiceTests
             _serviceProvider.Dispose();
         }
 
-        private async Task<int> CreateTestEventAsync(int totalSeats = 10)
+        private async Task<int> CreateTestEventAsync(int totalSeats = 15)
         {
             var futureDate = DateTime.UtcNow.AddDays(1);
             var created = await _eventService.CreateEventAsync(new CreateEventDto
@@ -63,8 +71,14 @@ namespace EventApp.EventServiceTests
             var ExistEventId = 3;
             var token = new CancellationToken();
             var statusPending = BookingStatus.Pending;
+            var userForTest = await _userRepository.GetByLogin("UserForTests", token);
+            if (userForTest == null)
+            {
+                userForTest = CreateUserForTest();
+                await _userRepository.AddAsync(userForTest, token);
+            }
 
-            var newBooking = await _bookingService.CreateBookingAsync(ExistEventId, token);
+            var newBooking = await _bookingService.CreateBookingAsync(ExistEventId, userForTest.Id, token);
 
             Assert.Equal(statusPending, newBooking.Status);
         }
@@ -75,9 +89,15 @@ namespace EventApp.EventServiceTests
             await CreateEventsForTestsAsync();
             var eventId = 4;
             var token = new CancellationToken();
+            var userForTest = await _userRepository.GetByLogin("UserForTests", token);
+            if (userForTest == null)
+            {
+                userForTest = CreateUserForTest();
+                await _userRepository.AddAsync(userForTest, token);
+            }
 
-            var firstBooking = await _bookingService.CreateBookingAsync(eventId, token);
-            var secondBooking = await _bookingService.CreateBookingAsync(eventId, token);
+            var firstBooking = await _bookingService.CreateBookingAsync(eventId, userForTest.Id, token);
+            var secondBooking = await _bookingService.CreateBookingAsync(eventId, userForTest.Id, token);
 
             Assert.NotEqual(firstBooking.Id, secondBooking.Id);
         }
@@ -88,10 +108,16 @@ namespace EventApp.EventServiceTests
             await CreateEventsForTestsAsync();
             var eventId = 8;
             var token = new CancellationToken();
+            var userForTest = await _userRepository.GetByLogin("UserForTests", token);
+            if (userForTest == null)
+            {
+                userForTest = CreateUserForTest();
+                await _userRepository.AddAsync(userForTest, token);
+            }
 
-            var newBooking = await _bookingService.CreateBookingAsync(eventId, token);
+            var newBooking = await _bookingService.CreateBookingAsync(eventId, userForTest.Id, token);
 
-            var expectedBookingWithPendingStatus = await _bookingService.GetBookingByIdAsync(newBooking.Id, token);
+            var expectedBookingWithPendingStatus = await _bookingService.GetBookingByIdAsync(newBooking.Id, userForTest.Id, token);
 
             Assert.Equal(eventId, expectedBookingWithPendingStatus?.EventId);
         }
@@ -102,13 +128,19 @@ namespace EventApp.EventServiceTests
             await CreateEventsForTestsAsync();
             var eventId = 9;
             var token = new CancellationToken();
-            var newBooking = await _bookingService.CreateBookingAsync(eventId, token);
+            var userForTest = await _userRepository.GetByLogin("UserForTests", token);
+            if (userForTest == null)
+            {
+                userForTest = CreateUserForTest();
+                await _userRepository.AddAsync(userForTest, token);
+            }
+            var newBooking = await _bookingService.CreateBookingAsync(eventId, userForTest.Id, token);
 
-            var expectedBookingWithPendingStatus = await _bookingService.GetBookingByIdAsync(newBooking.Id, token);
+            var expectedBookingWithPendingStatus = await _bookingService.GetBookingByIdAsync(newBooking.Id, userForTest.Id, token);
             var pendingStatus = expectedBookingWithPendingStatus!.Status;
             expectedBookingWithPendingStatus.Status = BookingStatus.Confirmed;
             await _bookingService.UpdateBookingAsync(expectedBookingWithPendingStatus, token);
-            var expectedBookingWithConfirmedStatus = await _bookingService.GetBookingByIdAsync(newBooking.Id, token);
+            var expectedBookingWithConfirmedStatus = await _bookingService.GetBookingByIdAsync(newBooking.Id, userForTest.Id, token);
 
             Assert.Equal(BookingStatus.Pending, pendingStatus);
             Assert.Equal(BookingStatus.Confirmed, expectedBookingWithConfirmedStatus!.Status);
@@ -120,9 +152,15 @@ namespace EventApp.EventServiceTests
             var notExistEventId = -1;
             var expectedExceptionMessage = $"Event with Id = {notExistEventId} does not exist.";
             var token = new CancellationToken();
+            var userForTest = await _userRepository.GetByLogin("UserForTests", token);
+            if (userForTest == null)
+            {
+                userForTest = CreateUserForTest();
+                await _userRepository.AddAsync(userForTest, token);
+            }
 
             var exception = await Assert
-        .ThrowsAsync<NotFoundException>(async () => await _bookingService.CreateBookingAsync(notExistEventId, token));
+        .ThrowsAsync<NotFoundException>(async () => await _bookingService.CreateBookingAsync(notExistEventId, userForTest.Id, token));
 
             Assert.Equal(expectedExceptionMessage, exception.Message);
         }
@@ -135,8 +173,14 @@ namespace EventApp.EventServiceTests
             var token = new CancellationToken();
             var expectedExceptionMessage = $"Event with Id = {deletedEventId} does not exist.";
             await _eventService.DeleteEventAsync(deletedEventId, token);
+            var userForTest = await _userRepository.GetByLogin("UserForTests", token);
+            if (userForTest == null)
+            {
+                userForTest = CreateUserForTest();
+                await _userRepository.AddAsync(userForTest, token);
+            }
             var exception = await Assert
-        .ThrowsAsync<NotFoundException>(async () => await _bookingService.CreateBookingAsync(deletedEventId, token));
+        .ThrowsAsync<NotFoundException>(async () => await _bookingService.CreateBookingAsync(deletedEventId, userForTest.Id, token));
 
             Assert.Equal(expectedExceptionMessage, exception.Message);
         }
@@ -147,9 +191,15 @@ namespace EventApp.EventServiceTests
             var notExistId = Guid.NewGuid();
             var token = new CancellationToken();
             var expectedExceptionMessage = $"Booking with Id = {notExistId} does not exist.";
+            var userForTest = await _userRepository.GetByLogin("UserForTests", token);
+            if (userForTest == null)
+            {
+                userForTest = CreateUserForTest();
+                await _userRepository.AddAsync(userForTest, token);
+            }
 
             var exception = await Assert
-        .ThrowsAsync<NotFoundException>(async () => await _bookingService.GetBookingByIdAsync(notExistId, token));
+        .ThrowsAsync<NotFoundException>(async () => await _bookingService.GetBookingByIdAsync(notExistId, userForTest.Id, token));
 
             Assert.Equal(expectedExceptionMessage, exception.Message);
         }
@@ -161,7 +211,13 @@ namespace EventApp.EventServiceTests
             var token = new CancellationToken();
             var expectedAvailableSeats = 99;
             var ExistEventId = 15;
-            var newBooking = await _bookingService.CreateBookingAsync(ExistEventId, token);
+            var userForTest = await _userRepository.GetByLogin("UserForTests", token);
+            if (userForTest == null)
+            {
+                userForTest = CreateUserForTest();
+                await _userRepository.AddAsync(userForTest, token);
+            }
+            var newBooking = await _bookingService.CreateBookingAsync(ExistEventId, userForTest.Id, token);
 
             var currentEvent = await _eventService.GetByIdAsync(newBooking.EventId, token);
 
@@ -180,10 +236,16 @@ namespace EventApp.EventServiceTests
             expectedEvent.AvailableSeats = expectedTotalSeats;
             var eventDto = ObjectMapperExtensions.MapEventToEventDto(expectedEvent);
             await _eventService.UpdateEventAsync(expectedEventId, eventDto, token);
+            var userForTest = await _userRepository.GetByLogin("UserForTests", token);
+            if (userForTest == null)
+            {
+                userForTest = CreateUserForTest();
+                await _userRepository.AddAsync(userForTest, token);
+            }
 
-            var firstBooking = await _bookingService.CreateBookingAsync(expectedEventId, token);
-            var secondBooking = await _bookingService.CreateBookingAsync(expectedEventId, token);
-            var thirdBooking = await _bookingService.CreateBookingAsync(expectedEventId, token);
+            var firstBooking = await _bookingService.CreateBookingAsync(expectedEventId, userForTest.Id, token);
+            var secondBooking = await _bookingService.CreateBookingAsync(expectedEventId, userForTest.Id, token);
+            var thirdBooking = await _bookingService.CreateBookingAsync(expectedEventId, userForTest.Id, token);
 
             Assert.NotNull(firstBooking);
             Assert.NotNull(secondBooking);
@@ -205,11 +267,17 @@ namespace EventApp.EventServiceTests
             expectedEvent.AvailableSeats = expectedTotalSeats;
             var eventDto = ObjectMapperExtensions.MapEventToEventDto(expectedEvent);
             await _eventService.UpdateEventAsync(expectedEventId, eventDto, token);
+            var userForTest = await _userRepository.GetByLogin("UserForTests", token);
+            if (userForTest == null)
+            {
+                userForTest = CreateUserForTest();
+                await _userRepository.AddAsync(userForTest, token);
+            }
 
-            var firstBooking = await _bookingService.CreateBookingAsync(expectedEventId, token);
+            var firstBooking = await _bookingService.CreateBookingAsync(expectedEventId, userForTest.Id, token);
 
             var exception = await Assert
-            .ThrowsAsync<NoAvailableSeatsException>(async () => await _bookingService.CreateBookingAsync(expectedEventId, token));
+            .ThrowsAsync<NoAvailableSeatsException>(async () => await _bookingService.CreateBookingAsync(expectedEventId, userForTest.Id, token));
 
             Assert.Equal(expectedExceptionMessage, exception.Message);
         }
@@ -220,9 +288,15 @@ namespace EventApp.EventServiceTests
             var token = new CancellationToken();
             var notExistingEventId = 29;
             var expectedExceptionMessage = $"Event with Id = {notExistingEventId} does not exist.";
+            var userForTest = await _userRepository.GetByLogin("UserForTests", token);
+            if (userForTest == null)
+            {
+                userForTest = CreateUserForTest();
+                await _userRepository.AddAsync(userForTest, token);
+            }
 
             var exception = await Assert
-            .ThrowsAsync<NotFoundException>(async () => await _bookingService.CreateBookingAsync(notExistingEventId, token));
+            .ThrowsAsync<NotFoundException>(async () => await _bookingService.CreateBookingAsync(notExistingEventId, userForTest.Id, token));
 
             Assert.Equal(expectedExceptionMessage, exception.Message);
         }
@@ -234,8 +308,14 @@ namespace EventApp.EventServiceTests
             var token = new CancellationToken();
             var expectedEventId = 10;
             var expectedStatus = BookingStatus.Confirmed;
+            var userForTest = await _userRepository.GetByLogin("UserForTests", token);
+            if (userForTest == null)
+            {
+                userForTest = CreateUserForTest();
+                await _userRepository.AddAsync(userForTest, token);
+            }
 
-            var booking = await _bookingService.CreateBookingAsync(expectedEventId, token);
+            var booking = await _bookingService.CreateBookingAsync(expectedEventId, userForTest.Id, token);
             booking.Confirm();
 
             Assert.Equal(expectedStatus, booking.Status);
@@ -250,8 +330,14 @@ namespace EventApp.EventServiceTests
             var expectedEventId = 9;
             var expectedStatus = BookingStatus.Rejected;
             var expectedEvent = await _eventService.GetByIdAsync(expectedEventId, token);
+            var userForTest = await _userRepository.GetByLogin("UserForTests", token);
+            if (userForTest == null)
+            {
+                userForTest = CreateUserForTest();
+                await _userRepository.AddAsync(userForTest, token);
+            }
 
-            var booking = await _bookingService.CreateBookingAsync(expectedEventId, token);
+            var booking = await _bookingService.CreateBookingAsync(expectedEventId, userForTest.Id, token);
             booking.Confirm();
 
             booking.Reject();
@@ -269,8 +355,14 @@ namespace EventApp.EventServiceTests
             var expectedEventId = 7;
             var expectedAvailableSeats = 100;
             var expectedEvent = await _eventService.GetByIdAsync(expectedEventId, token);
+            var userForTest = await _userRepository.GetByLogin("UserForTests", token);
+            if (userForTest == null)
+            {
+                userForTest = CreateUserForTest();
+                await _userRepository.AddAsync(userForTest, token);
+            }
 
-            var booking = await _bookingService.CreateBookingAsync(expectedEventId, token);
+            var booking = await _bookingService.CreateBookingAsync(expectedEventId, userForTest.Id, token);
             booking.Confirm();
 
             booking.Reject();
@@ -291,14 +383,20 @@ namespace EventApp.EventServiceTests
             expectedEvent.AvailableSeats = expectedSeats;
             var eventDto = ObjectMapperExtensions.MapEventToEventDto(expectedEvent);
             await _eventService.UpdateEventAsync(expectedEventId, eventDto, token);
+            var userForTest = await _userRepository.GetByLogin("UserForTests", token);
+            if (userForTest == null)
+            {
+                userForTest = CreateUserForTest();
+                await _userRepository.AddAsync(userForTest, token);
+            }
 
-            var booking = await _bookingService.CreateBookingAsync(expectedEventId, token);
+            var booking = await _bookingService.CreateBookingAsync(expectedEventId, userForTest.Id, token);
             booking.Confirm();
 
             booking.Reject();
             expectedEvent.ReleaseSeats();
 
-            var newBooking = await _bookingService.CreateBookingAsync(expectedEventId, token);
+            var newBooking = await _bookingService.CreateBookingAsync(expectedEventId, userForTest.Id, token);
 
             Assert.NotNull(newBooking);
         }
@@ -321,6 +419,12 @@ namespace EventApp.EventServiceTests
             await _eventService.UpdateEventAsync(expectedEventId, eventDto, token);
             var numbers = Enumerable.Range(0, 20).ToArray();
             var options = new ParallelOptions { MaxDegreeOfParallelism = 2 };
+            var userForTest = await _userRepository.GetByLogin("UserForTests", token);
+            if (userForTest == null)
+            {
+                userForTest = CreateUserForTest();
+                await _userRepository.AddAsync(userForTest, token);
+            }
 
             await Parallel.ForEachAsync(numbers, options, async (numbers, token) =>
             {
@@ -328,7 +432,7 @@ namespace EventApp.EventServiceTests
                 var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
                 try
                 {
-                    var newBooking = await bookingService.CreateBookingAsync(expectedEventId);
+                    var newBooking = await bookingService.CreateBookingAsync(expectedEventId, userForTest.Id);
                     if (newBooking != null)
                     {
                         Interlocked.Increment(ref SaccesfullBookingCount);
@@ -367,6 +471,12 @@ namespace EventApp.EventServiceTests
             var numbers = Enumerable.Range(0, 10).ToArray();
             var options = new ParallelOptions { MaxDegreeOfParallelism = 5 };
             var cuncuretBookingIdsBag = new ConcurrentBag<Guid>();
+            var userForTest = await _userRepository.GetByLogin("UserForTests", token);
+            if (userForTest == null)
+            {
+                userForTest = CreateUserForTest();
+                await _userRepository.AddAsync(userForTest, token);
+            }
 
             await Parallel.ForEachAsync(numbers, options, async (numbers, token) =>
             {
@@ -374,7 +484,7 @@ namespace EventApp.EventServiceTests
                 var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
                 try
                 {
-                    var newBooking = await bookingService.CreateBookingAsync(expectedEventId);
+                    var newBooking = await bookingService.CreateBookingAsync(expectedEventId, userForTest.Id);
                     if (newBooking != null)
                     {
                         cuncuretBookingIdsBag.Add(newBooking.Id);
@@ -385,6 +495,190 @@ namespace EventApp.EventServiceTests
             var uniqueIdsCount = cuncuretBookingIdsBag.Distinct().Count();
 
             Assert.Equal(expectedNoAvailableSeatsExceptionCount, uniqueIdsCount);
+        }
+        [Fact, Priority(17)]
+        public async Task TryBookPastEvent_Return_PastEventBookingException()
+        {
+            var token = new CancellationToken();
+            var expectedExceptionMessage = "You cannot book an event that has already taken place.";
+            var pastEvent = new CreateEventDto
+            {
+                Title = "Test Event",
+                StartAt = DateTime.UtcNow.AddDays(-2),
+                EndAt = DateTime.UtcNow.AddDays(-1),
+                TotalSeats = 10
+            };
+            var expectedPastEvent = await _eventService.CreateEventAsync(pastEvent, token);
+            var userForTest = await _userRepository.GetByLogin("UserForTests", token);
+            if (userForTest == null)
+            {
+                userForTest = CreateUserForTest();
+                await _userRepository.AddAsync(userForTest, token);
+            }
+
+            var exception = await Assert
+            .ThrowsAsync<PastEventBookingException>(async () => await _bookingService.CreateBookingAsync(expectedPastEvent.Id, userForTest.Id, token));
+
+            Assert.Equal(expectedExceptionMessage, exception.Message);
+        }
+
+        [Fact, Priority(17)]
+        public async Task WhenThelimitOfActiveBookIsReached_ANewBookIsNotCreated()
+        {
+            var token = new CancellationToken();
+            var expectedExceptionMessage = "The limit of 10 active bookings has been reached.";
+            var expectedBookingLimitCount = 10;
+            int count = 0;
+            var expectedEventId = await CreateTestEventAsync();
+            var userForTest = await _userRepository.GetByLogin("UserForTests", token);
+            if (userForTest == null)
+            {
+                userForTest = CreateUserForTest();
+                await _userRepository.AddAsync(userForTest, token);
+            }
+            for (int i = 0; i < expectedBookingLimitCount; i++)
+            {
+                await _bookingService.CreateBookingAsync(expectedEventId, userForTest.Id, token);
+            }
+            var exception = await Assert
+            .ThrowsAsync<ActiveLeasesExceededException>(async () => await _bookingService.CreateBookingAsync(expectedEventId, userForTest.Id, token));
+            count++;
+            Assert.Equal(expectedExceptionMessage, exception.Message);
+        }
+
+        [Fact, Priority(18)]
+        public async Task TheLimitsSetByDifferentUsersDoNotAffectEachOther()
+        {
+            var token = new CancellationToken();
+            var expectedSuccessfulBookingCount = 11;
+            int successfulBookingCount = 0;
+            var expectedEventId = await CreateTestEventAsync();
+            var userForTest1 = await _userRepository.GetByLogin("UserForTests", token);
+            if (userForTest1 == null)
+            {
+                userForTest1 = CreateUserForTest();
+                await _userRepository.AddAsync(userForTest1, token);
+            }
+            string hashPassword;
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                var passwordBytes = Encoding.UTF8.GetBytes("12345678");
+                var hashBytes = sha256.ComputeHash(passwordBytes);
+
+                hashPassword = Convert.ToHexString(hashBytes);
+            }
+            var userForTest2 = User.CreateUser(
+                    "UserForTests2",
+                    hashPassword,
+                    UserRoles.Admin
+                );
+            await _userRepository.AddAsync(userForTest2, token);
+
+            for (int i = 0; i < 5; i++)
+            {
+                await _bookingService.CreateBookingAsync(expectedEventId, userForTest1.Id, token);
+                successfulBookingCount++;
+            }
+            for (int i = 0; i < 6; i++)
+            {
+                await _bookingService.CreateBookingAsync(expectedEventId, userForTest2.Id, token);
+                successfulBookingCount++;
+            }
+
+            Assert.Equal(expectedSuccessfulBookingCount, successfulBookingCount);
+        }
+
+        [Fact, Priority(19)]
+        public async Task CancellationSomeoneElsesBooking_Return_PermissionDeniedException()
+        {
+            var expectedExceptionMessage = "The user does not have the rights to perform this operation.";
+            var token = new CancellationToken();
+            var expectedEventId = await CreateTestEventAsync();
+            var userForTest1 = await _userRepository.GetByLogin("UserForTests", token);
+            if (userForTest1 == null)
+            {
+                userForTest1 = CreateUserForTest();
+                await _userRepository.AddAsync(userForTest1, token);
+            }
+            string hashPassword;
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                var passwordBytes = Encoding.UTF8.GetBytes("12345678");
+                var hashBytes = sha256.ComputeHash(passwordBytes);
+
+                hashPassword = Convert.ToHexString(hashBytes);
+            }
+            var userForTest2 = User.CreateUser(
+                    "UserForTests2",
+                    hashPassword,
+                    UserRoles.User
+                );
+            await _userRepository.AddAsync(userForTest2, token);
+
+            var expextedBooking = await _bookingService.CreateBookingAsync(expectedEventId, userForTest1.Id, token);
+
+            var exception = await Assert
+            .ThrowsAsync<PermissionDeniedException>(async () => await _bookingService.CancellationBookingAsync(expextedBooking.Id, userForTest2.Id, token));
+            Assert.Equal(expectedExceptionMessage, exception.Message);
+        }
+        [Fact, Priority(20)]
+        public async Task CancelUserOwnBooking_Return_CancelledBookingStatus()
+        {
+            var token = new CancellationToken();
+            var expectedBookingStatus = BookingStatus.Cancelled;
+            var expectedEventId = await CreateTestEventAsync();
+            string hashPassword;
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                var passwordBytes = Encoding.UTF8.GetBytes("12345678");
+                var hashBytes = sha256.ComputeHash(passwordBytes);
+
+                hashPassword = Convert.ToHexString(hashBytes);
+            }
+            var userForTest = User.CreateUser(
+                    "UserForTests2",
+                    hashPassword,
+                    UserRoles.User
+                );
+            await _userRepository.AddAsync(userForTest, token);
+
+            var expextedBooking = await _bookingService.CreateBookingAsync(expectedEventId, userForTest.Id, token);
+            var cancelsedBooking = await _bookingService.CancellationBookingAsync(expextedBooking.Id, userForTest.Id, token);
+
+            Assert.Equal(expectedBookingStatus, cancelsedBooking.Status);
+        }
+
+        [Fact, Priority(21)]
+        public async Task CancelAdminSomeoneElsesBooking_Return_CancelledBookingStatus()
+        {
+            var token = new CancellationToken();
+            var expectedBookingStatus = BookingStatus.Cancelled;
+            var expectedEventId = await CreateTestEventAsync();
+            var adminForTest = await _userRepository.GetByLogin("UserForTests", token);
+            if (adminForTest == null)
+            {
+                adminForTest = CreateUserForTest();
+                await _userRepository.AddAsync(adminForTest, token);
+            }
+            string hashPassword;
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                var passwordBytes = Encoding.UTF8.GetBytes("12345678");
+                var hashBytes = sha256.ComputeHash(passwordBytes);
+
+                hashPassword = Convert.ToHexString(hashBytes);
+            }
+            var userForTest = User.CreateUser(
+                    "UserForTests2",
+                    hashPassword,
+                    UserRoles.User
+                );
+            await _userRepository.AddAsync(userForTest, token);
+
+            var expextedBooking = await _bookingService.CreateBookingAsync(expectedEventId, userForTest.Id, token);
+            var cancelsedBooking = await _bookingService.CancellationBookingAsync(expextedBooking.Id, adminForTest.Id, token);
+
+            Assert.Equal(expectedBookingStatus, cancelsedBooking.Status);
         }
 
         public async Task CreateEventsForTestsAsync()
@@ -409,7 +703,7 @@ namespace EventApp.EventServiceTests
                     new CreateEventDto(){ Title = "Title14", Description = "Description14", StartAt = DateTime.Now.AddDays(8), EndAt = DateTime.Now.AddDays(9), TotalSeats = 100},
                     new CreateEventDto(){ Title = "Title15", Description = "Description15", StartAt = DateTime.Now.AddDays(9), EndAt = DateTime.Now.AddDays(10), TotalSeats = 100}
                 };
-            if (!events.ListEvents.Any())
+         /*   if (!events.ListEvents!.Any())
             {
                 foreach (var @event in expectedEvents)
                 {
@@ -417,8 +711,8 @@ namespace EventApp.EventServiceTests
                 }
             }
             else
-            {
-                foreach (var ev in events.ListEvents)
+            { */
+                foreach (var ev in events.ListEvents!)
                 {
                     await _eventService.DeleteEventAsync(ev.Id, token);
                 }
@@ -426,7 +720,24 @@ namespace EventApp.EventServiceTests
                 {
                     await _eventService.CreateEventAsync(@event, token);
                 }
+         /*   } */
+        }
+
+        public User CreateUserForTest()
+        {
+            string hashPassword;
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                var passwordBytes = Encoding.UTF8.GetBytes("12345678");
+                var hashBytes = sha256.ComputeHash(passwordBytes);
+
+                hashPassword = Convert.ToHexString(hashBytes);
             }
+            return User.CreateUser(
+                    "UserForTests",
+                    hashPassword,
+                    UserRoles.Admin
+                );
         }
     }
 }

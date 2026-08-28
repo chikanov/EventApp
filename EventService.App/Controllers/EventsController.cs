@@ -1,7 +1,10 @@
 ﻿using EventService.Application.Abstractions.Services;
 using EventService.Application.DTOs;
+using EventService.Domain.CustomExceptions;
 using EventService.Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace EventService.App.Controllers
 {
@@ -12,11 +15,13 @@ namespace EventService.App.Controllers
     {
         private readonly IEventService _eventService;
         private readonly IBookingService _bookingService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         /// text
-        public EventsController(IEventService eventService, IBookingService bookingService)
+        public EventsController(IEventService eventService, IBookingService bookingService, IHttpContextAccessor httpContextAccessor)
         {
             _eventService = eventService;
             _bookingService = bookingService;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         /// <summary>
@@ -28,6 +33,7 @@ namespace EventService.App.Controllers
         /// <param name="page">Number of page</param>
         /// <param name="pageSize">Page size</param>
         /// <returns>Collection Events</returns>
+        [AllowAnonymous]
         [HttpGet]
         public async Task<ActionResult<PaginatedResult>> GetAllEventsAsync([FromQuery] string? title = null,
             [FromQuery] DateTime? from = null, [FromQuery] DateTime? to = null,
@@ -42,7 +48,9 @@ namespace EventService.App.Controllers
         /// </summary>
         /// <param name="id">Id</param>
         /// <returns>Event event</returns>
+        [AllowAnonymous]
         [HttpGet("{id}")]
+        [ActionName("GetEventByIdAsync")]
         public async Task<ActionResult<Event>> GetEventByIdAsync([FromRoute] int id)
         {
             var ev = await _eventService.GetByIdAsync(id);
@@ -54,6 +62,7 @@ namespace EventService.App.Controllers
         /// POST: Create new event.
         /// </summary>
         /// <returns>Event eventt</returns>
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<ActionResult<Event>> CreateEventAsync(CreateEventDto ev)
         {
@@ -70,6 +79,7 @@ namespace EventService.App.Controllers
         /// PUT: Update Event
         /// </summary>
         /// <returns>Event eventt</returns>
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         public async Task<ActionResult<EventDto>> UpdateEventAsync([FromRoute] int id, EventDto ev)
         {
@@ -84,6 +94,7 @@ namespace EventService.App.Controllers
         /// DELETE: Delete Event
         /// </summary>
         /// <returns>Event eventt</returns>
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<ActionResult<Event>> DeleteEventAsync([FromRoute] int id)
         {
@@ -94,16 +105,39 @@ namespace EventService.App.Controllers
         /// <summary>
         /// POST: Create new booking.
         /// </summary>
-        /// <param name="eventId">Event Id</param>
+        /// <param name="id">Event Id</param>
+        /// <param name="token">CancellationToken</param>
         /// <returns>Return Booking and link to booking in Headers</returns>
+        [Authorize(Roles = "User, Admin")]
         [HttpPost]
         [Route("{id}/book")]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<Booking>> CreateBookingAsync([FromRoute] int id)
+        public async Task<ActionResult<Booking>> CreateBookingAsync([FromRoute] int id, CancellationToken token)
         {
-            var newBooking = await _bookingService.CreateBookingAsync(id);
+            var userId = GetUserId();
 
-            return Accepted($"/bookings/{newBooking.Id}", newBooking);
+            try
+            {
+                var newBooking = await _bookingService.CreateBookingAsync(id, userId, token);
+
+                return Accepted($"/bookings/{newBooking.Id}", newBooking);
+            }
+            catch (PastEventBookingException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (ActiveLeasesExceededException ex)
+            {
+                return Conflict(ex.Message);
+            }
+            
+        }
+        private Guid GetUserId()
+        {
+            var currentUser = _httpContextAccessor?.HttpContext?.User;
+            var userIdClaim = currentUser!.FindFirst(ClaimTypes.NameIdentifier);
+            var userId = Guid.Parse(userIdClaim!.Value);
+            return userId;
         }
     }
 }

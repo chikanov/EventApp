@@ -75,7 +75,7 @@ namespace EventService.Application.Services
                 existEvent = await _eventRepository.UpdateAsync(ev, existEvent, cancellationToken);
             }
 
-            return existEvent;
+            return existEvent!;
         }
 
         /// Delete

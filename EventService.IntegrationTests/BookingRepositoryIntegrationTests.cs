@@ -1,9 +1,13 @@
-﻿using EventService.Domain.Entities;
+﻿using EventService.Application.Abstractions.Persistence.Repositories;
+using EventService.Domain.Entities;
+using EventService.Domain.Entities.Enum;
 using EventService.Domain.Models.Enum;
 using EventService.Infrastructure.Persistence.DataAccess;
 using EventService.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using System.Security.Cryptography;
+using System.Text;
 using Testcontainers.PostgreSql;
 
 namespace EventApp.EventServiceIntegrationTests
@@ -52,7 +56,12 @@ namespace EventApp.EventServiceIntegrationTests
 
             var bookingRepository = new BookingRepository(context);
             var eventId = context.Events.First().Id;
-            var newBooking = Booking.CreatePending(eventId);
+
+            var userRepository= new UserRepository(context);
+            var user = CreateUserForTest();
+            await userRepository.AddAsync(user, token);
+
+            var newBooking = Booking.CreatePending(eventId, user.Id);
             await bookingRepository.AddAsync(newBooking, token);
 
             await using var verifyContext = CreateContext();
@@ -77,9 +86,13 @@ namespace EventApp.EventServiceIntegrationTests
             var bookingRepository = new BookingRepository(context);
             var eventId = context.Events.First().Id;
 
+            var userRepository = new UserRepository(context);
+            var user = CreateUserForTest();
+            await userRepository.AddAsync(user, token);
+
             for (int i = 1; i <= expectedBookingsCount; i++)
             {
-                var newBooking = Booking.CreatePending(eventId);
+                var newBooking = Booking.CreatePending(eventId, user.Id);
                 await bookingRepository.AddAsync(newBooking, token);
             }
 
@@ -103,7 +116,12 @@ namespace EventApp.EventServiceIntegrationTests
 
             var bookingRepository = new BookingRepository(context);
             var eventId = context.Events.First().Id;
-            var newBooking = Booking.CreatePending(eventId);
+
+            var userRepository = new UserRepository(context);
+            var user = CreateUserForTest();
+            await userRepository.AddAsync(user, token);
+
+            var newBooking = Booking.CreatePending(eventId, user.Id);
             await bookingRepository.AddAsync(newBooking, token);
 
             await using var verifyContext = CreateContext();
@@ -128,9 +146,14 @@ namespace EventApp.EventServiceIntegrationTests
 
             var bookingRepository = new BookingRepository(context);
             var eventId = context.Events.First().Id;
-            var newBooking1 = Booking.CreatePending(eventId);
+
+            var userRepository = new UserRepository(context);
+            var user = CreateUserForTest();
+            await userRepository.AddAsync(user, token);
+
+            var newBooking1 = Booking.CreatePending(eventId, user.Id);
             await bookingRepository.AddAsync(newBooking1, token);
-            var newBooking2 = Booking.CreatePending(eventId);
+            var newBooking2 = Booking.CreatePending(eventId, user.Id);
             await bookingRepository.AddAsync(newBooking2, token);
             newBooking2.Status = BookingStatus.Rejected;
             await bookingRepository.SaveChangesAsync(token);
@@ -155,7 +178,12 @@ namespace EventApp.EventServiceIntegrationTests
 
             var bookingRepository = new BookingRepository(context);
             var eventId = context.Events.First().Id;
-            var newBooking = Booking.CreatePending(eventId);
+
+            var userRepository = new UserRepository(context);
+            var user = CreateUserForTest();
+            await userRepository.AddAsync(user, token);
+
+            var newBooking = Booking.CreatePending(eventId, user.Id);
             await bookingRepository.AddAsync(newBooking, token);
 
             await using var verifyContext = CreateContext();
@@ -177,7 +205,12 @@ namespace EventApp.EventServiceIntegrationTests
 
             var bookingRepository = new BookingRepository(context);
             var eventId = context.Events.First().Id;
-            var newBooking = Booking.CreatePending(eventId);
+
+            var userRepository = new UserRepository(context);
+            var user = CreateUserForTest();
+            await userRepository.AddAsync(user, token);
+
+            var newBooking = Booking.CreatePending(eventId, user.Id);
             await bookingRepository.AddAsync(newBooking, token);
 
             await using var actContext = CreateContext();
@@ -204,6 +237,23 @@ namespace EventApp.EventServiceIntegrationTests
                 DateTime.Now.ToUniversalTime().AddDays(1),
                 100
             );
+        }
+
+        public User CreateUserForTest()
+        {
+            string hashPassword;
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                var passwordBytes = Encoding.UTF8.GetBytes("12345678");
+                var hashBytes = sha256.ComputeHash(passwordBytes);
+
+                hashPassword =  Convert.ToHexString(hashBytes);
+            }
+            return User.CreateUser(
+                    "UserForTests",
+                    hashPassword,
+                    UserRoles.Admin
+                );
         }
     }
 }
