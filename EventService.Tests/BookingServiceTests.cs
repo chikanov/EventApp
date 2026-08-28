@@ -526,7 +526,7 @@ namespace EventApp.EventServiceTests
         public async Task WhenThelimitOfActiveBookIsReached_ANewBookIsNotCreated()
         {
             var token = new CancellationToken();
-            var expectedExceptionMessage = "The limit of active armor has been reached.";
+            var expectedExceptionMessage = "The limit of 10 active bookings has been reached.";
             var expectedBookingLimitCount = 10;
             int count = 0;
             var expectedEventId = await CreateTestEventAsync();

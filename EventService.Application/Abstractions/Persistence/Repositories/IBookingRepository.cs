@@ -10,5 +10,6 @@ namespace EventService.Application.Abstractions.Persistence.Repositories
         Task<List<Booking>> GetPendingAsync(CancellationToken ct = default);
         Task<bool> AnyAsync(CancellationToken ct = default);
         Task SaveChangesAsync(CancellationToken ct = default);
+        Task<List<Booking>> GetUserOwnBookingAsync(Guid userId, int eventId, CancellationToken ct = default);
     }
 }

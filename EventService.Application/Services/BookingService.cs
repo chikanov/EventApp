@@ -40,12 +40,11 @@ namespace EventService.Application.Services
                     throw new PastEventBookingException("You cannot book an event that has already taken place.");
                 }
 
-                var bookings = await _bookingRepository.GetAllAsync(cancellationToken);
-                var bookingsCount = bookings.Where(b => b.UserId == userId && b.EventId == eventId &&
-                                    b.Status == BookingStatus.Pending || b.Status == BookingStatus.Confirmed).Count();
-                if (currentUser!.Bookings != null && bookingsCount == bookingLimit)
+                var userBookingsOnCurEvent = await _bookingRepository.GetUserOwnBookingAsync(userId, eventId, cancellationToken);
+
+                if (currentUser!.Bookings != null && userBookingsOnCurEvent.Count() == bookingLimit)
                 {
-                    throw new ActiveLeasesExceededException("The limit of active armor has been reached.");
+                    throw new ActiveLeasesExceededException($"The limit of {bookingLimit} active bookings has been reached.");
                 }
 
 
@@ -115,9 +114,8 @@ namespace EventService.Application.Services
             {
                 throw new NotFoundException($"Booking with id - {bookingId} dose not exist.");
             }
-            var bookings = await _bookingRepository.GetAllAsync(cancellationToken);
-            var bookingsCurUser = bookings.Where(b => b.UserId == userId && b.EventId == curBooking.EventId &&
-                                b.Status == BookingStatus.Pending || b.Status == BookingStatus.Confirmed);
+            var bookingsCurUser = await _bookingRepository.GetUserOwnBookingAsync(userId, curBooking.EventId, cancellationToken);
+
             if (curUser.Role == UserRoles.User && !bookingsCurUser.Select(b => b.Id).Contains(bookingId))
             {
                 throw new PermissionDeniedException("The user does not have the rights to perform this operation.");

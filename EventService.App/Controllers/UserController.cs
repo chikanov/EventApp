@@ -30,11 +30,7 @@ namespace EventService.App.Controllers
             try
             {
                 var currentUser = await _userService.GetByLogin(login);
-                if (currentUser == null)
-                {
-                    return Unauthorized();
-                }
-                if (!AuthenticationComponent.VerifyPassword(password, currentUser.Password))
+                if (currentUser == null || !AuthenticationComponent.VerifyPassword(password, currentUser.Password))
                 {
                     return BadRequest();
                 }
