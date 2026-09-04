@@ -12,7 +12,12 @@
   </Folder>
   <Folder Name="/EventApp/Services/" />
   <Folder Name="/EventApp/Services/Booking/" />
-  <Folder Name="/EventApp/Services/Event/" />
+  <Folder Name="/EventApp/Services/Event/">
+    <Project Path="Services/Event/EventService.App/EventService.App.csproj" Id="5feb619e-9e7f-4854-a1dd-95088972118e" />
+    <Project Path="Services/Event/EventService.Application/EventService.Application.csproj" Id="d8c8a818-84f2-4380-8b67-960cca24b2cd" />
+    <Project Path="Services/Event/EventService.Domain/EventService.Domain.csproj" Id="dca6c978-3ac6-437f-a72f-cfe3a8e3134b" />
+    <Project Path="Services/Event/EventService.Infrastructure/EventService.Infrastructure.csproj" Id="7768077b-f905-4109-acab-716c64f4b184" />
+  </Folder>
   <Folder Name="/EventApp/Services/User/">
     <Project Path="Services/User/UserService.App/UserService.App.csproj" Id="b19e35d4-0d2f-4073-9d4f-452ec137ee25" />
     <Project Path="Services/User/UserService.Application/UserService.Application.csproj" Id="6b0aeffc-e830-4cc5-9377-20a493d0d9b7" />
