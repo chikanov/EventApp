@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <Folder Include="CustomExceptions\" />
-    <Folder Include="Entities\" />
   </ItemGroup>
 
 </Project>

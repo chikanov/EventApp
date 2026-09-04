@@ -8,8 +8,6 @@
 
   <ItemGroup>
     <Folder Include="Abstractions\Persistence\Repositories\" />
-    <Folder Include="Abstractions\Services\" />
-    <Folder Include="Services\" />
   </ItemGroup>
 
   <ItemGroup>
