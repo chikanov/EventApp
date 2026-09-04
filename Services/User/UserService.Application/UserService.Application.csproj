@@ -7,13 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Abstractions\Persistence\Repositories\" />
-    <Folder Include="Abstractions\Services\" />
-    <Folder Include="DTOs\" />
-    <Folder Include="Services\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\UserService.Domain\UserService.Domain.csproj" />
   </ItemGroup>
 

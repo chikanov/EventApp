@@ -48,6 +48,7 @@ builder.Services.AddSwaggerGen(options =>
         });
 });
 builder.Services.AddProblemDetails();
+builder.Services.AddOpenApi();
 var app = builder.Build();
 InfrastructureServiceCollectionExtensions.DatabaseMigrate(app);
 app.UseMiddleware<GlobalExceptionHandlingMiddleware>();

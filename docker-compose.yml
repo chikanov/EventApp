@@ -1,26 +1,26 @@
-# PostgreSQL для EventApi — совпадает с ConnectionStrings:DefaultConnection в appsettings.json
+# PostgreSQL для UserApi — совпадает с ConnectionStrings:DefaultConnection в appsettings.json
 # Запуск из корня репозитория: docker compose up -d
 # Остановка: docker compose down
-# Данные сохраняются в именованном томе eventapi_pgdata
+# Данные сохраняются в именованном томе userapi_pgdata
 
 services:
-  postgres:
+  userdb:
     image: postgres:16-alpine
-    container_name: eventapi-postgres
+    container_name: userapi-postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: eventapi
+      POSTGRES_DB: userapi
     ports:
       - "5432:5432"
     volumes:
-      - eventapi_pgdata:/var/lib/postgresql/data
+      - userapi_pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d eventapi"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d userapi"]
       interval: 5s
       timeout: 5s
       retries: 5
 
 volumes:
-  eventapi_pgdata:
+  userapi_pgdata:
