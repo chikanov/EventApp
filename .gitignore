@@ -5,6 +5,10 @@
 /EventService.Domain/obj
 /EventService.Application/obj
 /EventService.Infrastructure/obj
+/Services/User/UserService.App/obj
+/Services/User/UserService.Domain/obj
+/Services/User/UserService.Application/obj
+/Services/User/UserService.Infrastructure/obj
 
 /bin
 /EventService.App/bin
@@ -13,6 +17,10 @@
 /EventService.Domain/bin
 /EventService.Application/bin
 /EventService.Infrastructure/bin
+/Services/User/UserService.App/bin
+/Services/User/UserService.Domain/bin
+/Services/User/UserService.Application/bin
+/Services/User/UserService.Infrastructure/bin
 
 /.vs
 /EventService.App/.vs
@@ -21,3 +29,7 @@
 /EventService.Domain/.vs
 /EventService.Application/.vs
 /EventService.Infrastructure/.vs
+/Services/User/UserService.App/.vs
+/Services/User/UserService.Domain/.vs
+/Services/User/UserService.Application/.vs
+/Services/User/UserService.Infrastructure/.vs

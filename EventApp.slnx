@@ -10,4 +10,13 @@
     <Project Path="EventService.IntegrationTests/EventService.IntegrationTests.csproj" Id="b229825e-bf57-46c9-80ef-84cf1db7f25c" />
     <Project Path="EventService.Tests/EventService.Tests.csproj" Id="c96579e5-65b8-4592-b0bc-aed840a456bc" />
   </Folder>
+  <Folder Name="/EventApp/Services/" />
+  <Folder Name="/EventApp/Services/Booking/" />
+  <Folder Name="/EventApp/Services/Event/" />
+  <Folder Name="/EventApp/Services/User/">
+    <Project Path="Services/User/UserService.App/UserService.App.csproj" Id="b19e35d4-0d2f-4073-9d4f-452ec137ee25" />
+    <Project Path="Services/User/UserService.Application/UserService.Application.csproj" Id="6b0aeffc-e830-4cc5-9377-20a493d0d9b7" />
+    <Project Path="Services/User/UserService.Domain/UserService.Domain.csproj" Id="de53ad31-1c35-4390-82f5-c4779aec58cb" />
+    <Project Path="Services/User/UserService.Infrastructure/UserService.Infrastructure.csproj" Id="d65d70ed-c35f-47d2-a16d-d7bd6829c719" />
+  </Folder>
 </Solution>
