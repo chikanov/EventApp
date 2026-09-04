@@ -11,7 +11,12 @@
     <Project Path="EventService.Tests/EventService.Tests.csproj" Id="c96579e5-65b8-4592-b0bc-aed840a456bc" />
   </Folder>
   <Folder Name="/EventApp/Services/" />
-  <Folder Name="/EventApp/Services/Booking/" />
+  <Folder Name="/EventApp/Services/Booking/">
+    <Project Path="Services/Booking/BookingService.App/BookingService.App.csproj" Id="e81abd84-6c45-4152-b8bf-5dd6c471059d" />
+    <Project Path="Services/Booking/BookingService.Application/BookingService.Application.csproj" Id="4bf94add-1c2d-4cca-8d54-f30610d44b53" />
+    <Project Path="Services/Booking/BookingService.Domain/BookingService.Domain.csproj" Id="2414c9e5-c4e7-4f0a-9da8-031e67a79774" />
+    <Project Path="Services/Booking/BookingService.Infrastructure/BookingService.Infrastructure.csproj" Id="4447f22e-7ba2-4b42-91c8-12b5cfdea2e8" />
+  </Folder>
   <Folder Name="/EventApp/Services/Event/">
     <Project Path="Services/Event/EventService.App/EventService.App.csproj" Id="5feb619e-9e7f-4854-a1dd-95088972118e" />
     <Project Path="Services/Event/EventService.Application/EventService.Application.csproj" Id="d8c8a818-84f2-4380-8b67-960cca24b2cd" />

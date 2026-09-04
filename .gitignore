@@ -13,6 +13,10 @@
 /Services/Event/EventService.Domain/obj
 /Services/Event/EventService.Application/obj
 /Services/Event/EventService.Infrastructure/obj
+/Services/Booking/BookingService.App/obj
+/Services/Booking/BookingService.Domain/obj
+/Services/Booking/BookingService.Application/obj
+/Services/Booking/BookingService.Infrastructure/obj
 
 /bin
 /EventService.App/bin
@@ -29,6 +33,10 @@
 /Services/Event/EventService.Domain/bin
 /Services/Event/EventService.Application/bin
 /Services/Event/EventService.Infrastructure/bin
+/Services/Booking/BookingService.App/bin
+/Services/Booking/BookingService.Domain/bin
+/Services/Booking/BookingService.Application/bin
+/Services/Booking/BookingService.Infrastructure/bin
 
 /.vs
 /EventService.App/.vs
@@ -45,3 +53,7 @@
 /Services/Event/EventService.Domain/.vs
 /Services/Event/EventService.Application/.vs
 /Services/Event/EventService.Infrastructure/.vs
+/Services/Booking/BookingService.App/.vs
+/Services/Booking/BookingService.Domain/.vs
+/Services/Booking/BookingService.Application/.vs
+/Services/Booking/BookingService.Infrastructure/.vs
