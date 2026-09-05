@@ -17,6 +17,10 @@
 /Services/Booking/BookingService.Domain/obj
 /Services/Booking/BookingService.Application/obj
 /Services/Booking/BookingService.Infrastructure/obj
+Shared/Exceptions/EventApp.Shared.Exceptions/obj
+Shared/Exceptions/EventApp.Shared.Authentication/obj
+EventApp.Shared.Exceptions/obj
+EventApp.Shared.Authentication/obj
 
 /bin
 /EventService.App/bin
@@ -37,6 +41,10 @@
 /Services/Booking/BookingService.Domain/bin
 /Services/Booking/BookingService.Application/bin
 /Services/Booking/BookingService.Infrastructure/bin
+Shared/Exceptions/EventApp.Shared.Exceptions/bin
+Shared/Exceptions/EventApp.Shared.Authentication/bin
+EventApp.Shared.Exceptions/bin
+EventApp.Shared.Authentication/bin
 
 /.vs
 /EventService.App/.vs
@@ -57,3 +65,7 @@
 /Services/Booking/BookingService.Domain/.vs
 /Services/Booking/BookingService.Application/.vs
 /Services/Booking/BookingService.Infrastructure/.vs
+Shared/Exceptions/EventApp.Shared.Exceptions/.vs
+Shared/Exceptions/EventApp.Shared.Authentication/.vs
+EventApp.Shared.Exceptions/.vs
+EventApp.Shared.Authentication/.vs

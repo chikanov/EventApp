@@ -1,9 +1,9 @@
-﻿using EventService.Domain.CustomExceptions;
+﻿using EventApp.Shared.Exceptions.CustomExceptions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
-namespace EventService.App.Middleware
+namespace EventApp.Shared.Exceptions
 {
     public class GlobalExceptionHandlingMiddleware
     {

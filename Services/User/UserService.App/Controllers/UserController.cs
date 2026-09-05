@@ -8,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using EventApp.Shared.Authentication;
 
 namespace UserService.App.Controllers
 {
@@ -23,6 +24,12 @@ namespace UserService.App.Controllers
             _userService = userService;
             _configuration = configuration;
         }
+        /// <summary>
+        /// POST: Login.
+        /// </summary>
+        /// <param name="login">User login</param>
+        /// <param name="password">User password</param>
+        /// <returns>Access Token</returns>
         [AllowAnonymous]
         [HttpPost("auth/login")]
         public async Task<ActionResult> Login([FromQuery] string login, [FromQuery] string password, CancellationToken cancellationToken)

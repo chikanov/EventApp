@@ -1,8 +1,12 @@
-using EventService.App;
-using EventService.App.Middleware;
+using EventApp.Shared.Exceptions;
+using EventService.Application.Abstractions.Persistence.Repositories;
+using EventService.Application.Abstractions.Services;
+using EventService.Infrastructure.Persistence.DataAccess;
+using EventService.Infrastructure.Persistence.Repositories;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using System.Reflection;
-using UserService.App;
+using EventApp.Shared.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 AuthenticationComponent.AddAuthentication(builder);
@@ -14,8 +18,15 @@ builder.Services.AddControllersWithViews()
     .AddNewtonsoftJson(options =>
     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
 );
-InfrastructureServiceCollectionExtensions.AddInfrastructureServices(builder);
-ApplicationServiceCollectionExtensionscs.AddInfrastructureServices(builder);
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+                ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+builder.Services.AddOpenApi();
+builder.Services.AddDbContext<EventDbContext>(options =>
+    options.UseNpgsql(connectionString));
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+builder.Services.AddScoped<IEventRepository, EventRepository>();
+builder.Services.AddScoped<IEventService, EventService.Application.Services.EventService>();
+
 builder.Services.AddSwaggerGen(options =>
 {
     var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
@@ -50,7 +61,12 @@ builder.Services.AddProblemDetails();
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
-InfrastructureServiceCollectionExtensions.DatabaseMigrate(app);
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<EventDbContext>();
+    db.Database.Migrate();
+}
 app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

@@ -1,5 +1,11 @@
-using BookingService.App;
-using BookingService.App.Middleware;
+using BookingService.Application.Abstractions.Persistence.Repositories;
+using BookingService.Application.Abstractions.Services;
+using BookingService.Application.BackgroundServices;
+using BookingService.Infrastructure.Persistence.DataAccess;
+using BookingService.Infrastructure.Persistence.Repositories;
+using EventApp.Shared.Exceptions;
+using EventApp.Shared.Authentication;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using System.Reflection;
 
@@ -14,8 +20,15 @@ builder.Services.AddControllersWithViews()
     .AddNewtonsoftJson(options =>
     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
 );
-InfrastructureServiceCollectionExtensions.AddInfrastructureServices(builder);
-ApplicationServiceCollectionExtensionscs.AddInfrastructureServices(builder);
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+                ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+builder.Services.AddOpenApi();
+builder.Services.AddDbContext<BookingDbContext>(options =>
+    options.UseNpgsql(connectionString));
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+builder.Services.AddScoped<IBookingRepository, BookingRepository>();
+builder.Services.AddScoped<IBookingService, BookingService.Application.Services.BookingService>();
+builder.Services.AddHostedService<BookingBackgroundService>();
 
 builder.Services.AddSwaggerGen(options =>
 {
@@ -51,7 +64,12 @@ builder.Services.AddProblemDetails();
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
-InfrastructureServiceCollectionExtensions.DatabaseMigrate(app);
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<BookingDbContext>();
+    db.Database.Migrate();
+}
 app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

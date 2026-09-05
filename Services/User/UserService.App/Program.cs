@@ -1,7 +1,12 @@
+using EventApp.Shared.Exceptions;
+using EventApp.Shared.Authentication;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using System.Reflection;
-using UserService.App;
-using UserService.App.Middleware;
+using UserService.Application.Abstractions.Persistence.Repositories;
+using UserService.Application.Abstractions.Services;
+using UserService.Infrastructure.Persistence.DataAccess;
+using UserService.Infrastructure.Persistence.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 AuthenticationComponent.AddAuthentication(builder);
@@ -13,8 +18,15 @@ builder.Services.AddControllersWithViews()
     .AddNewtonsoftJson(options =>
     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
 );
-InfrastructureServiceCollectionExtensions.AddInfrastructureServices(builder);
-ApplicationServiceCollectionExtensionscs.AddInfrastructureServices(builder);
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+                ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+builder.Services.AddOpenApi();
+builder.Services.AddDbContext<UserDbContext>(options =>
+    options.UseNpgsql(connectionString));
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IUserService, UserService.Application.Services.UserService>();
+
 builder.Services.AddSwaggerGen(options =>
 {
     var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
@@ -49,7 +61,13 @@ builder.Services.AddProblemDetails();
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
-InfrastructureServiceCollectionExtensions.DatabaseMigrate(app);
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<UserDbContext>();
+    db.Database.Migrate();
+
+}
 app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

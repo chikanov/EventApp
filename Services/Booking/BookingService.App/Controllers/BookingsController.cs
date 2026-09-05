@@ -63,6 +63,11 @@ namespace BookingService.App.Controllers
 
             return Ok(booking);
         }
+        /// <summary>
+        /// DELETE: Delete Booking by id.
+        /// </summary>
+        /// <param name="id">Booking guid Id</param>
+        /// <returns>Return No Content</returns>
         [Authorize(Roles = "User,Admin")]
         [HttpDelete("{id}")]
         public async Task<ActionResult<Booking>> CancellationBooking([FromRoute] Guid id, CancellationToken cancellationToken)

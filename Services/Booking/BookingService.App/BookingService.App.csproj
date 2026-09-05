@@ -21,6 +21,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\EventApp.Shared.Authentication\EventApp.Shared.Authentication.csproj" />
+    <ProjectReference Include="..\..\..\Shared\Exceptions\EventApp.Shared.Exceptions\EventApp.Shared.Exceptions.csproj" />
     <ProjectReference Include="..\BookingService.Application\BookingService.Application.csproj" />
     <ProjectReference Include="..\BookingService.Infrastructure\BookingService.Infrastructure.csproj" />
   </ItemGroup>
