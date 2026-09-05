@@ -36,4 +36,7 @@
   <Folder Name="/EventApp/Shared/Exceptions/">
     <Project Path="Shared/Exceptions/EventApp.Shared.Exceptions/EventApp.Shared.Exceptions.csproj" Id="6b8f0acd-6cda-4a3e-8e33-8b9272d0dad0" />
   </Folder>
+  <Folder Name="/EventApp/Shared/Kafka/">
+    <Project Path="Shared/Kafka/EventApp.Shared.Kafka/EventApp.Shared.Kafka.csproj" Id="ab8e98df-b7ff-4e0f-93ff-f4a837081f6e" />
+  </Folder>
 </Solution>
