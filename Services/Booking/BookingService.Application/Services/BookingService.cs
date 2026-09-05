@@ -61,7 +61,7 @@ namespace BookingService.Application.Services
         //    var curUser = await _userRepository.GetByIdAsync(userId, cancellationToken);
             if (book == null)
             {
-                throw new NotFoundException($"Booking with Id = {bookingId} does not exist.");
+                throw new NotFoundBookingException($"Booking with Id = {bookingId} does not exist.");
             }
         /*    if (curUser == null)
             {
@@ -75,7 +75,7 @@ namespace BookingService.Application.Services
 
             if (existBooking == null)
             {
-                throw new NotFoundException($"Booking with Id = {book.Id} does not exist.");
+                throw new NotFoundBookingException($"Booking with Id = {book.Id} does not exist.");
             }
 
             if (existBooking != null)
@@ -106,7 +106,7 @@ namespace BookingService.Application.Services
             } */
             if (curBooking == null)
             {
-                throw new NotFoundException($"Booking with id - {bookingId} dose not exist.");
+                throw new NotFoundBookingException($"Booking with id - {bookingId} dose not exist.");
             }
             var bookingsCurUser = await _bookingRepository.GetUserOwnBookingAsync(userId, curBooking.EventId, cancellationToken);
 

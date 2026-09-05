@@ -1,15 +1,15 @@
-﻿namespace BookingService.Domain.CustomExceptions
+﻿namespace UserService.Domain.CustomExceptions
 {
-    public class ValidationException : Exception
+    public class ValidationUserException : Exception
     {
         public IDictionary<string, ICollection<string>> Errors { get; } = new Dictionary<string, ICollection<string>>();
 
-        public ValidationException(IDictionary<string, ICollection<string>> errors) : base("Validation failed")
+        public ValidationUserException(IDictionary<string, ICollection<string>> errors) : base("Validation failed")
         {
             Errors = errors;
         }
 
-        public ValidationException(string field, string error) : base("Validation failed")
+        public ValidationUserException(string field, string error) : base("Validation failed")
         {
             Errors = new Dictionary<string, ICollection<string>>
             {

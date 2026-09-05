@@ -1,15 +1,15 @@
 ﻿namespace EventService.Domain.CustomExceptions
 {
-    public class ValidationException : Exception
+    public class ValidationEventException : Exception
     {
         public IDictionary<string, ICollection<string>> Errors { get; } = new Dictionary<string, ICollection<string>>();
 
-        public ValidationException(IDictionary<string, ICollection<string>> errors) : base("Validation failed")
+        public ValidationEventException(IDictionary<string, ICollection<string>> errors) : base("Validation failed")
         {
             Errors = errors;
         }
 
-        public ValidationException(string field, string error) : base("Validation failed")
+        public ValidationEventException(string field, string error) : base("Validation failed")
         {
             Errors = new Dictionary<string, ICollection<string>>
             {

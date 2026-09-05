@@ -10,4 +10,10 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="10.0.11" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Services\Booking\BookingService.Domain\BookingService.Domain.csproj" />
+    <ProjectReference Include="..\..\..\Services\Event\EventService.Domain\EventService.Domain.csproj" />
+    <ProjectReference Include="..\..\..\Services\User\UserService.Domain\UserService.Domain.csproj" />
+  </ItemGroup>
+
 </Project>

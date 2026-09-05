@@ -55,7 +55,7 @@ namespace EventService.Domain.Entities
             int availableSeats)
         {
             if (availableSeats < 0 || availableSeats > totalSeats)
-                new ValidationException(nameof(availableSeats),
+                new ValidationEventException(nameof(availableSeats),
                     "The AvailableSeats parameter must not be less than 0 or greater than the TotalSeats parameter.");
             Title = title!;
             Description = description!;

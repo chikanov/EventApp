@@ -27,7 +27,7 @@ namespace UserService.Application.Services
             var existUser = await _userRepo.GetByIdAsync(id);
             if (existUser == null)
             {
-                throw new NotFoundException($"User with Id = {id} does not exist.");
+                throw new NotFoundUserException($"User with Id = {id} does not exist.");
             }
             await _userRepo.DeleteAsync(existUser);
             return true;
@@ -52,7 +52,7 @@ namespace UserService.Application.Services
         public async Task<User> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
             var user = await _userRepo.GetByIdAsync(id, cancellationToken)
-                ?? throw new NotFoundException($"User with Id - {id} not found.");
+                ?? throw new NotFoundUserException($"User with Id - {id} not found.");
             return user;
         }
 
@@ -66,7 +66,7 @@ namespace UserService.Application.Services
             var existUser = await _userRepo.GetByIdAsync(id);
             if (existUser == null)
             {
-                throw new NotFoundException($"User with Id = {id} does not exist.");
+                throw new NotFoundUserException($"User with Id = {id} does not exist.");
             }
             User.ValidateUser(existUser!);
 

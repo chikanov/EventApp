@@ -57,7 +57,7 @@ namespace UserService.Domain.Entities
                 AddError(errors, nameof(user.Password), "Password cannot be empty.");
 
             if (errors.Any())
-                throw new ValidationException(errors);
+                throw new ValidationUserException(errors);
         }
     }
 }

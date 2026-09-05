@@ -35,7 +35,7 @@ namespace BookingService.Domain.Entities
                 }
                 else
                 {  
-                    throw new ValidationException(nameof(Status), "The status is already in a canceled state.");
+                    throw new ValidationBookingException(nameof(Status), "The status is already in a canceled state.");
                 }
             }
         }

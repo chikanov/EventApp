@@ -1,7 +1,9 @@
-﻿using EventApp.Shared.Exceptions.CustomExceptions;
+﻿using BookingService.Domain.CustomExceptions;
+using EventService.Domain.CustomExceptions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using UserService.Domain.CustomExceptions;
 
 namespace EventApp.Shared.Exceptions
 {
@@ -61,8 +63,12 @@ namespace EventApp.Shared.Exceptions
         private static int MapStatusCode(Exception ex)
             => ex switch
             {
-                ValidationException ve => StatusCodes.Status400BadRequest,
-                NotFoundException nfe => StatusCodes.Status404NotFound,
+                ValidationUserException ve => StatusCodes.Status400BadRequest,
+                ValidationEventException ve => StatusCodes.Status400BadRequest,
+                ValidationBookingException ve => StatusCodes.Status400BadRequest,
+                NotFoundUserException nfue => StatusCodes.Status404NotFound,
+                NotFoundEventException nfee => StatusCodes.Status404NotFound,
+                NotFoundBookingException nfee => StatusCodes.Status404NotFound,
                 NoAvailableSeatsException nase => StatusCodes.Status409Conflict,
                 ActiveLeasesExceededException alee => StatusCodes.Status409Conflict,
                 PastEventBookingException pebe => StatusCodes.Status400BadRequest,

@@ -32,7 +32,7 @@ namespace EventService.Application.Services
         public async Task<Event?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         {
             var @event = await _eventRepository.GetByIdAsync(id, cancellationToken)
-                ?? throw new NotFoundException("Event not found");
+                ?? throw new NotFoundEventException("Event not found");
             return @event;
         }
 
@@ -41,7 +41,7 @@ namespace EventService.Application.Services
         {
             if (ev.TotalSeats <= 0)
             {
-                throw new ValidationException(nameof(ev.TotalSeats), "Total seats value must be greater than zero.");
+                throw new ValidationEventException(nameof(ev.TotalSeats), "Total seats value must be greater than zero.");
             }
             
             var newEvent = Event.Create(ev.Title, ev.Description, ev.StartAt, ev.EndAt, ev.TotalSeats);
@@ -57,17 +57,17 @@ namespace EventService.Application.Services
 
             if (existEvent == null)
             {
-                throw new NotFoundException($"Event with Id = {id} does not exist.");
+                throw new NotFoundEventException($"Event with Id = {id} does not exist.");
             }
 
             if (ev.StartAt > ev.EndAt)
             {
-                throw new ValidationException(nameof(ev.StartAt), "The end date must be greater than the start date.");
+                throw new ValidationEventException(nameof(ev.StartAt), "The end date must be greater than the start date.");
             }
 
             if (ev.TotalSeats <= 0)
             {
-                throw new ValidationException(nameof(ev.TotalSeats), "Total seats value must be greater than zero.");
+                throw new ValidationEventException(nameof(ev.TotalSeats), "Total seats value must be greater than zero.");
             }
 
             if (existEvent != null)
@@ -84,7 +84,7 @@ namespace EventService.Application.Services
             var existEvent = await _eventRepository.GetByIdAsync(id, cancellationToken);
             if (existEvent == null)
             {
-                throw new NotFoundException($"Event with Id = {id} does not exist.");
+                throw new NotFoundEventException($"Event with Id = {id} does not exist.");
             }
             if (existEvent != null)
                 await _eventRepository.DeleteAsync(existEvent, cancellationToken);

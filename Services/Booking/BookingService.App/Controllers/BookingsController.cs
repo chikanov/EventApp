@@ -39,10 +39,10 @@ namespace BookingService.App.Controllers
 
                 return Accepted($"/bookings/{newBooking.Id}", newBooking);
             }
-            catch (PastEventBookingException ex)
+        /*    catch (PastEventBookingException ex)
             {
                 return BadRequest(ex.Message);
-            }
+            } */
             catch (ActiveLeasesExceededException ex)
             {
                 return Conflict(ex.Message);
@@ -79,11 +79,11 @@ namespace BookingService.App.Controllers
                 var cancellationBookig = await _bookingService.CancellationBookingAsync(id, userId, cancellationToken);
                 return NoContent();
             }
-            catch (PermissionDeniedException ex)
+        /*    catch (PermissionDeniedException ex)
             {
                 return Forbid(ex.Message);
-            }
-            catch (NotFoundException ex)
+            } */
+            catch (NotFoundBookingException ex)
             {
                 return NotFound(ex.Message);
             }
