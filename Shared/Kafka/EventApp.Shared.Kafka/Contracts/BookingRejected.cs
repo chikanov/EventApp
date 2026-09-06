@@ -1,12 +1,16 @@
-﻿namespace EventApp.Shared.Kafka.Contracts
+﻿using BookingService.Application.Abstractions.Persistence.KafkaContracts;
+using EventService.Application.Abstractions.Persistence.KafkaContracts;
+using UserService.Application.Abstractions.Persistence.KafkaContracts;
+
+namespace EventApp.Shared.Kafka.Contracts
 {
-    public class BookingRejected
+    public class BookingRejected : IUserMessageContract, IEventMessageContract, IBookingMessageContract
     {
         public Guid BookigId { get; init; }
         public int EventId { get; init; }
         public Guid UserId { get; init; }
         public int SeatsCount { get; init; }
-        public DateTime RejectedDate { get; init; }
+        public DateTime ProcessingDateTime { get; init; }
         public RejectedReason Reason { get; init; }
     }
 }

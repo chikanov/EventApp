@@ -1,12 +1,13 @@
+using EventApp.Shared.Authentication;
 using EventApp.Shared.Exceptions;
 using EventService.Application.Abstractions.Persistence.Repositories;
 using EventService.Application.Abstractions.Services;
 using EventService.Infrastructure.Persistence.DataAccess;
+using EventService.Infrastructure.Persistence.kafka;
 using EventService.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using System.Reflection;
-using EventApp.Shared.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 AuthenticationComponent.AddAuthentication(builder);
@@ -24,6 +25,13 @@ builder.Services.AddOpenApi();
 builder.Services.AddDbContext<EventDbContext>(options =>
     options.UseNpgsql(connectionString));
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+builder.Services.AddSingleton<KafkaProducerService>(provider =>
+{
+    var configuration = provider.GetRequiredService<IConfiguration>();
+    var bootstrapServers = builder.Configuration.GetConnectionString("Kafka:BootstrapServers")
+                ?? throw new InvalidOperationException("Kafka string 'BootstrapServers' not found.");
+    return new KafkaProducerService(bootstrapServers);
+});
 builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IEventService, EventService.Application.Services.EventService>();
 

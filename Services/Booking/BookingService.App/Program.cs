@@ -2,9 +2,10 @@ using BookingService.Application.Abstractions.Persistence.Repositories;
 using BookingService.Application.Abstractions.Services;
 using BookingService.Application.BackgroundServices;
 using BookingService.Infrastructure.Persistence.DataAccess;
+using BookingService.Infrastructure.Persistence.Kafka;
 using BookingService.Infrastructure.Persistence.Repositories;
-using EventApp.Shared.Exceptions;
 using EventApp.Shared.Authentication;
+using EventApp.Shared.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using System.Reflection;
@@ -26,6 +27,13 @@ builder.Services.AddOpenApi();
 builder.Services.AddDbContext<BookingDbContext>(options =>
     options.UseNpgsql(connectionString));
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+builder.Services.AddSingleton<KafkaProducerService>(provider =>
+{
+    var configuration = provider.GetRequiredService<IConfiguration>();
+    var bootstrapServers = builder.Configuration.GetConnectionString("Kafka:BootstrapServers")
+                ?? throw new InvalidOperationException("Kafka string 'BootstrapServers' not found.");
+    return new KafkaProducerService(bootstrapServers);
+});
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 builder.Services.AddScoped<IBookingService, BookingService.Application.Services.BookingService>();
 builder.Services.AddHostedService<BookingBackgroundService>();

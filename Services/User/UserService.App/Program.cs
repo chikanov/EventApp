@@ -7,6 +7,7 @@ using UserService.Application.Abstractions.Persistence.Repositories;
 using UserService.Application.Abstractions.Services;
 using UserService.Infrastructure.Persistence.DataAccess;
 using UserService.Infrastructure.Persistence.Repositories;
+using UserService.Infrastructure.Persistence.Kafka;
 
 var builder = WebApplication.CreateBuilder(args);
 AuthenticationComponent.AddAuthentication(builder);
@@ -24,6 +25,14 @@ builder.Services.AddOpenApi();
 builder.Services.AddDbContext<UserDbContext>(options =>
     options.UseNpgsql(connectionString));
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+builder.Services.AddSingleton<KafkaProducerService>(provider =>
+{
+    var configuration = provider.GetRequiredService<IConfiguration>();
+    var bootstrapServers = builder.Configuration.GetConnectionString("Kafka:BootstrapServers")
+                ?? throw new InvalidOperationException("Kafka string 'BootstrapServers' not found.");
+    return new KafkaProducerService(bootstrapServers);
+});
+
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService.Application.Services.UserService>();
 
