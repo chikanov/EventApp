@@ -25,15 +25,18 @@ builder.Services.AddOpenApi();
 builder.Services.AddDbContext<EventDbContext>(options =>
     options.UseNpgsql(connectionString));
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
+CreateTopicForKafkaIfNotExistComponent.Create(builder);
+
 builder.Services.AddSingleton<KafkaProducerService>(provider =>
 {
-    var configuration = provider.GetRequiredService<IConfiguration>();
     var bootstrapServers = builder.Configuration.GetConnectionString("Kafka:BootstrapServers")
                 ?? throw new InvalidOperationException("Kafka string 'BootstrapServers' not found.");
     return new KafkaProducerService(bootstrapServers);
 });
 builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IEventService, EventService.Application.Services.EventService>();
+builder.Services.AddHostedService<EventConsumerWorker>();
 
 builder.Services.AddSwaggerGen(options =>
 {

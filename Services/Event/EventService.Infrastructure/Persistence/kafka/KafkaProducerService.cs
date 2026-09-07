@@ -1,7 +1,7 @@
 ﻿using Confluent.Kafka;
 using EventService.Application.Abstractions.Persistence.KafkaContracts;
 using EventService.Application.Abstractions.Services;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace EventService.Infrastructure.Persistence.kafka
 {
@@ -44,7 +44,7 @@ namespace EventService.Infrastructure.Persistence.kafka
                 var result = await _producer.ProduceAsync(topicName, new Message<string, string>
                 {
                     Key = message.EventId.ToString(),
-                    Value = JsonConvert.SerializeObject(message)
+                    Value = JsonSerializer.Serialize(message)
                 }, ct);
                 Console.WriteLine($"Message delivered to bookings [{result.TopicPartitionOffset}]");
             }

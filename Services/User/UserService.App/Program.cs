@@ -27,7 +27,6 @@ builder.Services.AddDbContext<UserDbContext>(options =>
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 builder.Services.AddSingleton<KafkaProducerService>(provider =>
 {
-    var configuration = provider.GetRequiredService<IConfiguration>();
     var bootstrapServers = builder.Configuration.GetConnectionString("Kafka:BootstrapServers")
                 ?? throw new InvalidOperationException("Kafka string 'BootstrapServers' not found.");
     return new KafkaProducerService(bootstrapServers);
