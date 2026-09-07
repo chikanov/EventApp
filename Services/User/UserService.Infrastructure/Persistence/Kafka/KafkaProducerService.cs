@@ -31,7 +31,7 @@ namespace UserService.Infrastructure.Persistence.Kafka
                 Console.WriteLine($"User kafka Producer disposed.");
             }
         }
-        public async Task SendMessageToKafka(string bootstrapServers, string topicName, IUserMessageContract message, CancellationToken ct = default)
+        public async Task SendMessageToKafka(string topicName, IUserMessageContract message, CancellationToken ct = default)
         {
             if (_disposed)
                 throw new ObjectDisposedException(nameof(KafkaProducerService));
@@ -43,7 +43,7 @@ namespace UserService.Infrastructure.Persistence.Kafka
             {
                 var result = await _producer.ProduceAsync(topicName, new Message<string, string>
                 {
-                    Key = message.BookigId.ToString(),
+                    Key = message.EventId.ToString(),
                     Value = JsonConvert.SerializeObject(message)
                 }, ct);
                 Console.WriteLine($"Message delivered to bookings [{result.TopicPartitionOffset}]");

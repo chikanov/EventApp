@@ -4,6 +4,6 @@ namespace EventService.Application.Abstractions.Services
 {
     public interface IKafkaProducerService
     {
-        Task SendMessageToKafka(string bootstrapServers, string topicName, IEventMessageContract message, CancellationToken ct = default);
+        Task SendMessageToKafka(string topicName, IEventMessageContract message, CancellationToken ct = default);
     }
 }

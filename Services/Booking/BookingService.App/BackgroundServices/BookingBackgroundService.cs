@@ -1,5 +1,8 @@
 ﻿using BookingService.Application.Abstractions.Persistence.Repositories;
 using BookingService.Domain.Entities.Enum;
+using BookingService.Infrastructure.Persistence.Kafka;
+using EventApp.Shared.Kafka;
+using EventApp.Shared.Kafka.Contracts;
 
 namespace BookingService.Application.BackgroundServices
 {
@@ -80,6 +83,17 @@ namespace BookingService.Application.BackgroundServices
 
                 booking.Confirm();
                 await bookingRepository.SaveChangesAsync(stoppingToken);
+
+                var message = new BookingConfirmed() 
+                { 
+                    BookigId = booking.Id,
+                    EventId = booking.EventId,
+                    UserId = booking.UserId,
+                    SeatsCount = 1,
+                    ProcessingDateTime = DateTime.UtcNow
+                };
+                var kafkaProducerService = scope.ServiceProvider.GetRequiredService<KafkaProducerService>();
+                await kafkaProducerService.SendMessageToKafka(Constants.BookingConfirmed, message, stoppingToken);
 
                 _logger.LogInformation(
                     "Booking {BookingId} for event {EventId} processed → {Status}",

@@ -1,6 +1,7 @@
 ﻿using BookingService.Application.Abstractions.Persistence.KafkaContracts;
 using BookingService.Application.Abstractions.Services;
 using Confluent.Kafka;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace BookingService.Infrastructure.Persistence.Kafka
@@ -9,13 +10,13 @@ namespace BookingService.Infrastructure.Persistence.Kafka
     {
         private readonly IProducer<string, string> _producer;
         private bool _disposed = false;
-
         public KafkaProducerService(string bootstrapServers)
         {
             var config = new ProducerConfig
             {
                 BootstrapServers = bootstrapServers,
-                Acks = Acks.All
+                Acks = Acks.All,
+                EnableIdempotence = true
             };
 
             _producer = new ProducerBuilder<string, string>(config).Build();
@@ -31,7 +32,7 @@ namespace BookingService.Infrastructure.Persistence.Kafka
                 Console.WriteLine($"Booking kafka Producer disposed.");
             }
         }
-        public async Task SendMessageToKafka(string bootstrapServers, string topicName, IBookingMessageContract message, CancellationToken ct = default)
+        public async Task SendMessageToKafka(string topicName, IBookingMessageContract message, CancellationToken ct = default)
         {
             if (_disposed)
                 throw new ObjectDisposedException(nameof(KafkaProducerService));
@@ -43,7 +44,7 @@ namespace BookingService.Infrastructure.Persistence.Kafka
             {
                 var result = await _producer.ProduceAsync(topicName, new Message<string, string>
                 {
-                    Key = message.BookigId.ToString(),
+                    Key = message.EventId.ToString(),
                     Value = JsonConvert.SerializeObject(message)
                 }, ct);
                 Console.WriteLine($"Message delivered [{result.TopicPartitionOffset}]");
