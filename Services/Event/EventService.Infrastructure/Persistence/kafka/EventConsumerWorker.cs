@@ -76,8 +76,11 @@ namespace EventService.Infrastructure.Persistence.kafka
                         _logger.LogError($"The available seats for the event are over.");
                         return;
                     }
-                    @event.ReleaseSeats();
-                    await eventRepository.SaveChangesAsync(stoppingToken);
+                    if (@event != null && @event.StartAt > deserializedOrder.ProcessingDateTime && @event.TryReserveSeats())
+                    {
+                        @event.ReleaseSeats();
+                        await eventRepository.SaveChangesAsync(stoppingToken);
+                    }
 
                     consumer.StoreOffset(consumeResult);
                 }
