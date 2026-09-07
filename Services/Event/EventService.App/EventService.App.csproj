@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\EventApp.Shared.Authentication\EventApp.Shared.Authentication.csproj" />
+    <ProjectReference Include="..\..\..\Shared\Authentication\EventApp.Shared.Authentication\EventApp.Shared.Authentication.csproj" />
     <ProjectReference Include="..\..\..\Shared\Exceptions\EventApp.Shared.Exceptions\EventApp.Shared.Exceptions.csproj" />
     <ProjectReference Include="..\EventService.Application\EventService.Application.csproj" />
     <ProjectReference Include="..\EventService.Infrastructure\EventService.Infrastructure.csproj" />

@@ -12,7 +12,7 @@ namespace EventApp.Shared.Authentication
         public static IServiceCollection AddAuthentication(this WebApplicationBuilder builder)
         {
             var authenticationParams = GetAuthenticationParams(builder.Configuration);
-            
+
             builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = "JwtBearerScheme";
@@ -59,7 +59,7 @@ namespace EventApp.Shared.Authentication
             if (password == null)
                 return false;
 
-           var hash = HashPassword(password); 
+            var hash = HashPassword(password);
             return storedHash.Equals(hash);
         }
 
