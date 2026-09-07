@@ -61,25 +61,11 @@ namespace BookingService.Application.BackgroundServices
                 await Task.Delay(ProcessingDelay, stoppingToken);
 
                 using var scope = _scopeFactory.CreateScope();
-             //   var eventRepository = scope.ServiceProvider.GetRequiredService<IEventRepository>();
                 var bookingRepository = scope.ServiceProvider.GetRequiredService<IBookingRepository>();
 
                 var booking = await bookingRepository.GetByIdAsync(bookingId, stoppingToken);
                 if (booking == null || booking.Status != BookingStatus.Pending)
                     return;
-
-             /*   var @event = await eventRepository.GetByIdAsync(booking.EventId, stoppingToken);
-                if (@event == null)
-                { 
-                    booking.Reject();
-                    await bookingRepository.SaveChangesAsync(stoppingToken);
-
-                    _logger.LogWarning(
-                        "Booking {BookingId} rejected: event {EventId} not found",
-                        booking.Id, booking.EventId);
-
-                    return;
-                } */
 
                 booking.Confirm();
                 await bookingRepository.SaveChangesAsync(stoppingToken);
@@ -107,7 +93,6 @@ namespace BookingService.Application.BackgroundServices
                 try
                 {
                     using var scope = _scopeFactory.CreateScope();
-                //    var eventRepository = scope.ServiceProvider.GetRequiredService<IEventRepository>();
                     var bookingRepository = scope.ServiceProvider.GetRequiredService<IBookingRepository>();
 
                     var booking = await bookingRepository.GetByIdAsync(bookingId, stoppingToken);
@@ -115,12 +100,7 @@ namespace BookingService.Application.BackgroundServices
                     {
                         booking.Reject();
 
-                     /*   var @event = await eventRepository.GetByIdAsync(booking.EventId, stoppingToken);
-                        if (@event != null)
-                            @event.ReleaseSeats(); */
-
                         await bookingRepository.SaveChangesAsync(stoppingToken);
-                    //    await eventRepository.SaveChangesAsync(stoppingToken);
                     }
 
                     _logger.LogError(ex,

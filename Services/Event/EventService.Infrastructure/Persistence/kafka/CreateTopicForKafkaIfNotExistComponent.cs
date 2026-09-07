@@ -24,7 +24,6 @@ namespace EventService.Infrastructure.Persistence.kafka
                     Console.WriteLine("The booking-confirmed topic already exists");
                 }
 
-                // Создаём топик, если его нет
                 adminClient.CreateTopicsAsync(new[]
                 {
                 new TopicSpecification
