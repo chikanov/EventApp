@@ -64,17 +64,14 @@ namespace EventService.Infrastructure.Persistence.kafka
                     if (@event == null)
                     {
                         _logger.LogError($"Event with Id = {deserializedOrder.EventId} does not exist.");
-                        return;
                     }
                     if (@event.StartAt < deserializedOrder.ProcessingDateTime)
                     {
                         _logger.LogError("You cannot book an event that has already taken place.");
-                        return;
                     }
                     if (!@event.TryReserveSeats())
                     {
                         _logger.LogError($"The available seats for the event are over.");
-                        return;
                     }
                     if (@event != null && @event.StartAt > deserializedOrder.ProcessingDateTime && @event.TryReserveSeats())
                     {
