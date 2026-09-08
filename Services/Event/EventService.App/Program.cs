@@ -1,5 +1,5 @@
 using EventApp.Shared.Authentication;
-using EventApp.Shared.Exceptions;
+using EventService.App.Middleware;
 using EventService.Application.Abstractions.Persistence.Repositories;
 using EventService.Application.Abstractions.Services;
 using EventService.Infrastructure.Persistence.DataAccess;

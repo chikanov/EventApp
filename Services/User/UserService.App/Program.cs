@@ -1,4 +1,3 @@
-using EventApp.Shared.Exceptions;
 using EventApp.Shared.Authentication;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
@@ -8,6 +7,7 @@ using UserService.Application.Abstractions.Services;
 using UserService.Infrastructure.Persistence.DataAccess;
 using UserService.Infrastructure.Persistence.Repositories;
 using UserService.Infrastructure.Persistence.Kafka;
+using UserService.App.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 AuthenticationComponent.AddAuthentication(builder);

@@ -1,12 +1,11 @@
+using BookingService.App.Middleware;
 using BookingService.Application.Abstractions.Persistence.Repositories;
 using BookingService.Application.Abstractions.Services;
 using BookingService.Application.BackgroundServices;
 using BookingService.Infrastructure.Persistence.DataAccess;
 using BookingService.Infrastructure.Persistence.Kafka;
 using BookingService.Infrastructure.Persistence.Repositories;
-using Confluent.Kafka;
 using EventApp.Shared.Authentication;
-using EventApp.Shared.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using System.Reflection;

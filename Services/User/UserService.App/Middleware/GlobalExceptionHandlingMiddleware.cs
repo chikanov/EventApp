@@ -1,11 +1,7 @@
-﻿using BookingService.Domain.CustomExceptions;
-using EventService.Domain.CustomExceptions;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.AspNetCore.Mvc;
 using UserService.Domain.CustomExceptions;
 
-namespace EventApp.Shared.Exceptions
+namespace UserService.App.Middleware
 {
     public class GlobalExceptionHandlingMiddleware
     {
@@ -64,16 +60,8 @@ namespace EventApp.Shared.Exceptions
             => ex switch
             {
                 ValidationUserException ve => StatusCodes.Status400BadRequest,
-                ValidationEventException ve => StatusCodes.Status400BadRequest,
-                ValidationBookingException ve => StatusCodes.Status400BadRequest,
                 NotFoundUserException nfue => StatusCodes.Status404NotFound,
-                NotFoundEventException nfee => StatusCodes.Status404NotFound,
-                NotFoundBookingException nfee => StatusCodes.Status404NotFound,
-                NoAvailableSeatsException nase => StatusCodes.Status409Conflict,
-                ActiveLeasesExceededException alee => StatusCodes.Status409Conflict,
-                PastEventBookingException pebe => StatusCodes.Status400BadRequest,
-                PermissionDeniedException pde => StatusCodes.Status403Forbidden,
-                PermissionDeniedBookingException pde => StatusCodes.Status403Forbidden,
+                UserService.Domain.CustomExceptions.PermissionDeniedException pde => StatusCodes.Status403Forbidden,
                 _ => StatusCodes.Status500InternalServerError
             };
     }

@@ -68,7 +68,7 @@ namespace BookingService.Application.Services
             
             if (!bookingsCurUser.Select(b => b.Id).Contains(bookingId) || role != "admin")
             {
-                throw new PermissionDeniedBookingException("The user does not have the rights to perform this operation.");
+                throw new PermissionDeniedException("The user does not have the rights to perform this operation.");
             }
             curBooking.Cancel();
             await _bookingRepository.SaveChangesAsync(cancellationToken);
