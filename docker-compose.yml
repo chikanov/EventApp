@@ -52,7 +52,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: userapi
     ports:
-      - "5432:5432"
+      - "5431:5432"
     volumes:
       - userapi_pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -70,7 +70,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: eventapi
     ports:
-      - "5436:5436"
+      - "5432:5432"
     volumes:
       - eventapi_pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -88,7 +88,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: bookingapi
     ports:
-      - "5433:5433"
+      - "5433:5432"
     volumes:
       - bookingapi_pgdata:/var/lib/postgresql/data
     healthcheck:
