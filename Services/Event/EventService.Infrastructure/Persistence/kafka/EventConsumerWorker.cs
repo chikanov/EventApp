@@ -86,7 +86,7 @@ namespace EventService.Infrastructure.Persistence.kafka
 
                         processedBookings = new ProcessedBookings() 
                             { Id = deserializedOrder.BookigId, ProcessedDateTime = DateTime.UtcNow };
-                        await context.AddAsync(processedBookings, stoppingToken);
+                        await context.ProcessedBookings.AddAsync(processedBookings, stoppingToken);
 
                         await context.SaveChangesAsync(stoppingToken);
                     }
