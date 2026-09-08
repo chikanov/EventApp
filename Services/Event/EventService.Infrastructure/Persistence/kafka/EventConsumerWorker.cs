@@ -1,7 +1,9 @@
 ﻿using Confluent.Kafka;
 using EventApp.Shared.Kafka;
 using EventApp.Shared.Kafka.Contracts;
-using EventService.Application.Abstractions.Persistence.Repositories;
+using EventService.Domain.Entities;
+using EventService.Infrastructure.Persistence.DataAccess;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -12,14 +14,15 @@ namespace EventService.Infrastructure.Persistence.kafka
 {
     public class EventConsumerWorker : BackgroundService
     {
-        private readonly IServiceScopeFactory _scopeFactory;
         private readonly IConfiguration _configuration;
         private readonly ILogger<EventConsumerWorker> _logger;
-        public EventConsumerWorker(IServiceScopeFactory scopeFactory, IConfiguration configuration, ILogger<EventConsumerWorker> logger)
+        private readonly IServiceScopeFactory _serviceScopeFactory;
+        public EventConsumerWorker(IServiceScopeFactory scopeFactory, IConfiguration configuration, 
+            ILogger<EventConsumerWorker> logger, IServiceScopeFactory serviceScopeFactory)
         {
-            _scopeFactory = scopeFactory;
             _configuration = configuration;
             _logger = logger;
+            _serviceScopeFactory = serviceScopeFactory;
         }
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
@@ -56,10 +59,10 @@ namespace EventService.Infrastructure.Persistence.kafka
                     _logger.LogInformation($"Received a message from the topic 'booking-cofirded': bookingId - {deserializedOrder.BookigId}; " +
                         $"eventId - {deserializedOrder.EventId}; userId - {deserializedOrder.UserId}; SeatsCount - {deserializedOrder.SeatsCount}; " +
                         $"processingDateTime - {deserializedOrder.ProcessingDateTime}");
-                    
-                    using var scope = _scopeFactory.CreateScope();
-                    var eventRepository = scope.ServiceProvider.GetRequiredService<IEventRepository>();
-                    var @event = await eventRepository.GetByIdAsync(deserializedOrder.EventId, stoppingToken);
+                    using var scope = _serviceScopeFactory.CreateScope();
+                    var context = scope.ServiceProvider.GetRequiredService<EventDbContext>();
+
+                    var @event = await context.Events.FirstOrDefaultAsync(e => e.Id == deserializedOrder.EventId, stoppingToken);
 
                     if (@event == null)
                     {
@@ -73,13 +76,23 @@ namespace EventService.Infrastructure.Persistence.kafka
                     {
                         _logger.LogError($"The available seats for the event are over.");
                     }
-                    if (@event != null && @event.StartAt > deserializedOrder.ProcessingDateTime && @event.TryReserveSeats())
+                    
+                    var processedBookings = await context.ProcessedBookings.FirstOrDefaultAsync(p => p.Id == deserializedOrder.BookigId);
+                    
+                    if (@event != null && @event.StartAt > deserializedOrder.ProcessingDateTime && @event.TryReserveSeats() 
+                        && processedBookings == null)
                     {
                         @event.ReleaseSeats();
-                        await eventRepository.SaveChangesAsync(stoppingToken);
+
+                        processedBookings = new ProcessedBookings() 
+                            { Id = deserializedOrder.BookigId, ProcessedDateTime = DateTime.UtcNow };
+                        await context.AddAsync(processedBookings, stoppingToken);
+
+                        await context.SaveChangesAsync(stoppingToken);
                     }
 
                     consumer.StoreOffset(consumeResult);
+                    consumer.Commit(consumeResult);
                 }
             }
             catch (ConsumeException ex)

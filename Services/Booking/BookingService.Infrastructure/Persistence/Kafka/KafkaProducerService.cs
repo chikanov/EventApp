@@ -1,8 +1,8 @@
 ﻿using BookingService.Application.Abstractions.Persistence.KafkaContracts;
 using BookingService.Application.Abstractions.Services;
 using Confluent.Kafka;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using static Confluent.Kafka.ConfigPropertyNames;
 
 namespace BookingService.Infrastructure.Persistence.Kafka
 {
@@ -15,8 +15,7 @@ namespace BookingService.Infrastructure.Persistence.Kafka
             var config = new ProducerConfig
             {
                 BootstrapServers = bootstrapServers,
-                Acks = Acks.All,
-                EnableIdempotence = true
+                Acks = Acks.All
             };
 
             _producer = new ProducerBuilder<string, string>(config).Build();

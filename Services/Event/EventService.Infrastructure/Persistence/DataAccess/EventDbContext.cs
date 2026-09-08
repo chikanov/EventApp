@@ -1,4 +1,5 @@
 ﻿using EventService.Domain.Entities;
+using EventService.Infrastructure.Persistence.DataAccess.Configurations;
 using Microsoft.EntityFrameworkCore;
 
 namespace EventService.Infrastructure.Persistence.DataAccess
@@ -8,6 +9,7 @@ namespace EventService.Infrastructure.Persistence.DataAccess
         public EventDbContext(DbContextOptions<EventDbContext> options) : base(options) { }
 
         public DbSet<Event> Events => Set<Event>();
+        public DbSet<ProcessedBookings> ProcessedBookings => Set<ProcessedBookings>();       
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
