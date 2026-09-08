@@ -30,7 +30,7 @@ CreateTopicForKafkaIfNotExistComponent.Create(builder);
 
 builder.Services.AddSingleton<KafkaProducerService>(provider =>
 {
-    var bootstrapServers = builder.Configuration.GetConnectionString("Kafka:BootstrapServers")
+    var bootstrapServers = builder.Configuration.GetValue<string>("Kafka:BootstrapServers")
                 ?? throw new InvalidOperationException("Kafka string 'BootstrapServers' not found.");
     return new KafkaProducerService(bootstrapServers);
 });
@@ -68,8 +68,6 @@ builder.Services.AddSwaggerGen(options =>
         });
 });
 builder.Services.AddProblemDetails();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
