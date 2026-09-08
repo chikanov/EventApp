@@ -73,6 +73,7 @@ namespace EventApp.Shared.Exceptions
                 ActiveLeasesExceededException alee => StatusCodes.Status409Conflict,
                 PastEventBookingException pebe => StatusCodes.Status400BadRequest,
                 PermissionDeniedException pde => StatusCodes.Status403Forbidden,
+                PermissionDeniedBookingException pde => StatusCodes.Status403Forbidden,
                 _ => StatusCodes.Status500InternalServerError
             };
     }

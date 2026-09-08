@@ -2,6 +2,7 @@
 using BookingService.Application.Abstractions.Services;
 using BookingService.Domain.CustomExceptions;
 using BookingService.Domain.Entities;
+using System.Security.Claims;
 
 namespace BookingService.Application.Services
 {
@@ -55,7 +56,7 @@ namespace BookingService.Application.Services
             return await _bookingRepository.GetPendingAsync(cancellationToken);
         }
 
-        public async Task<Booking> CancellationBookingAsync(Guid bookingId, Guid userId, CancellationToken cancellationToken = default)
+        public async Task<Booking> CancellationBookingAsync(Guid bookingId, Guid userId, string role, CancellationToken cancellationToken = default)
         {
             var curBooking = await _bookingRepository.GetByIdAsync(bookingId, cancellationToken);
             
@@ -64,7 +65,11 @@ namespace BookingService.Application.Services
                 throw new NotFoundBookingException($"Booking with id - {bookingId} dose not exist.");
             }
             var bookingsCurUser = await _bookingRepository.GetUserOwnBookingAsync(userId, curBooking.EventId, cancellationToken);
-
+            
+            if (!bookingsCurUser.Select(b => b.Id).Contains(bookingId) || role != "admin")
+            {
+                throw new PermissionDeniedBookingException("The user does not have the rights to perform this operation.");
+            }
             curBooking.Cancel();
             await _bookingRepository.SaveChangesAsync(cancellationToken);
 

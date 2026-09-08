@@ -71,8 +71,9 @@ namespace BookingService.App.Controllers
             try
             {
                 var userId = GetUserId();
+                var userRole = GetUserRole();
 
-                var cancellationBookig = await _bookingService.CancellationBookingAsync(id, userId, cancellationToken);
+                var cancellationBookig = await _bookingService.CancellationBookingAsync(id, userId, userRole, cancellationToken);
                 return NoContent();
             }
             catch (NotFoundBookingException ex)
@@ -87,6 +88,14 @@ namespace BookingService.App.Controllers
             var userIdClaim = currentUser!.FindFirst(ClaimTypes.NameIdentifier);
             var userId = Guid.Parse(userIdClaim!.Value);
             return userId;
+        }
+
+        private string GetUserRole()
+        {
+            var currentUser = _httpContextAccessor?.HttpContext?.User;
+            var userRoleClaim = currentUser!.FindFirst(ClaimTypes.Name);
+            var role = userRoleClaim!.Value;
+            return role;
         }
     }
 }

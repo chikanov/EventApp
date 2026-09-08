@@ -8,6 +8,6 @@ namespace BookingService.Application.Abstractions.Services
         Task<Booking?> GetBookingByIdAsync(Guid bookingId, Guid userId, CancellationToken cancellationToken = default);
         Task<List<Booking>> GetPendingAsync(CancellationToken cancellationToken = default);
         Task<Booking> UpdateBookingAsync(Booking book, CancellationToken cancellationToken = default);
-        Task<Booking> CancellationBookingAsync(Guid bookingId, Guid userId, CancellationToken cancellationToken = default);
+        Task<Booking> CancellationBookingAsync(Guid bookingId, Guid userId, string role, CancellationToken cancellationToken = default);
     }
 }
