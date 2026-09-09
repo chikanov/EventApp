@@ -15,7 +15,8 @@ namespace EventService.Infrastructure.Persistence.kafka
             var config = new ProducerConfig
             {
                 BootstrapServers = bootstrapServers,
-                Acks = Acks.All
+                Acks = Acks.All,
+                EnableIdempotence = true
             };
 
             _producer = new ProducerBuilder<string, string>(config).Build();

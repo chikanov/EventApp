@@ -20,9 +20,9 @@ Event management Service.
 
 ## Database schema
 
-    userdb - ports: - "5432:5432"
-    eventdb - ports: - "5436:5436"
-    bookingdb - ports: - "5433:5433"
+    userdb - ports: - "5431:5432"
+    eventdb - ports: - "5432:5432"
+    bookingdb - ports: - "5433:5432"
     The schema is managed by EF Core migrations.
     Deploying a new database instance based on existing migrations - dotnet ef database update.
     To add migration - dotnet ef migrations add MigrationName.

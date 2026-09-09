@@ -17,6 +17,7 @@ namespace EventService.Infrastructure.Persistence.kafka
         private readonly IConfiguration _configuration;
         private readonly ILogger<EventConsumerWorker> _logger;
         private readonly IServiceScopeFactory _serviceScopeFactory;
+        private static readonly SemaphoreSlim _processingSemaphore = new(1, 1);
         public EventConsumerWorker(IServiceScopeFactory scopeFactory, IConfiguration configuration, 
             ILogger<EventConsumerWorker> logger, IServiceScopeFactory serviceScopeFactory)
         {
@@ -78,21 +79,30 @@ namespace EventService.Infrastructure.Persistence.kafka
                     }
                     
                     var processedBookings = await context.ProcessedBookings.FirstOrDefaultAsync(p => p.Id == deserializedOrder.BookigId);
-                    
-                    if (@event != null && @event.StartAt > deserializedOrder.ProcessingDateTime && @event.TryReserveSeats() 
-                        && processedBookings == null)
+
+                    await _processingSemaphore.WaitAsync(stoppingToken);
+
+                    try
                     {
-                        @event.ReleaseSeats();
+                        if (@event != null && @event.StartAt > deserializedOrder.ProcessingDateTime && @event.TryReserveSeats()
+                            && processedBookings == null)
+                        {
+                            @event.ReleaseSeats();
 
-                        processedBookings = new ProcessedBookings() 
+                            processedBookings = new ProcessedBookings()
                             { Id = deserializedOrder.BookigId, ProcessedDateTime = DateTime.UtcNow };
-                        await context.ProcessedBookings.AddAsync(processedBookings, stoppingToken);
+                            await context.ProcessedBookings.AddAsync(processedBookings, stoppingToken);
 
-                        await context.SaveChangesAsync(stoppingToken);
+                            await context.SaveChangesAsync(stoppingToken);
+
+                            consumer.StoreOffset(consumeResult);
+                            consumer.Commit(consumeResult);
+                        }
+                    } catch (Exception ex)
+                    {
+                        throw new Exception(ex.Message);
                     }
-
-                    consumer.StoreOffset(consumeResult);
-                    consumer.Commit(consumeResult);
+                    finally { _processingSemaphore.Release(); } 
                 }
             }
             catch (ConsumeException ex)
