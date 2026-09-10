@@ -3,11 +3,31 @@
     <File Path=".gitignore" />
     <File Path="docker-compose.yml" />
     <File Path="README.md" />
-    <Project Path="EventService.App/EventService.App.csproj" />
-    <Project Path="EventService.Application/EventService.Application.csproj" Id="05ae0aff-1770-4cd9-b67e-3620710d97d3" />
-    <Project Path="EventService.Domain/EventService.Domain.csproj" Id="398580f6-1f07-48e9-a867-fa257083acfd" />
-    <Project Path="EventService.Infrastructure/EventService.Infrastructure.csproj" Id="e3642eff-390b-4144-b68a-3e678b47a7a2" />
-    <Project Path="EventService.IntegrationTests/EventService.IntegrationTests.csproj" Id="b229825e-bf57-46c9-80ef-84cf1db7f25c" />
-    <Project Path="EventService.Tests/EventService.Tests.csproj" Id="c96579e5-65b8-4592-b0bc-aed840a456bc" />
+  </Folder>
+  <Folder Name="/EventApp/Services/" />
+  <Folder Name="/EventApp/Services/Booking/">
+    <Project Path="Services/Booking/BookingService.App/BookingService.App.csproj" Id="e81abd84-6c45-4152-b8bf-5dd6c471059d" />
+    <Project Path="Services/Booking/BookingService.Application/BookingService.Application.csproj" Id="4bf94add-1c2d-4cca-8d54-f30610d44b53" />
+    <Project Path="Services/Booking/BookingService.Domain/BookingService.Domain.csproj" Id="2414c9e5-c4e7-4f0a-9da8-031e67a79774" />
+    <Project Path="Services/Booking/BookingService.Infrastructure/BookingService.Infrastructure.csproj" Id="4447f22e-7ba2-4b42-91c8-12b5cfdea2e8" />
+  </Folder>
+  <Folder Name="/EventApp/Services/Event/">
+    <Project Path="Services/Event/EventService.App/EventService.App.csproj" Id="5feb619e-9e7f-4854-a1dd-95088972118e" />
+    <Project Path="Services/Event/EventService.Application/EventService.Application.csproj" Id="d8c8a818-84f2-4380-8b67-960cca24b2cd" />
+    <Project Path="Services/Event/EventService.Domain/EventService.Domain.csproj" Id="dca6c978-3ac6-437f-a72f-cfe3a8e3134b" />
+    <Project Path="Services/Event/EventService.Infrastructure/EventService.Infrastructure.csproj" Id="7768077b-f905-4109-acab-716c64f4b184" />
+  </Folder>
+  <Folder Name="/EventApp/Services/User/">
+    <Project Path="Services/User/UserService.App/UserService.App.csproj" Id="b19e35d4-0d2f-4073-9d4f-452ec137ee25" />
+    <Project Path="Services/User/UserService.Application/UserService.Application.csproj" Id="6b0aeffc-e830-4cc5-9377-20a493d0d9b7" />
+    <Project Path="Services/User/UserService.Domain/UserService.Domain.csproj" Id="de53ad31-1c35-4390-82f5-c4779aec58cb" />
+    <Project Path="Services/User/UserService.Infrastructure/UserService.Infrastructure.csproj" Id="d65d70ed-c35f-47d2-a16d-d7bd6829c719" />
+  </Folder>
+  <Folder Name="/EventApp/Shared/" />
+  <Folder Name="/EventApp/Shared/Authentication/">
+    <Project Path="Shared/Authentication/EventApp.Shared.Authentication/EventApp.Shared.Authentication.csproj" Id="151156dd-806a-42d6-8bc2-fc0da86677ce" />
+  </Folder>
+  <Folder Name="/EventApp/Shared/Kafka/">
+    <Project Path="Shared/Kafka/EventApp.Shared.Kafka/EventApp.Shared.Kafka.csproj" Id="ab8e98df-b7ff-4e0f-93ff-f4a837081f6e" />
   </Folder>
 </Solution>

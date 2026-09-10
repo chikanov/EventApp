@@ -4,12 +4,9 @@ Event management Service.
 
 ## Project structure
 
-    EventService.App - Presentation layer of the project. Provides the user (or the client application) with access to the implemented Use Case.
-    EventService.Application - Here, we define what enables the user to solve specific tasks.
-    EventService.Domain - This is the central layer, the core of the system. Here, the classes of business entities and the rules of business logic are defined.
-    EventService.Infrastructure - This layer defines the work with the infrastructure — the DBMS server, caching, and external dependencies. It is here that the repositories are defined.
-    EventService.IntegrationTests - Integration Tests EventRepository and BookingRepository.
-    EventService.Tests - Unit tests EventService and BookingService.
+    Booking Service
+    Event Service
+    User Service
     
 ## Run the app
 
@@ -17,28 +14,18 @@ Event management Service.
     dotnet build
     dotnet run
 
-## To start test
-
-    dotnet test
-
 ## Сonfigure the connection string
 
     To configure the connection string, change the settings in appsettings.json "ConnectionStrings".
 
 ## Database schema
 
+    userdb - ports: - "5431:5432"
+    eventdb - ports: - "5432:5432"
+    bookingdb - ports: - "5433:5432"
     The schema is managed by EF Core migrations.
     Deploying a new database instance based on existing migrations - dotnet ef database update.
     To add migration - dotnet ef migrations add MigrationName.
-
-## Tests
-
-    The tests use InMemory provider.
-
-## Integration Tests
-    
-    Integration Tests with Testcontainers integrated with PostgreSQL.
-    To run the tests, you need to run docker.
 
 ## Roles
     
@@ -57,6 +44,12 @@ Event management Service.
 ## Secret key JWT
 
     The JWT secret key is stored in appsettings.json. It is recommended to use a secure value in production.
+
+## Data stream
+
+    After confirmation, BookingBackgroundService publishes a message to the BookingComferd topic.
+    EventConsumer listens for messages from the BookingComferd topic, performs checks, 
+    and if the check is successful, reduces the number of available seats.
 
 # REST API
 
