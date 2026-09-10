@@ -1,6 +1,6 @@
-﻿namespace UserService.Application.Abstractions.Persistence.KafkaContracts
+﻿namespace EventApp.Shared.Kafka.Contracts
 {
-    public interface IUserMessageContract
+    public interface IMessageContract
     {
         public Guid BookigId { get; init; }
         public int EventId { get; init; }

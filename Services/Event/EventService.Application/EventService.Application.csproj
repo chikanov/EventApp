@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Shared\Kafka\EventApp.Shared.Kafka\EventApp.Shared.Kafka.csproj" />
     <ProjectReference Include="..\EventService.Domain\EventService.Domain.csproj" />
   </ItemGroup>
 

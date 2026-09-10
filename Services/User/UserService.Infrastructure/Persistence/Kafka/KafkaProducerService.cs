@@ -1,6 +1,6 @@
 ﻿using Confluent.Kafka;
+using EventApp.Shared.Kafka.Contracts;
 using Newtonsoft.Json;
-using UserService.Application.Abstractions.Persistence.KafkaContracts;
 using UserService.Application.Abstractions.Services;
 
 namespace UserService.Infrastructure.Persistence.Kafka
@@ -32,7 +32,7 @@ namespace UserService.Infrastructure.Persistence.Kafka
                 Console.WriteLine($"User kafka Producer disposed.");
             }
         }
-        public async Task SendMessageToKafka(string topicName, IUserMessageContract message, CancellationToken ct = default)
+        public async Task SendMessageToKafka(string topicName, IMessageContract message, CancellationToken ct = default)
         {
             if (_disposed)
                 throw new ObjectDisposedException(nameof(KafkaProducerService));

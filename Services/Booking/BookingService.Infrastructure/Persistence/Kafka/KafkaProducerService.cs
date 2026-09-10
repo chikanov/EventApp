@@ -1,6 +1,6 @@
-﻿using BookingService.Application.Abstractions.Persistence.KafkaContracts;
-using BookingService.Application.Abstractions.Services;
+﻿using BookingService.Application.Abstractions.Services;
 using Confluent.Kafka;
+using EventApp.Shared.Kafka.Contracts;
 using Newtonsoft.Json;
 using static Confluent.Kafka.ConfigPropertyNames;
 
@@ -32,7 +32,7 @@ namespace BookingService.Infrastructure.Persistence.Kafka
                 Console.WriteLine($"Booking kafka Producer disposed.");
             }
         }
-        public async Task SendMessageToKafka(string topicName, IBookingMessageContract message, CancellationToken ct = default)
+        public async Task SendMessageToKafka(string topicName, IMessageContract message, CancellationToken ct = default)
         {
             if (_disposed)
                 throw new ObjectDisposedException(nameof(KafkaProducerService));

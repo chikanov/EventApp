@@ -73,10 +73,6 @@ namespace EventService.Infrastructure.Persistence.kafka
                     {
                         _logger.LogError("You cannot book an event that has already taken place.");
                     }
-                    if (!@event.TryReserveSeats())
-                    {
-                        _logger.LogError($"The available seats for the event are over.");
-                    }
                     
                     var processedBookings = await context.ProcessedBookings.FirstOrDefaultAsync(p => p.Id == deserializedOrder.BookigId);
 
@@ -84,15 +80,25 @@ namespace EventService.Infrastructure.Persistence.kafka
 
                     try
                     {
-                        if (@event != null && @event.StartAt > deserializedOrder.ProcessingDateTime && @event.TryReserveSeats()
-                            && processedBookings == null)
+                        if (!@event.TryReserveSeats())
                         {
-                            @event.ReleaseSeats();
+                            _logger.LogError($"The available seats for the event are over.");
+                        }
 
+                        if (@event != null && @event.StartAt > deserializedOrder.ProcessingDateTime && processedBookings == null)
+                        {
                             processedBookings = new ProcessedBookings()
                             { Id = deserializedOrder.BookigId, ProcessedDateTime = DateTime.UtcNow };
                             await context.ProcessedBookings.AddAsync(processedBookings, stoppingToken);
 
+                            await context.SaveChangesAsync(stoppingToken);
+
+                            consumer.StoreOffset(consumeResult);
+                            consumer.Commit(consumeResult);
+                        }
+                        else
+                        {
+                            @event.ReleaseSeats();
                             await context.SaveChangesAsync(stoppingToken);
 
                             consumer.StoreOffset(consumeResult);
