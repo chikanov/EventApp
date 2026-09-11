@@ -130,7 +130,10 @@ namespace EventService.Application.Services
                 Page = page
             };
         }
-
+        public async Task<List<Event>> GetTopAsync(CancellationToken cancellationToken = default)
+        {
+            return await _eventRepository.GetTopAsync(cancellationToken);
+        }
         DateTime? GetTheStartOfTheDayOrDefault(DateTime? from)
         {
             return from!.Value.AddHours(0 - from.Value.Hour).

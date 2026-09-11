@@ -13,5 +13,6 @@ namespace EventService.Application.Abstractions.Persistence.Repositories
         Task<bool> AnyAsync(CancellationToken ct = default);
         Task<int> MaxAsync(CancellationToken ct = default);
         Task SaveChangesAsync(CancellationToken ct = default);
+        Task<List<Event>> GetTopAsync(CancellationToken ct = default);
     }
 }

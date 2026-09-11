@@ -3,6 +3,7 @@ using EventService.Application.DTOs;
 using EventService.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
 
 namespace EventService.App.Controllers
 {
@@ -12,10 +13,12 @@ namespace EventService.App.Controllers
     public class EventsController : ControllerBase
     {
         private readonly IEventService _eventService;
+        private readonly IRedisService _redisService;
         /// text
-        public EventsController(IEventService eventService)
+        public EventsController(IEventService eventService, IRedisService redisService)
         {
             _eventService = eventService;
+            _redisService = redisService;
         }
 
         /// <summary>
@@ -38,16 +41,50 @@ namespace EventService.App.Controllers
         }
 
         /// <summary>
+        /// GET: Get TOP Events.
+        /// </summary>
+        /// <returns>Collection TOP Events</returns>
+        [AllowAnonymous]
+        [HttpGet]
+        public async Task<ActionResult<List<Event>>> GetTopEventsAsync(CancellationToken token)
+        {
+            var cached = await _redisService.GetTopCacheEventsAsync();
+            if (cached != null)
+            {
+                return Ok(cached);
+            }
+
+            var result = await _eventService.GetTopAsync(token);
+            if (result != null)
+            {
+                await _redisService.WriteCacheTopEventsInRedisAsync(result);
+            }
+
+            return Ok(result);
+        }
+
+        /// <summary>
         /// GET: Get Event by id.
         /// </summary>
         /// <param name="id">Id</param>
+        /// <param name="token">CancellationToken</param>
         /// <returns>Event event</returns>
         [AllowAnonymous]
         [HttpGet("{id}")]
         [ActionName("GetEventByIdAsync")]
-        public async Task<ActionResult<Event>> GetEventByIdAsync([FromRoute] int id)
+        public async Task<ActionResult<Event>> GetEventByIdAsync([FromRoute] int id, CancellationToken token)
         {
-            var ev = await _eventService.GetByIdAsync(id);
+            var cached = await _redisService.GetCacheEventByIdAsync(id);
+            if (cached != null)
+            {
+                return Ok(cached);
+            }
+
+            var ev = await _eventService.GetByIdAsync(id, token);
+            if (ev != null)
+            {
+                await _redisService.WriteCacheEventInRedisAsync(ev);
+            }
 
             return Ok(ev);
         }
@@ -58,13 +95,13 @@ namespace EventService.App.Controllers
         /// <returns>Event eventt</returns>
         [Authorize(Roles = "Admin")]
         [HttpPost]
-        public async Task<ActionResult<Event>> CreateEventAsync(CreateEventDto ev)
+        public async Task<ActionResult<Event>> CreateEventAsync(CreateEventDto ev, CancellationToken token)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            var createdEvent = await _eventService.CreateEventAsync(ev);
+            var createdEvent = await _eventService.CreateEventAsync(ev, token);
 
             return CreatedAtAction(nameof(GetEventByIdAsync), new { id = createdEvent.Id }, createdEvent);
         }
@@ -75,12 +112,12 @@ namespace EventService.App.Controllers
         /// <returns>Event eventt</returns>
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
-        public async Task<ActionResult<EventDto>> UpdateEventAsync([FromRoute] int id, EventDto ev)
+        public async Task<ActionResult<EventDto>> UpdateEventAsync([FromRoute] int id, EventDto ev, CancellationToken token)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var updatedEvent = await _eventService.UpdateEventAsync(id, ev);
+            var updatedEvent = await _eventService.UpdateEventAsync(id, ev, token);
             return Ok(updatedEvent);
         }
 
@@ -90,9 +127,9 @@ namespace EventService.App.Controllers
         /// <returns>Event eventt</returns>
         [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
-        public async Task<ActionResult<Event>> DeleteEventAsync([FromRoute] int id)
+        public async Task<ActionResult<Event>> DeleteEventAsync([FromRoute] int id, CancellationToken token)
         {
-            await _eventService.DeleteEventAsync(id);
+            await _eventService.DeleteEventAsync(id, token);
             return NoContent();
         }
     }
