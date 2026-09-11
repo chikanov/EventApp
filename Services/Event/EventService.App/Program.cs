@@ -4,9 +4,11 @@ using EventService.Application.Abstractions.Persistence.Repositories;
 using EventService.Application.Abstractions.Services;
 using EventService.Infrastructure.Persistence.DataAccess;
 using EventService.Infrastructure.Persistence.kafka;
+using EventService.Infrastructure.Persistence.Redis;
 using EventService.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
+using StackExchange.Redis;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -34,6 +36,23 @@ builder.Services.AddSingleton<KafkaProducerService>(provider =>
                 ?? throw new InvalidOperationException("Kafka string 'BootstrapServers' not found.");
     return new KafkaProducerService(bootstrapServers);
 });
+var redisConnectionString = builder.Configuration.GetValue<string>("Redis:Redis__ConnectionString")
+                ?? throw new InvalidOperationException("Redis connection string not found.");
+var redisPassword = builder.Configuration.GetValue<string>("Redis:Password")
+                ?? throw new InvalidOperationException("Redis Password string not found.");
+var redisOptions = new ConfigurationOptions
+{
+    EndPoints = { redisConnectionString },
+    Password = redisPassword,
+    ConnectTimeout = 5000,
+    SyncTimeout = 3000,
+    AbortOnConnectFail = false,
+    ConnectRetry = 3,
+};
+builder.Services.AddSingleton<IConnectionMultiplexer>(
+    ConnectionMultiplexer.Connect(redisOptions)
+);
+builder.Services.AddScoped<IRedisService, RedisService>();
 builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IEventService, EventService.Application.Services.EventService>();
 builder.Services.AddHostedService<EventConsumerWorker>();
