@@ -1,8 +1,8 @@
 ﻿using EventService.Application.Abstractions.Services;
 using EventService.Domain.Entities;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using StackExchange.Redis;
-using System.Text.Json;
 
 namespace EventService.Infrastructure.Persistence.Redis
 {
@@ -46,7 +46,7 @@ namespace EventService.Infrastructure.Persistence.Redis
 
                 if (value.HasValue)
                 {
-                    var @event = JsonSerializer.Deserialize<Event>(value.ToString());
+                 var @event = JsonConvert.DeserializeObject<Event>(value.ToString());
                     return @event;
                 }
                 else return null;
@@ -65,7 +65,7 @@ namespace EventService.Infrastructure.Persistence.Redis
                 await _redisDb.PingAsync();
                 _logger.LogInformation("Redis is available.");
 
-                string json = JsonSerializer.Serialize(@event);
+                string json = JsonConvert.SerializeObject(@event);
                 var isAdded = await _redisDb.StringSetAsync($"event:{@event.Id}", json, TimeSpan.FromMinutes(eventTtlMinutes));
 
                 if(isAdded)
@@ -91,7 +91,7 @@ namespace EventService.Infrastructure.Persistence.Redis
 
                 if (value.HasValue)
                 {
-                    var listEvents = JsonSerializer.Deserialize<List<Event>>(value.ToString());
+                    var listEvents = JsonConvert.DeserializeObject<List<Event>>(value.ToString());
                     return listEvents!;
                 }
                 else return null!;
@@ -110,7 +110,7 @@ namespace EventService.Infrastructure.Persistence.Redis
                 await _redisDb.PingAsync();
                 _logger.LogInformation("Redis is available.");
 
-                string json = JsonSerializer.Serialize(topEvents);
+                string json = JsonConvert.SerializeObject(topEvents);
                 var isAdded = await _redisDb.StringSetAsync(topEventsKey, json, TimeSpan.FromMinutes(eventTtlMinutes));
 
                 if (isAdded)

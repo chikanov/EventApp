@@ -38,12 +38,9 @@ builder.Services.AddSingleton<KafkaProducerService>(provider =>
 });
 var redisConnectionString = builder.Configuration.GetValue<string>("Redis:Redis__ConnectionString")
                 ?? throw new InvalidOperationException("Redis connection string not found.");
-var redisPassword = builder.Configuration.GetValue<string>("Redis:Password")
-                ?? throw new InvalidOperationException("Redis Password string not found.");
 var redisOptions = new ConfigurationOptions
 {
     EndPoints = { redisConnectionString },
-    Password = redisPassword,
     ConnectTimeout = 5000,
     SyncTimeout = 3000,
     AbortOnConnectFail = false,
@@ -52,7 +49,7 @@ var redisOptions = new ConfigurationOptions
 builder.Services.AddSingleton<IConnectionMultiplexer>(
     ConnectionMultiplexer.Connect(redisOptions)
 );
-builder.Services.AddScoped<IRedisService, RedisService>();
+builder.Services.AddSingleton<IRedisService, RedisService>();
 builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IEventService, EventService.Application.Services.EventService>();
 builder.Services.AddHostedService<EventConsumerWorker>();

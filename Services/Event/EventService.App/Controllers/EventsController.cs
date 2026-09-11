@@ -45,7 +45,7 @@ namespace EventService.App.Controllers
         /// </summary>
         /// <returns>Collection TOP Events</returns>
         [AllowAnonymous]
-        [HttpGet]
+        [HttpGet("top")]
         public async Task<ActionResult<List<Event>>> GetTopEventsAsync(CancellationToken token)
         {
             var cached = await _redisService.GetTopCacheEventsAsync();
