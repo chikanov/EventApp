@@ -103,7 +103,12 @@ namespace EventService.App.Controllers
             }
             var createdEvent = await _eventService.CreateEventAsync(ev, token);
 
-            return CreatedAtAction(nameof(GetEventByIdAsync), new { id = createdEvent.Id }, createdEvent);
+            if (createdEvent != null)
+            {
+                await _redisService.WriteCacheEventInRedisAsync(createdEvent);
+            }
+
+            return CreatedAtAction(nameof(GetEventByIdAsync), new { id = createdEvent!.Id }, createdEvent);
         }
 
         /// <summary>
@@ -118,6 +123,12 @@ namespace EventService.App.Controllers
                 return BadRequest(ModelState);
 
             var updatedEvent = await _eventService.UpdateEventAsync(id, ev, token);
+
+            if (updatedEvent != null)
+            {
+                await _redisService.DeleteCacheEventFromRedisAsync(id);
+                await _redisService.WriteCacheEventInRedisAsync(updatedEvent);
+            }
             return Ok(updatedEvent);
         }
 
@@ -129,7 +140,11 @@ namespace EventService.App.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<Event>> DeleteEventAsync([FromRoute] int id, CancellationToken token)
         {
-            await _eventService.DeleteEventAsync(id, token);
+            var deleted = await _eventService.DeleteEventAsync(id, token);
+            if (deleted)
+            {
+                await _redisService.DeleteCacheEventFromRedisAsync(id);
+            }
             return NoContent();
         }
     }

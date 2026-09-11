@@ -1,6 +1,7 @@
 ﻿using Confluent.Kafka;
 using EventApp.Shared.Kafka;
 using EventApp.Shared.Kafka.Contracts;
+using EventService.Application.Abstractions.Services;
 using EventService.Domain.Entities;
 using EventService.Infrastructure.Persistence.DataAccess;
 using Microsoft.EntityFrameworkCore;
@@ -15,15 +16,17 @@ namespace EventService.Infrastructure.Persistence.kafka
     public class EventConsumerWorker : BackgroundService
     {
         private readonly IConfiguration _configuration;
+        private readonly IRedisService _redisService;
         private readonly ILogger<EventConsumerWorker> _logger;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private static readonly SemaphoreSlim _processingSemaphore = new(1, 1);
         public EventConsumerWorker(IServiceScopeFactory scopeFactory, IConfiguration configuration, 
-            ILogger<EventConsumerWorker> logger, IServiceScopeFactory serviceScopeFactory)
+            ILogger<EventConsumerWorker> logger, IServiceScopeFactory serviceScopeFactory, IRedisService redisService)
         {
             _configuration = configuration;
             _logger = logger;
             _serviceScopeFactory = serviceScopeFactory;
+            _redisService = redisService;
         }
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
@@ -137,6 +140,9 @@ namespace EventService.Infrastructure.Persistence.kafka
                                 await context.ProcessedBookings.AddAsync(processedBookings, stoppingToken);
 
                                 await context.SaveChangesAsync(stoppingToken);
+
+                                await _redisService.DeleteCacheEventFromRedisAsync(@event.Id);
+                                await _redisService.WriteCacheEventInRedisAsync(@event);
 
                                 consumer.StoreOffset(consumeResult);
                                 consumer.Commit(consumeResult);

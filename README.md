@@ -51,6 +51,14 @@ Event management Service.
     EventConsumer listens for messages from the BookingComferd topic, performs checks, 
     and if the check is successful, reduces the number of available seats.
 
+## Redis
+
+    Port: 6379
+    Events and top 10 events are added to the cache. Implemented the Cache-Aside pattern for two scenarios:
+    1) Get Event by Id.
+    2) Get top 10 Events.
+    When data changes, the cache is deleted and a new cache is written. The TTL lifetime is 10 minutes.
+
 # REST API
 
 The REST API to the example app is described below.
