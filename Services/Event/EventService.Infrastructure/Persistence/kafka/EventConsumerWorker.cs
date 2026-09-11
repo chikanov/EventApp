@@ -63,52 +63,96 @@ namespace EventService.Infrastructure.Persistence.kafka
                     using var scope = _serviceScopeFactory.CreateScope();
                     var context = scope.ServiceProvider.GetRequiredService<EventDbContext>();
 
-                    var @event = await context.Events.FirstOrDefaultAsync(e => e.Id == deserializedOrder.EventId, stoppingToken);
-
-                    if (@event == null)
-                    {
-                        _logger.LogError($"Event with Id = {deserializedOrder.EventId} does not exist.");
-                    }
-                    if (@event.StartAt < deserializedOrder.ProcessingDateTime)
-                    {
-                        _logger.LogError("You cannot book an event that has already taken place.");
-                    }
-                    
                     var processedBookings = await context.ProcessedBookings.FirstOrDefaultAsync(p => p.Id == deserializedOrder.BookigId);
-
-                    await _processingSemaphore.WaitAsync(stoppingToken);
-
-                    try
+                    if (processedBookings == null)
                     {
-                        if (!@event.TryReserveSeats())
+                        var @event = await context.Events.FirstOrDefaultAsync(e => e.Id == deserializedOrder.EventId, stoppingToken);
+                        await _processingSemaphore.WaitAsync(stoppingToken);
+                        var isEventExist = true;
+                        var isPastEventBooking = false;
+                        var isSeatAvailable = true;
+                        try
                         {
-                            _logger.LogError($"The available seats for the event are over.");
-                        }
+                            if (@event == null)
+                            {
+                                /* TO DO: 
+                                    using var scope = _scopeFactory.CreateScope();
+                                    var message = new BookingRejected() 
+                                    { 
+                                        BookigId = booking.Id,
+                                        EventId = booking.EventId,
+                                        UserId = booking.UserId,
+                                        SeatsCount = 1,
+                                        ProcessingDateTime = DateTime.UtcNow,
+                                        Reason = RejectedReason.NotFoundEventtException
+                                    };
+                                    var kafkaProducerService = scope.ServiceProvider.GetRequiredService<KafkaProducerService>();
+                                    await kafkaProducerService.SendMessageToKafka(Constants.BookingRejected, message, stoppingToken); 
+                                     */
+                                isEventExist = false;
+                                _logger.LogError($"Event with Id = {deserializedOrder.EventId} does not exist.");
+                            }
+                            if (@event.StartAt < deserializedOrder.ProcessingDateTime)
+                            {
+                                /* TO DO: 
+                                   using var scope = _scopeFactory.CreateScope();
+                                   var message = new BookingRejected() 
+                                   { 
+                                       BookigId = booking.Id,
+                                       EventId = booking.EventId,
+                                       UserId = booking.UserId,
+                                       SeatsCount = 1,
+                                       ProcessingDateTime = DateTime.UtcNow,
+                                       Reason = RejectedReason.PastEventBookingException
+                                   };
+                                   var kafkaProducerService = scope.ServiceProvider.GetRequiredService<KafkaProducerService>();
+                                   await kafkaProducerService.SendMessageToKafka(Constants.BookingRejected, message, stoppingToken); 
+                                    */
+                                isPastEventBooking = true;
+                                _logger.LogError("You cannot book an event that has already taken place.");
+                            }
+                            if (!@event.TryReserveSeats())
+                            {
+                                /* TO DO: 
+                                using var scope = _scopeFactory.CreateScope();
+                                var message = new BookingRejected() 
+                                { 
+                                    BookigId = booking.Id,
+                                    EventId = booking.EventId,
+                                    UserId = booking.UserId,
+                                    SeatsCount = 1,
+                                    ProcessingDateTime = DateTime.UtcNow,
+                                    Reason = RejectedReason.NoAvailableSeatsException
+                                };
+                                var kafkaProducerService = scope.ServiceProvider.GetRequiredService<KafkaProducerService>();
+                                await kafkaProducerService.SendMessageToKafka(Constants.BookingRejected, message, stoppingToken); 
+                                 */
+                                isSeatAvailable = false;
+                                _logger.LogError($"The available seats for the event are over.");
+                            }
+                            if (isEventExist && !isPastEventBooking && isSeatAvailable)
+                            {
+                                processedBookings = new ProcessedBookings()
+                                { Id = deserializedOrder.BookigId, ProcessedDateTime = DateTime.UtcNow };
+                                await context.ProcessedBookings.AddAsync(processedBookings, stoppingToken);
 
-                        if (@event != null && @event.StartAt > deserializedOrder.ProcessingDateTime && processedBookings == null)
+                                await context.SaveChangesAsync(stoppingToken);
+
+                                consumer.StoreOffset(consumeResult);
+                                consumer.Commit(consumeResult);
+                            }
+                            else 
+                            {
+                                consumer.StoreOffset(consumeResult);
+                                consumer.Commit(consumeResult);
+                            }
+                        }
+                        catch (Exception ex)
                         {
-                            processedBookings = new ProcessedBookings()
-                            { Id = deserializedOrder.BookigId, ProcessedDateTime = DateTime.UtcNow };
-                            await context.ProcessedBookings.AddAsync(processedBookings, stoppingToken);
-
-                            await context.SaveChangesAsync(stoppingToken);
-
-                            consumer.StoreOffset(consumeResult);
-                            consumer.Commit(consumeResult);
+                            throw new Exception(ex.Message);
                         }
-                        else
-                        {
-                            @event.ReleaseSeats();
-                            await context.SaveChangesAsync(stoppingToken);
-
-                            consumer.StoreOffset(consumeResult);
-                            consumer.Commit(consumeResult);
-                        }
-                    } catch (Exception ex)
-                    {
-                        throw new Exception(ex.Message);
-                    }
-                    finally { _processingSemaphore.Release(); } 
+                        finally { _processingSemaphore.Release(); }
+                    }  
                 }
             }
             catch (ConsumeException ex)
