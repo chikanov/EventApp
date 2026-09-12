@@ -40,10 +40,8 @@ namespace EventService.Application.Services
             }
             var @event = await _eventRepository.GetByIdAsync(id, cancellationToken)
                 ?? throw new NotFoundEventException("Event not found");
-            if (@event != null)
-            {
-                await _redisService.WriteCacheEventInRedisAsync(@event);
-            }
+            await _redisService.WriteCacheEventInRedisAsync(@event);
+
             return @event;
         }
 
@@ -86,12 +84,9 @@ namespace EventService.Application.Services
                 throw new ValidationEventException(nameof(ev.TotalSeats), "Total seats value must be greater than zero.");
             }
 
-            if (existEvent != null)
-            {
-                await _eventRepository.UpdateAsync(ev, existEvent, cancellationToken);
-                await _redisService.DeleteCacheEventFromRedisAsync(id);
-                await _redisService.WriteCacheEventInRedisAsync(existEvent);
-            }
+            await _eventRepository.UpdateAsync(ev, existEvent, cancellationToken);
+            await _redisService.DeleteCacheEventFromRedisAsync(id);
+            await _redisService.WriteCacheEventInRedisAsync(existEvent);
 
             return existEvent!;
         }
@@ -104,11 +99,9 @@ namespace EventService.Application.Services
             {
                 throw new NotFoundEventException($"Event with Id = {id} does not exist.");
             }
-            if (existEvent != null)
-            {
-                await _eventRepository.DeleteAsync(existEvent, cancellationToken);
-                await _redisService.DeleteCacheEventFromRedisAsync(id);
-            }
+
+            await _eventRepository.DeleteAsync(existEvent, cancellationToken);
+            await _redisService.DeleteCacheEventFromRedisAsync(id);
 
             return true;
         }
