@@ -14,16 +14,19 @@ namespace EventService.Infrastructure.Persistence.Repositories
         {
             _context = context;
         }
-        public async Task AddAsync(Event @event, CancellationToken ct = default)
+        public async Task<Event> AddAsync(Event @event, CancellationToken ct = default)
         {
-            await _context.Events.AddAsync(@event, ct).AsTask();
+            var addedEvent = await _context.Events.AddAsync(@event, ct);
             await _context.SaveChangesAsync(ct);
+
+            return addedEvent.Entity;
         }
 
-        public async Task DeleteAsync(Event @event, CancellationToken ct = default)
+        public async Task<Event> DeleteAsync(Event @event, CancellationToken ct = default)
         {
             _context.Remove(@event);
             await _context.SaveChangesAsync(ct);
+            return @event;
         }
 
         public async Task<List<Event>> GetAllAsync(CancellationToken ct = default)

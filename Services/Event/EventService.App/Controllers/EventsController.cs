@@ -3,7 +3,6 @@ using EventService.Application.DTOs;
 using EventService.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json.Linq;
 
 namespace EventService.App.Controllers
 {
@@ -13,12 +12,10 @@ namespace EventService.App.Controllers
     public class EventsController : ControllerBase
     {
         private readonly IEventService _eventService;
-        private readonly IRedisService _redisService;
         /// text
-        public EventsController(IEventService eventService, IRedisService redisService)
+        public EventsController(IEventService eventService)
         {
             _eventService = eventService;
-            _redisService = redisService;
         }
 
         /// <summary>
@@ -48,18 +45,7 @@ namespace EventService.App.Controllers
         [HttpGet("top")]
         public async Task<ActionResult<List<Event>>> GetTopEventsAsync(CancellationToken token)
         {
-            var cached = await _redisService.GetTopCacheEventsAsync();
-            if (cached != null)
-            {
-                return Ok(cached);
-            }
-
             var result = await _eventService.GetTopAsync(token);
-            if (result != null)
-            {
-                await _redisService.WriteCacheTopEventsInRedisAsync(result);
-            }
-
             return Ok(result);
         }
 
@@ -74,18 +60,7 @@ namespace EventService.App.Controllers
         [ActionName("GetEventByIdAsync")]
         public async Task<ActionResult<Event>> GetEventByIdAsync([FromRoute] int id, CancellationToken token)
         {
-            var cached = await _redisService.GetCacheEventByIdAsync(id);
-            if (cached != null)
-            {
-                return Ok(cached);
-            }
-
             var ev = await _eventService.GetByIdAsync(id, token);
-            if (ev != null)
-            {
-                await _redisService.WriteCacheEventInRedisAsync(ev);
-            }
-
             return Ok(ev);
         }
 
@@ -103,11 +78,6 @@ namespace EventService.App.Controllers
             }
             var createdEvent = await _eventService.CreateEventAsync(ev, token);
 
-            if (createdEvent != null)
-            {
-                await _redisService.WriteCacheEventInRedisAsync(createdEvent);
-            }
-
             return CreatedAtAction(nameof(GetEventByIdAsync), new { id = createdEvent!.Id }, createdEvent);
         }
 
@@ -124,11 +94,6 @@ namespace EventService.App.Controllers
 
             var updatedEvent = await _eventService.UpdateEventAsync(id, ev, token);
 
-            if (updatedEvent != null)
-            {
-                await _redisService.DeleteCacheEventFromRedisAsync(id);
-                await _redisService.WriteCacheEventInRedisAsync(updatedEvent);
-            }
             return Ok(updatedEvent);
         }
 
@@ -141,10 +106,7 @@ namespace EventService.App.Controllers
         public async Task<ActionResult<Event>> DeleteEventAsync([FromRoute] int id, CancellationToken token)
         {
             var deleted = await _eventService.DeleteEventAsync(id, token);
-            if (deleted)
-            {
-                await _redisService.DeleteCacheEventFromRedisAsync(id);
-            }
+            
             return NoContent();
         }
     }
