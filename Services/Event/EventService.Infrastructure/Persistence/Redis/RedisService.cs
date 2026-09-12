@@ -11,6 +11,7 @@ namespace EventService.Infrastructure.Persistence.Redis
         private readonly IDatabase _redisDb;
         private readonly ILogger<RedisService> _logger;
         private const int eventTtlMinutes = 10;
+        private const int eventTopTtlMinutes = 60;
         private const string topEventsKey = "events:top10";
         public RedisService(IConnectionMultiplexer connection, ILogger<RedisService> logger)
         {
@@ -111,7 +112,7 @@ namespace EventService.Infrastructure.Persistence.Redis
                 _logger.LogInformation("Redis is available.");
 
                 string json = JsonConvert.SerializeObject(topEvents);
-                var isAdded = await _redisDb.StringSetAsync(topEventsKey, json, TimeSpan.FromMinutes(eventTtlMinutes));
+                var isAdded = await _redisDb.StringSetAsync(topEventsKey, json, TimeSpan.FromMinutes(eventTopTtlMinutes));
 
                 if (isAdded)
                     _logger.LogInformation("Top 10 Events successfully added to Redis");
