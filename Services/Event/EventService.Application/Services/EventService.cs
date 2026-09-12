@@ -12,9 +12,11 @@ namespace EventService.Application.Services
     public class EventService : IEventService
     {
         private readonly IEventRepository _eventRepository;
-        public EventService(IEventRepository eventRepository)
+        private readonly IRedisService _redisService;
+        public EventService(IEventRepository eventRepository, IRedisService redisService)
         {
             _eventRepository = eventRepository;
+            _redisService = redisService;
         }
         ///GetAll() 
         public async Task<IReadOnlyList<Event>> GetAllAsync(CancellationToken cancellationToken = default)
@@ -31,8 +33,15 @@ namespace EventService.Application.Services
         ///GetById
         public async Task<Event?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         {
+            var cached = await _redisService.GetCacheEventByIdAsync(id);
+            if (cached != null)
+            {
+                return cached;
+            }
             var @event = await _eventRepository.GetByIdAsync(id, cancellationToken)
                 ?? throw new NotFoundEventException("Event not found");
+            await _redisService.WriteCacheEventInRedisAsync(@event);
+
             return @event;
         }
 
@@ -46,8 +55,13 @@ namespace EventService.Application.Services
             
             var newEvent = Event.Create(ev.Title, ev.Description, ev.StartAt, ev.EndAt, ev.TotalSeats);
 
-            await _eventRepository.AddAsync(newEvent, cancellationToken);
-            return newEvent;
+            var createdEvent = await _eventRepository.AddAsync(newEvent, cancellationToken);
+            
+            if (createdEvent != null)
+            {
+                await _redisService.WriteCacheEventInRedisAsync(createdEvent);
+            }
+            return createdEvent!;
         }
 
         /// Update
@@ -70,10 +84,9 @@ namespace EventService.Application.Services
                 throw new ValidationEventException(nameof(ev.TotalSeats), "Total seats value must be greater than zero.");
             }
 
-            if (existEvent != null)
-            {
-                existEvent = await _eventRepository.UpdateAsync(ev, existEvent, cancellationToken);
-            }
+            await _eventRepository.UpdateAsync(ev, existEvent, cancellationToken);
+            await _redisService.DeleteCacheEventFromRedisAsync(id);
+            await _redisService.WriteCacheEventInRedisAsync(existEvent);
 
             return existEvent!;
         }
@@ -86,8 +99,9 @@ namespace EventService.Application.Services
             {
                 throw new NotFoundEventException($"Event with Id = {id} does not exist.");
             }
-            if (existEvent != null)
-                await _eventRepository.DeleteAsync(existEvent, cancellationToken);
+
+            await _eventRepository.DeleteAsync(existEvent, cancellationToken);
+            await _redisService.DeleteCacheEventFromRedisAsync(id);
 
             return true;
         }
@@ -130,7 +144,21 @@ namespace EventService.Application.Services
                 Page = page
             };
         }
+        public async Task<List<Event>> GetTopAsync(CancellationToken cancellationToken = default)
+        {
+            var cached = await _redisService.GetTopCacheEventsAsync();
+            if (cached != null)
+            {
+                return cached;
+            }
 
+            var result = await _eventRepository.GetTopAsync(cancellationToken);
+            if (result != null)
+            {
+                await _redisService.WriteCacheTopEventsInRedisAsync(result);
+            }
+            return result!;
+        }
         DateTime? GetTheStartOfTheDayOrDefault(DateTime? from)
         {
             return from!.Value.AddHours(0 - from.Value.Hour).

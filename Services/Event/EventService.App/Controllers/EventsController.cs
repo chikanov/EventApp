@@ -38,17 +38,29 @@ namespace EventService.App.Controllers
         }
 
         /// <summary>
+        /// GET: Get TOP Events.
+        /// </summary>
+        /// <returns>Collection TOP Events</returns>
+        [AllowAnonymous]
+        [HttpGet("top")]
+        public async Task<ActionResult<List<Event>>> GetTopEventsAsync(CancellationToken token)
+        {
+            var result = await _eventService.GetTopAsync(token);
+            return Ok(result);
+        }
+
+        /// <summary>
         /// GET: Get Event by id.
         /// </summary>
         /// <param name="id">Id</param>
+        /// <param name="token">CancellationToken</param>
         /// <returns>Event event</returns>
         [AllowAnonymous]
         [HttpGet("{id}")]
         [ActionName("GetEventByIdAsync")]
-        public async Task<ActionResult<Event>> GetEventByIdAsync([FromRoute] int id)
+        public async Task<ActionResult<Event>> GetEventByIdAsync([FromRoute] int id, CancellationToken token)
         {
-            var ev = await _eventService.GetByIdAsync(id);
-
+            var ev = await _eventService.GetByIdAsync(id, token);
             return Ok(ev);
         }
 
@@ -58,15 +70,15 @@ namespace EventService.App.Controllers
         /// <returns>Event eventt</returns>
         [Authorize(Roles = "Admin")]
         [HttpPost]
-        public async Task<ActionResult<Event>> CreateEventAsync(CreateEventDto ev)
+        public async Task<ActionResult<Event>> CreateEventAsync(CreateEventDto ev, CancellationToken token)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            var createdEvent = await _eventService.CreateEventAsync(ev);
+            var createdEvent = await _eventService.CreateEventAsync(ev, token);
 
-            return CreatedAtAction(nameof(GetEventByIdAsync), new { id = createdEvent.Id }, createdEvent);
+            return CreatedAtAction(nameof(GetEventByIdAsync), new { id = createdEvent!.Id }, createdEvent);
         }
 
         /// <summary>
@@ -75,12 +87,13 @@ namespace EventService.App.Controllers
         /// <returns>Event eventt</returns>
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
-        public async Task<ActionResult<EventDto>> UpdateEventAsync([FromRoute] int id, EventDto ev)
+        public async Task<ActionResult<EventDto>> UpdateEventAsync([FromRoute] int id, EventDto ev, CancellationToken token)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var updatedEvent = await _eventService.UpdateEventAsync(id, ev);
+            var updatedEvent = await _eventService.UpdateEventAsync(id, ev, token);
+
             return Ok(updatedEvent);
         }
 
@@ -90,9 +103,10 @@ namespace EventService.App.Controllers
         /// <returns>Event eventt</returns>
         [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
-        public async Task<ActionResult<Event>> DeleteEventAsync([FromRoute] int id)
+        public async Task<ActionResult<Event>> DeleteEventAsync([FromRoute] int id, CancellationToken token)
         {
-            await _eventService.DeleteEventAsync(id);
+            var deleted = await _eventService.DeleteEventAsync(id, token);
+            
             return NoContent();
         }
     }
