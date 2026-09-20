@@ -8,8 +8,14 @@ using EventService.Infrastructure.Persistence.Redis;
 using EventService.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
+using OpenTelemetry.Exporter;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using StackExchange.Redis;
 using System.Reflection;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 AuthenticationComponent.AddAuthentication(builder);
@@ -21,6 +27,57 @@ builder.Services.AddControllersWithViews()
     .AddNewtonsoftJson(options =>
     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
 );
+builder.Logging.AddJsonConsole(options =>
+{
+    options.JsonWriterOptions = new JsonWriterOptions
+    {
+        Indented = false
+    };
+});
+var serviceName = builder.Configuration.GetValue<string>("ServiceName")
+                ?? throw new InvalidOperationException("ServiceName not found.");
+
+builder.Services
+    .AddOpenTelemetry()
+    .ConfigureResource(resource => resource
+        .AddService(
+            serviceName: serviceName))
+    .WithMetrics(metrics =>
+    {
+        metrics
+            .AddAspNetCoreInstrumentation()
+            .AddRuntimeInstrumentation()
+            .AddPrometheusExporter();
+    })
+    .WithTracing(tracing => tracing
+        .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(serviceName))
+        .AddAspNetCoreInstrumentation(options =>
+        {
+            options.Filter = httpContext =>
+            {
+                var path = httpContext.Request.Path;
+
+                return !path.StartsWithSegments("/health") &&
+                       !path.StartsWithSegments("/metrics");
+            };
+        })
+        .AddHttpClientInstrumentation()
+        .AddEntityFrameworkCoreInstrumentation()
+        .AddOtlpExporter(options =>
+        {
+            var otlpExporterEndpoint = builder.Configuration.GetValue<string>("OtlpExporterEndpoint")
+                ?? throw new InvalidOperationException("OtlpExporterEndpoint not found.");
+            options.Endpoint = new Uri(otlpExporterEndpoint);
+
+            options.Protocol = OtlpExportProtocol.HttpProtobuf;
+
+            options.BatchExportProcessorOptions.ScheduledDelayMilliseconds = 1000;
+
+            options.BatchExportProcessorOptions.ExporterTimeoutMilliseconds = 5000;
+        }))
+    .WithLogging(logging => logging
+        .AddOtlpExporter());
+
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                 ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddOpenApi();
@@ -106,6 +163,7 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapPrometheusScrapingEndpoint();
 app.MapControllers();
 
 app.Run();
