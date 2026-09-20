@@ -60,9 +60,10 @@ namespace EventService.Infrastructure.Persistence.kafka
                     var consumeResult = consumer.Consume(stoppingToken);
                     BookingConfirmed deserializedOrder = JsonSerializer.Deserialize<BookingConfirmed>(consumeResult.Message.Value);
 
-                    _logger.LogInformation($"Received a message from the topic 'booking-cofirded': bookingId - {deserializedOrder.BookigId}; " +
-                        $"eventId - {deserializedOrder.EventId}; userId - {deserializedOrder.UserId}; SeatsCount - {deserializedOrder.SeatsCount}; " +
-                        $"processingDateTime - {deserializedOrder.ProcessingDateTime}");
+                    _logger.LogInformation("Received a message from the topic 'booking-cofirded': bookingId - {BookigId}; " +
+                        "eventId - {EventId1}; userId - {UserId}; SeatsCount - {SeatsCount}; " +
+                        "processingDateTime - {ProcessingDateTime}", deserializedOrder!.BookigId, deserializedOrder.EventId,
+                        deserializedOrder.UserId, deserializedOrder.SeatsCount, deserializedOrder.ProcessingDateTime);
                     using var scope = _serviceScopeFactory.CreateScope();
                     var context = scope.ServiceProvider.GetRequiredService<EventDbContext>();
 
@@ -93,7 +94,7 @@ namespace EventService.Infrastructure.Persistence.kafka
                                     await kafkaProducerService.SendMessageToKafka(Constants.BookingRejected, message, stoppingToken); 
                                      */
                                 isEventExist = false;
-                                _logger.LogError($"Event with Id = {deserializedOrder.EventId} does not exist.");
+                                _logger.LogError("Event with Id = {EventId} does not exist.", deserializedOrder.EventId);
                             }
                             if (@event.StartAt < deserializedOrder.ProcessingDateTime)
                             {
@@ -131,7 +132,7 @@ namespace EventService.Infrastructure.Persistence.kafka
                                 await kafkaProducerService.SendMessageToKafka(Constants.BookingRejected, message, stoppingToken); 
                                  */
                                 isSeatAvailable = false;
-                                _logger.LogError($"The available seats for the event are over.");
+                                _logger.LogError("The available seats for the event are over.");
                             }
                             if (isEventExist && !isPastEventBooking && isSeatAvailable)
                             {
