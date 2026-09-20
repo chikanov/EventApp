@@ -6,8 +6,9 @@ using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using Serilog;
+using Serilog.Formatting.Compact;
 using System.Reflection;
-using System.Text.Json;
 using UserService.App.Middleware;
 using UserService.Application.Abstractions.Persistence.Repositories;
 using UserService.Application.Abstractions.Services;
@@ -25,16 +26,9 @@ builder.Services.AddControllersWithViews()
     .AddNewtonsoftJson(options =>
     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
 );
-builder.Logging.AddJsonConsole(options =>
-{
-    options.JsonWriterOptions = new JsonWriterOptions
-    {
-        Indented = false
-    };
-});
+
 var serviceName = builder.Configuration.GetValue<string>("ServiceName")
                 ?? throw new InvalidOperationException("ServiceName not found.");
-
 builder.Services
     .AddOpenTelemetry()
     .ConfigureResource(resource => resource
@@ -72,9 +66,11 @@ builder.Services
             options.BatchExportProcessorOptions.ScheduledDelayMilliseconds = 1000;
 
             options.BatchExportProcessorOptions.ExporterTimeoutMilliseconds = 5000;
-        }))
-    .WithLogging(logging => logging
-        .AddOtlpExporter());
+        }));
+
+builder.Host.UseSerilog((ctx, cfg) =>
+    cfg.ReadFrom.Configuration(ctx.Configuration)
+       .WriteTo.Console(new CompactJsonFormatter()));
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                 ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");

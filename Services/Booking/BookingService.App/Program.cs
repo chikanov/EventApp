@@ -13,8 +13,9 @@ using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using Serilog;
+using Serilog.Formatting.Compact;
 using System.Reflection;
-using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 AuthenticationComponent.AddAuthentication(builder);
@@ -22,16 +23,9 @@ builder.Services.AddAuthorization();
 // Add services to the container.
 
 builder.Services.AddControllers();
-builder.Logging.AddJsonConsole(options =>
-{
-    options.JsonWriterOptions = new JsonWriterOptions
-    {
-        Indented = false
-    };
-});
+
 var serviceName = builder.Configuration.GetValue<string>("ServiceName")
                 ?? throw new InvalidOperationException("ServiceName not found.");
-
 builder.Services
     .AddOpenTelemetry()
     .ConfigureResource(resource => resource
@@ -69,9 +63,12 @@ builder.Services
             options.BatchExportProcessorOptions.ScheduledDelayMilliseconds = 1000;
 
             options.BatchExportProcessorOptions.ExporterTimeoutMilliseconds = 5000;
-        }))
-    .WithLogging(logging => logging
-        .AddOtlpExporter());
+        }));
+
+builder.Host.UseSerilog((ctx, cfg) =>
+    cfg.ReadFrom.Configuration(ctx.Configuration)
+       .WriteTo.Console(new CompactJsonFormatter()));
+
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddControllersWithViews()
     .AddNewtonsoftJson(options =>
