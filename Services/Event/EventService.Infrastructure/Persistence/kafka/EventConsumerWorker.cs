@@ -20,7 +20,7 @@ namespace EventService.Infrastructure.Persistence.kafka
         private readonly ILogger<EventConsumerWorker> _logger;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private static readonly SemaphoreSlim _processingSemaphore = new(1, 1);
-        public EventConsumerWorker(IServiceScopeFactory scopeFactory, IConfiguration configuration, 
+        public EventConsumerWorker(IServiceScopeFactory scopeFactory, IConfiguration configuration,
             ILogger<EventConsumerWorker> logger, IServiceScopeFactory serviceScopeFactory, IRedisService redisService)
         {
             _configuration = configuration;
@@ -148,7 +148,7 @@ namespace EventService.Infrastructure.Persistence.kafka
                                 consumer.StoreOffset(consumeResult);
                                 consumer.Commit(consumeResult);
                             }
-                            else 
+                            else
                             {
                                 consumer.StoreOffset(consumeResult);
                                 consumer.Commit(consumeResult);
@@ -159,7 +159,7 @@ namespace EventService.Infrastructure.Persistence.kafka
                             throw new Exception(ex.Message);
                         }
                         finally { _processingSemaphore.Release(); }
-                    }  
+                    }
                 }
             }
             catch (ConsumeException ex)

@@ -6,7 +6,7 @@ using Moq;
 
 namespace EventService.Tests
 {
-    public class EventServiceTests 
+    public class EventServiceTests
     {
         private Mock<IEventRepository> _mockRepository;
         private Mock<IRedisService> _mockCache;
@@ -68,11 +68,13 @@ namespace EventService.Tests
         {
             // Arrange
             int eventId = 3;
-            var EventDto = new EventDto() { Title = "Test event title - updated",
-                                                 Description = "Description test 777-updated",
-                                                 StartAt = DateTime.UtcNow,
-                                                 EndAt = DateTime.UtcNow.AddDays(1),
-                                                 TotalSeats = 10
+            var EventDto = new EventDto()
+            {
+                Title = "Test event title - updated",
+                Description = "Description test 777-updated",
+                StartAt = DateTime.UtcNow,
+                EndAt = DateTime.UtcNow.AddDays(1),
+                TotalSeats = 10
             };
             var expectedEvent = Event.Create("Test event title", "Description test 777", DateTime.UtcNow,
                 DateTime.UtcNow.AddDays(1), 10);

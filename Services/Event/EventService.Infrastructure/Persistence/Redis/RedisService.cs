@@ -51,7 +51,7 @@ namespace EventService.Infrastructure.Persistence.Redis
 
                 if (value.HasValue)
                 {
-                 var @event = JsonConvert.DeserializeObject<Event>(value.ToString());
+                    var @event = JsonConvert.DeserializeObject<Event>(value.ToString());
                     return @event;
                 }
                 else return null;
@@ -78,9 +78,9 @@ namespace EventService.Infrastructure.Persistence.Redis
                 string json = JsonConvert.SerializeObject(@event);
                 var isAdded = await _redisDb.StringSetAsync($"event:{@event.Id}", json, TimeSpan.FromMinutes(eventTtlMinutes));
 
-                if(isAdded)
+                if (isAdded)
                     _logger.LogInformation($"Event with id{@event.Id} successfully added to Redis");
-                else 
+                else
                     _logger.LogInformation($"Event with id{@event.Id} did not added to redis.");
 
             }

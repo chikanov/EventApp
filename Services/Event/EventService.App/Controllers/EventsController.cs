@@ -106,7 +106,7 @@ namespace EventService.App.Controllers
         public async Task<ActionResult<Event>> DeleteEventAsync([FromRoute] int id, CancellationToken token)
         {
             var deleted = await _eventService.DeleteEventAsync(id, token);
-            
+
             return NoContent();
         }
     }

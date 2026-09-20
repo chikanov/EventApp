@@ -65,13 +65,13 @@ namespace BookingService.Application.Services
         public async Task<Booking> CancellationBookingAsync(Guid bookingId, Guid userId, string role, CancellationToken cancellationToken = default)
         {
             var curBooking = await _bookingRepository.GetByIdAsync(bookingId, cancellationToken);
-            
+
             if (curBooking == null)
             {
                 throw new NotFoundBookingException($"Booking with id - {bookingId} dose not exist.");
             }
             var bookingsCurUser = await _bookingRepository.GetUserOwnBookingAsync(userId, curBooking.EventId, cancellationToken);
-            
+
             if (!bookingsCurUser.Select(b => b.Id).Contains(bookingId) || role != "admin")
             {
                 throw new PermissionDeniedException("The user does not have the rights to perform this operation.");

@@ -34,7 +34,7 @@ namespace BookingService.Domain.Entities
                     ProcessedAt = DateTime.Now;
                 }
                 else
-                {  
+                {
                     throw new ValidationBookingException(nameof(Status), "The status is already in a canceled state.");
                 }
             }

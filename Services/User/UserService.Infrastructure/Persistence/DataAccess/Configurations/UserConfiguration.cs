@@ -12,7 +12,7 @@ namespace UserService.Infrastructure.Persistence.DataAccess.Configurations
 
             builder.HasKey(e => e.Id);
             builder.Property(e => e.Id).HasColumnName("id").ValueGeneratedNever();
-            
+
             builder.Property(e => e.Login).IsRequired().HasColumnName("login").HasMaxLength(50);
             builder.Property(e => e.Password).IsRequired().HasColumnName("password").HasMaxLength(100);
             builder.Property(b => b.Role).HasColumnName("role").IsRequired().HasMaxLength(20).HasConversion<string>();

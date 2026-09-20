@@ -70,8 +70,8 @@ namespace BookingService.Application.BackgroundServices
                 booking.Confirm();
                 await bookingRepository.SaveChangesAsync(stoppingToken);
 
-                var message = new BookingConfirmed() 
-                { 
+                var message = new BookingConfirmed()
+                {
                     BookigId = booking.Id,
                     EventId = booking.EventId,
                     UserId = booking.UserId,

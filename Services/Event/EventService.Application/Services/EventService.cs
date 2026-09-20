@@ -52,11 +52,11 @@ namespace EventService.Application.Services
             {
                 throw new ValidationEventException(nameof(ev.TotalSeats), "Total seats value must be greater than zero.");
             }
-            
+
             var newEvent = Event.Create(ev.Title, ev.Description, ev.StartAt, ev.EndAt, ev.TotalSeats);
 
             var createdEvent = await _eventRepository.AddAsync(newEvent, cancellationToken);
-            
+
             if (createdEvent != null)
             {
                 await _redisService.WriteCacheEventInRedisAsync(createdEvent);
