@@ -57,7 +57,8 @@ Event management Service.
     Events and top 10 events are added to the cache. Implemented the Cache-Aside pattern for two scenarios:
     1) Get Event by Id.
     2) Get top 10 Events.
-    When data changes, the cache is deleted and a new cache is written. The TTL lifetime is 10 minutes.
+    When data changes, the cache is deleted and a new cache is written. The TTL lifetime for 'Get Event by Id' is 10 minutes.
+    The TTL lifetime for 'Get top 10 Events' is 60 minutes.
 
 # REST API
 
