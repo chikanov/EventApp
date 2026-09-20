@@ -27,13 +27,17 @@ namespace EventService.Infrastructure.Persistence.Redis
 
                 var isDeleted = await _redisDb.KeyDeleteAsync($"event:{id}");
                 if (isDeleted)
-                    _logger.LogInformation($"Event with id - {id} successfully deleted from Redis."); 
+                    _logger.LogInformation($"Event with id - {id} successfully deleted from Redis.");
                 else
                     _logger.LogInformation($"Event with id - {id} did not deleted from redis.");
             }
             catch (RedisConnectionException ex)
             {
                 _logger.LogError($"Couldn't connect to Redis: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex.ToString());
             }
         }
         public async Task<Event?> GetCacheEventByIdAsync(int id)
@@ -57,6 +61,11 @@ namespace EventService.Infrastructure.Persistence.Redis
                 _logger.LogError($"Couldn't connect to Redis: {ex.Message}");
                 return null;
             }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex.ToString());
+                return null;
+            }
         }
 
         public async Task WriteCacheEventInRedisAsync(Event @event)
@@ -78,7 +87,11 @@ namespace EventService.Infrastructure.Persistence.Redis
             catch (RedisConnectionException ex)
             {
                 _logger.LogError($"Couldn't connect to Redis: {ex.Message}");
-            }   
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex.ToString());
+            }
         }
 
         public async Task<List<Event>> GetTopCacheEventsAsync()
@@ -100,6 +113,11 @@ namespace EventService.Infrastructure.Persistence.Redis
             catch (RedisConnectionException ex)
             {
                 _logger.LogError($"Couldn't connect to Redis: {ex.Message}");
+                return null!;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex.ToString());
                 return null!;
             }
         }
@@ -124,6 +142,10 @@ namespace EventService.Infrastructure.Persistence.Redis
             {
                 _logger.LogError($"Couldn't connect to Redis: {ex.Message}");
             }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex.ToString());
+            }
         }
 
         public async Task DeleteCacheTopEventsFromRedisAsync()
@@ -142,6 +164,10 @@ namespace EventService.Infrastructure.Persistence.Redis
             catch (RedisConnectionException ex)
             {
                 _logger.LogError($"Couldn't connect to Redis: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex.ToString());
             }
         }
     }
