@@ -2,6 +2,7 @@
   <Folder Name="/EventApp/">
     <File Path=".gitignore" />
     <File Path="docker-compose.yml" />
+    <File Path="prometheus.yml" />
     <File Path="README.md" />
   </Folder>
   <Folder Name="/EventApp/Services/" />
