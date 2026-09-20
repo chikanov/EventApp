@@ -60,6 +60,13 @@ Event management Service.
     When data changes, the cache is deleted and a new cache is written. The TTL lifetime for 'Get Event by Id' is 10 minutes.
     The TTL lifetime for 'Get top 10 Events' is 60 minutes.
 
+## Observability
+    
+    The observability system consists of metric collection, tracing, and logging. 
+    Prometheus is added to port 9090. Jaeger UI is on port 16686. Grafana is on port 3000. 
+    To launch the monitoring stack, add a dashboard in Grafana from the file in the repository 
+    EventAppDashboardGrafanaExport.json.
+
 # REST API
 
 The REST API to the example app is described below.
