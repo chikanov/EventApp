@@ -143,6 +143,7 @@ namespace EventService.Infrastructure.Persistence.kafka
 
                                 await _redisService.DeleteCacheEventFromRedisAsync(@event.Id);
                                 await _redisService.WriteCacheEventInRedisAsync(@event);
+                                await _redisService.DeleteCacheTopEventsFromRedisAsync();
 
                                 consumer.StoreOffset(consumeResult);
                                 consumer.Commit(consumeResult);

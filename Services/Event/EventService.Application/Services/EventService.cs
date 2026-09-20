@@ -60,6 +60,7 @@ namespace EventService.Application.Services
             if (createdEvent != null)
             {
                 await _redisService.WriteCacheEventInRedisAsync(createdEvent);
+                await _redisService.DeleteCacheTopEventsFromRedisAsync();
             }
             return createdEvent!;
         }
@@ -87,6 +88,7 @@ namespace EventService.Application.Services
             await _eventRepository.UpdateAsync(ev, existEvent, cancellationToken);
             await _redisService.DeleteCacheEventFromRedisAsync(id);
             await _redisService.WriteCacheEventInRedisAsync(existEvent);
+            await _redisService.DeleteCacheTopEventsFromRedisAsync();
 
             return existEvent!;
         }
@@ -102,6 +104,7 @@ namespace EventService.Application.Services
 
             await _eventRepository.DeleteAsync(existEvent, cancellationToken);
             await _redisService.DeleteCacheEventFromRedisAsync(id);
+            await _redisService.DeleteCacheTopEventsFromRedisAsync();
 
             return true;
         }
