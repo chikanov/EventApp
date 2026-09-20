@@ -2,19 +2,25 @@
 using BookingService.Application.Abstractions.Services;
 using BookingService.Domain.CustomExceptions;
 using BookingService.Domain.Entities;
-using System.Security.Claims;
 
 namespace BookingService.Application.Services
 {
     public class BookingService : IBookingService
     {
         private readonly IBookingRepository _bookingRepository;
+        private const int bookingLimit = 10;
         public BookingService(IBookingRepository bookingRepository)
         {
             _bookingRepository = bookingRepository;
         }
         public async Task<Booking> CreateBookingAsync(int eventId, Guid userId, CancellationToken cancellationToken = default)
         {
+            var userBookingsOnCurEvent = await _bookingRepository.GetUserOwnBookingAsync(userId, eventId, cancellationToken);
+
+            if (userBookingsOnCurEvent.Count() == bookingLimit)
+            {
+                throw new ActiveLeasesExceededException($"The limit of {bookingLimit} active bookings has been reached.");
+            }
             var newBooking = Booking.CreatePending(eventId, userId);
 
             await _bookingRepository.AddAsync(newBooking, cancellationToken);
@@ -59,13 +65,13 @@ namespace BookingService.Application.Services
         public async Task<Booking> CancellationBookingAsync(Guid bookingId, Guid userId, string role, CancellationToken cancellationToken = default)
         {
             var curBooking = await _bookingRepository.GetByIdAsync(bookingId, cancellationToken);
-            
+
             if (curBooking == null)
             {
                 throw new NotFoundBookingException($"Booking with id - {bookingId} dose not exist.");
             }
             var bookingsCurUser = await _bookingRepository.GetUserOwnBookingAsync(userId, curBooking.EventId, cancellationToken);
-            
+
             if (!bookingsCurUser.Select(b => b.Id).Contains(bookingId) || role != "admin")
             {
                 throw new PermissionDeniedException("The user does not have the rights to perform this operation.");

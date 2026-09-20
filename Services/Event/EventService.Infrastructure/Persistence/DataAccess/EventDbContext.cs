@@ -9,7 +9,7 @@ namespace EventService.Infrastructure.Persistence.DataAccess
         public EventDbContext(DbContextOptions<EventDbContext> options) : base(options) { }
 
         public DbSet<Event> Events => Set<Event>();
-        public DbSet<ProcessedBookings> ProcessedBookings => Set<ProcessedBookings>();       
+        public DbSet<ProcessedBookings> ProcessedBookings => Set<ProcessedBookings>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

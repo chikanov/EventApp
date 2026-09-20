@@ -20,6 +20,8 @@ namespace EventService.Application.Abstractions.Services
         Task<Event> UpdateEventAsync(int id, EventDto ev, CancellationToken cancellationToken = default);
         /// Event Delete
         Task<bool> DeleteEventAsync(int id, CancellationToken cancellationToken = default);
+        /// Filtred collection Event top
+        Task<List<Event>> GetTopAsync(CancellationToken cancellationToken = default);
 
     }
 }

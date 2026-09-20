@@ -33,6 +33,7 @@ builder.Services.AddSingleton<KafkaProducerService>(provider =>
                 ?? throw new InvalidOperationException("Kafka string 'BootstrapServers' not found.");
     return new KafkaProducerService(bootstrapServers);
 });
+
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 builder.Services.AddScoped<IBookingService, BookingService.Application.Services.BookingService>();
 builder.Services.AddHostedService<BookingBackgroundService>();
