@@ -59,8 +59,8 @@ builder.Services
         .AddEntityFrameworkCoreInstrumentation()
         .AddOtlpExporter(options =>
         {
-            var otlpExporterEndpoint = builder.Configuration.GetValue<string>("OtlpExporterEndpoint")
-                ?? throw new InvalidOperationException("OtlpExporterEndpoint not found.");
+            var otlpExporterEndpoint = builder.Configuration.GetValue<string>("Otlp:Endpoint")
+                ?? throw new InvalidOperationException("Otlp:Endpoint not found.");
             options.Endpoint = new Uri(otlpExporterEndpoint);
 
             options.Protocol = OtlpExportProtocol.HttpProtobuf;
