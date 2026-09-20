@@ -62,7 +62,8 @@ namespace EventService.Infrastructure.Persistence.Repositories
 
         public async Task<List<Event>> GetTopAsync(CancellationToken ct = default)
         {
-            return await _context.Events.OrderByDescending(e => (e.TotalSeats - e.AvailableSeats) /e.TotalSeats).Take(topCount).
+            return await _context.Events.OrderByDescending(e =>
+                (double)(e.TotalSeats - e.AvailableSeats) /e.TotalSeats).Take(topCount).
                 AsNoTrackingWithIdentityResolution().ToListAsync(ct);
         }
     }
