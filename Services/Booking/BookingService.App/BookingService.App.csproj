@@ -32,6 +32,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\Shared\Authentication\EventApp.Shared.Authentication\EventApp.Shared.Authentication.csproj" />
     <ProjectReference Include="..\..\..\Shared\Kafka\EventApp.Shared.Kafka\EventApp.Shared.Kafka.csproj" />
+    <ProjectReference Include="..\..\..\Shared\Observability\EventApp.Shared.Observability\EventApp.Shared.Observability.csproj" />
     <ProjectReference Include="..\BookingService.Application\BookingService.Application.csproj" />
     <ProjectReference Include="..\BookingService.Infrastructure\BookingService.Infrastructure.csproj" />
   </ItemGroup>

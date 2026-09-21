@@ -31,6 +31,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Shared\Authentication\EventApp.Shared.Authentication\EventApp.Shared.Authentication.csproj" />
+    <ProjectReference Include="..\..\..\Shared\Observability\EventApp.Shared.Observability\EventApp.Shared.Observability.csproj" />
     <ProjectReference Include="..\UserService.Application\UserService.Application.csproj" />
     <ProjectReference Include="..\UserService.Infrastructure\UserService.Infrastructure.csproj" />
   </ItemGroup>

@@ -2,9 +2,21 @@
   <Folder Name="/EventApp/">
     <File Path=".gitignore" />
     <File Path="docker-compose.yml" />
-    <File Path="EventAppDashboardGrafanaExport.json" />
-    <File Path="prometheus.yml" />
     <File Path="README.md" />
+  </Folder>
+  <Folder Name="/EventApp/grafana/" />
+  <Folder Name="/EventApp/grafana/dashboards/">
+    <File Path="dashboard.json" />
+  </Folder>
+  <Folder Name="/EventApp/grafana/provisioning/" />
+  <Folder Name="/EventApp/grafana/provisioning/dashboards/">
+    <File Path="Dashboard.yml" />
+  </Folder>
+  <Folder Name="/EventApp/grafana/provisioning/datasources/">
+    <File Path="grafana/provisioning/datasources/prometheus.yml" />
+  </Folder>
+  <Folder Name="/EventApp/prometheus/">
+    <File Path="prometheus.yml" />
   </Folder>
   <Folder Name="/EventApp/Services/" />
   <Folder Name="/EventApp/Services/Booking/">
@@ -32,5 +44,8 @@
   </Folder>
   <Folder Name="/EventApp/Shared/Kafka/">
     <Project Path="Shared/Kafka/EventApp.Shared.Kafka/EventApp.Shared.Kafka.csproj" Id="ab8e98df-b7ff-4e0f-93ff-f4a837081f6e" />
+  </Folder>
+  <Folder Name="/EventApp/Shared/Observability/">
+    <Project Path="Shared/Observability/EventApp.Shared.Observability/EventApp.Shared.Observability.csproj" Id="bb6bc89c-e593-4161-9f1e-8211a879001b" />
   </Folder>
 </Solution>
