@@ -40,6 +40,9 @@ public static class ObservabilityServiceCollectionExtensions
                 })
                 .AddHttpClientInstrumentation()
                 .AddEntityFrameworkCoreInstrumentation()
+                .AddRedisInstrumentation()
+                .AddSource("Confluent.Kafka.Producer")
+                .AddSource("Confluent.Kafka.Consumer")
                 .AddOtlpExporter(options =>
                 {
                     var otlpExporterEndpoint = builder.Configuration.GetValue<string>("Otlp:Endpoint")
