@@ -66,8 +66,8 @@ Event management Service.
     Prometheus is added to port 9090. Jaeger UI is on port 16686. Grafana is on port 3000. The services are launched locally.
     Events metrics - http://localhost:5214/metrics, Booking metrics - http://localhost:5247/metrics,
     User metrics - http://localhost:5212/metrics.
-    To launch the monitoring stack - 'docker compose up -d', in Grafana, you first need to create a Prometheus data source, then
-    add a dashboard in Grafana from the file in the repository EventAppDashboardGrafanaExport.json.
+    To launch the monitoring stack - 'docker compose up -d'. 
+    The Datasource and Dashboard in Grafana are configured via provisioning.
 
 # REST API
 
