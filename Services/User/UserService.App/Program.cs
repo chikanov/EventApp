@@ -1,13 +1,20 @@
 using EventApp.Shared.Authentication;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
+using OpenTelemetry.Exporter;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
+using Serilog;
+using Serilog.Formatting.Compact;
 using System.Reflection;
+using UserService.App.Middleware;
 using UserService.Application.Abstractions.Persistence.Repositories;
 using UserService.Application.Abstractions.Services;
 using UserService.Infrastructure.Persistence.DataAccess;
-using UserService.Infrastructure.Persistence.Repositories;
 using UserService.Infrastructure.Persistence.Kafka;
-using UserService.App.Middleware;
+using UserService.Infrastructure.Persistence.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 AuthenticationComponent.AddAuthentication(builder);
@@ -19,6 +26,9 @@ builder.Services.AddControllersWithViews()
     .AddNewtonsoftJson(options =>
     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
 );
+
+ObservabilityServiceCollectionExtensions.AddObservabilityServices(builder);
+
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                 ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddOpenApi();
@@ -88,6 +98,7 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
+ObservabilityServiceCollectionExtensions.MapPrometheusScrapingEndpoint(app);
 app.MapControllers();
 
 app.Run();

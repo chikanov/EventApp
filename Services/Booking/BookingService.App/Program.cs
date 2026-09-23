@@ -8,6 +8,13 @@ using BookingService.Infrastructure.Persistence.Repositories;
 using EventApp.Shared.Authentication;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
+using OpenTelemetry.Exporter;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
+using Serilog;
+using Serilog.Formatting.Compact;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,6 +23,9 @@ builder.Services.AddAuthorization();
 // Add services to the container.
 
 builder.Services.AddControllers();
+
+ObservabilityServiceCollectionExtensions.AddObservabilityServices(builder);
+
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddControllersWithViews()
     .AddNewtonsoftJson(options =>
@@ -90,6 +100,7 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
+ObservabilityServiceCollectionExtensions.MapPrometheusScrapingEndpoint(app);
 app.MapControllers();
 
 app.Run();

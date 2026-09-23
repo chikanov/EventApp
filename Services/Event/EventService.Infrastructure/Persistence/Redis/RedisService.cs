@@ -27,13 +27,13 @@ namespace EventService.Infrastructure.Persistence.Redis
 
                 var isDeleted = await _redisDb.KeyDeleteAsync($"event:{id}");
                 if (isDeleted)
-                    _logger.LogInformation($"Event with id - {id} successfully deleted from Redis.");
+                    _logger.LogInformation("Event with id - {id} successfully deleted from Redis.", id);
                 else
-                    _logger.LogInformation($"Event with id - {id} did not deleted from redis.");
+                    _logger.LogInformation("Event with id - {id} did not deleted from redis.", id);
             }
             catch (RedisConnectionException ex)
             {
-                _logger.LogError($"Couldn't connect to Redis: {ex.Message}");
+                _logger.LogError(ex, "Couldn't connect to Redis: {Message}", ex.Message);
             }
             catch (Exception ex)
             {
@@ -58,7 +58,7 @@ namespace EventService.Infrastructure.Persistence.Redis
             }
             catch (RedisConnectionException ex)
             {
-                _logger.LogError($"Couldn't connect to Redis: {ex.Message}");
+                _logger.LogError(ex, "Couldn't connect to Redis: {Reason}", ex.Message);
                 return null;
             }
             catch (Exception ex)
@@ -79,14 +79,14 @@ namespace EventService.Infrastructure.Persistence.Redis
                 var isAdded = await _redisDb.StringSetAsync($"event:{@event.Id}", json, TimeSpan.FromMinutes(eventTtlMinutes));
 
                 if (isAdded)
-                    _logger.LogInformation($"Event with id{@event.Id} successfully added to Redis");
+                    _logger.LogInformation("Event with id {Id} successfully added to Redis", @event.Id);
                 else
-                    _logger.LogInformation($"Event with id{@event.Id} did not added to redis.");
+                    _logger.LogInformation("Event with id {id} did not added to redis.", @event.Id);
 
             }
             catch (RedisConnectionException ex)
             {
-                _logger.LogError($"Couldn't connect to Redis: {ex.Message}");
+                _logger.LogError(ex, "Couldn't connect to Redis: {Message}", ex.Message);
             }
             catch (Exception ex)
             {
@@ -112,7 +112,7 @@ namespace EventService.Infrastructure.Persistence.Redis
             }
             catch (RedisConnectionException ex)
             {
-                _logger.LogError($"Couldn't connect to Redis: {ex.Message}");
+                _logger.LogError(ex, "Couldn't connect to Redis: {Message}", ex.Message);
                 return null!;
             }
             catch (Exception ex)
@@ -140,7 +140,7 @@ namespace EventService.Infrastructure.Persistence.Redis
             }
             catch (RedisConnectionException ex)
             {
-                _logger.LogError($"Couldn't connect to Redis: {ex.Message}");
+                _logger.LogError(ex, "Couldn't connect to Redis: {Message}", ex.Message);
             }
             catch (Exception ex)
             {
@@ -163,7 +163,7 @@ namespace EventService.Infrastructure.Persistence.Redis
             }
             catch (RedisConnectionException ex)
             {
-                _logger.LogError($"Couldn't connect to Redis: {ex.Message}");
+                _logger.LogError(ex, "Couldn't connect to Redis: {Message}", ex.Message);
             }
             catch (Exception ex)
             {

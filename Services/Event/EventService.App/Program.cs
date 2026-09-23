@@ -8,6 +8,13 @@ using EventService.Infrastructure.Persistence.Redis;
 using EventService.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
+using OpenTelemetry.Exporter;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
+using Serilog;
+using Serilog.Formatting.Compact;
 using StackExchange.Redis;
 using System.Reflection;
 
@@ -21,6 +28,9 @@ builder.Services.AddControllersWithViews()
     .AddNewtonsoftJson(options =>
     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
 );
+
+ObservabilityServiceCollectionExtensions.AddObservabilityServices(builder);
+
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                 ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddOpenApi();
@@ -106,6 +116,7 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
+ObservabilityServiceCollectionExtensions.MapPrometheusScrapingEndpoint(app);
 app.MapControllers();
 
 app.Run();
